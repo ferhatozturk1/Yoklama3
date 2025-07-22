@@ -1,6 +1,28 @@
 [build]
-  command = "npm run build"
+  command = "bash netlify-build.sh"
   publish = "build"
+
+[build.environment]
+  NODE_VERSION = "16"
+  NPM_VERSION = "8"
+  NODE_ENV = "production"
+
+[build.processing]
+  skip_processing = false
+
+[build.processing.css]
+  bundle = true
+  minify = true
+
+[build.processing.js]
+  bundle = true
+  minify = true
+
+[build.processing.html]
+  pretty_urls = true
+
+[build.processing.images]
+  compress = true
 
 [[redirects]]
   from = "/*"
