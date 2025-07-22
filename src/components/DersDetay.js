@@ -43,8 +43,10 @@ import {
   InsertDriveFile,
   Edit,
   Delete,
-  MoreVert
+  MoreVert,
+  Visibility
 } from '@mui/icons-material';
+import ÖğrenciDetay from './ÖğrenciDetay';
 
 const DersDetay = ({ ders, onBack }) => {
   // Dialog states
@@ -57,6 +59,10 @@ const DersDetay = ({ ders, onBack }) => {
   const [viewMode, setViewMode] = useState('list');
   const [canEdit, setCanEdit] = useState(true);
   const [editMode, setEditMode] = useState(false);
+  
+  // Student detail states
+  const [selectedStudent, setSelectedStudent] = useState(null);
+  const [showStudentDetail, setShowStudentDetail] = useState(false);
 
   // Sample students data
   const [students] = useState([
@@ -165,6 +171,29 @@ const DersDetay = ({ ders, onBack }) => {
   const checkEditPermission = () => {
     return canEdit;
   };
+
+  const handleStudentClick = (student) => {
+    setSelectedStudent(student);
+    setShowStudentDetail(true);
+    setOpenStudentDialog(false);
+  };
+
+  const handleBackFromStudentDetail = () => {
+    setShowStudentDetail(false);
+    setSelectedStudent(null);
+    setOpenStudentDialog(true);
+  };
+
+  // Eğer öğrenci detayı gösteriliyorsa ÖğrenciDetay bileşenini render et
+  if (showStudentDetail && selectedStudent) {
+    return (
+      <ÖğrenciDetay 
+        student={selectedStudent}
+        course={ders}
+        onBack={handleBackFromStudentDetail}
+      />
+    );
+  }
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, pb: 4 }}>
@@ -506,12 +535,19 @@ const DersDetay = ({ ders, onBack }) => {
                     <TableCell><strong>Bölüm</strong></TableCell>
                     <TableCell><strong>Son Yoklama</strong></TableCell>
                     <TableCell><strong>Katılım Oranı</strong></TableCell>
-                    {editMode && <TableCell><strong>İşlemler</strong></TableCell>}
+                    <TableCell><strong>İşlemler</strong></TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
                   {getSortedStudents().map((student, index) => (
-                    <TableRow key={student.id} sx={{ '&:hover': { bgcolor: '#f8f9fa' } }}>
+                    <TableRow 
+                      key={student.id} 
+                      sx={{ 
+                        '&:hover': { bgcolor: '#f8f9fa', cursor: 'pointer' },
+                        cursor: 'pointer'
+                      }}
+                      onClick={() => handleStudentClick(student)}
+                    >
                       <TableCell>
                         <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
                           {index + 1}
@@ -563,18 +599,38 @@ const DersDetay = ({ ders, onBack }) => {
                           </Typography>
                         </Box>
                       </TableCell>
-                      {editMode && (
-                        <TableCell>
-                          <Box sx={{ display: 'flex', gap: 0.5 }}>
-                            <IconButton size="small" color="primary">
-                              <Edit />
-                            </IconButton>
-                            <IconButton size="small" color="error">
-                              <Delete />
-                            </IconButton>
-                          </Box>
-                        </TableCell>
-                      )}
+                      <TableCell>
+                        <Box sx={{ display: 'flex', gap: 0.5 }}>
+                          <IconButton 
+                            size="small" 
+                            color="primary"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleStudentClick(student);
+                            }}
+                          >
+                            <Visibility />
+                          </IconButton>
+                          {editMode && (
+                            <>
+                              <IconButton 
+                                size="small" 
+                                color="primary"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                <Edit />
+                              </IconButton>
+                              <IconButton 
+                                size="small" 
+                                color="error"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                <Delete />
+                              </IconButton>
+                            </>
+                          )}
+                        </Box>
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
