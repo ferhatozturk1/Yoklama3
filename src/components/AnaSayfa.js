@@ -157,15 +157,41 @@ const AnaSayfa = ({ onSectionChange }) => {
         }}
       >
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-          <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
+          <Typography 
+            variant="h2" 
+            sx={{ 
+              fontWeight: 600,
+              fontSize: { xs: '1.75rem', sm: '2rem', md: '2.125rem' },
+              lineHeight: 1.3,
+              letterSpacing: '-0.01em'
+            }}
+          >
             Hoşgeldin Dr. Ayşe Kaya! 👩‍🏫
           </Typography>
           <Box sx={{ textAlign: 'right' }}>
-            <Typography variant="h5" sx={{ fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Typography 
+              variant="h4" 
+              sx={{ 
+                fontWeight: 500,
+                fontSize: { xs: '1.125rem', sm: '1.25rem', md: '1.375rem' },
+                fontFamily: 'SF Mono, Monaco, Consolas, monospace',
+                letterSpacing: '0.02em',
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: 1 
+              }}
+            >
               <AccessTime />
               {currentTime.toLocaleTimeString('tr-TR')}
             </Typography>
-            <Typography variant="body1" sx={{ opacity: 0.9 }}>
+            <Typography 
+              variant="body1" 
+              sx={{ 
+                opacity: 0.9,
+                fontSize: { xs: '0.875rem', sm: '1rem' },
+                lineHeight: 1.5
+              }}
+            >
               {currentDate.toLocaleDateString('tr-TR', { 
                 weekday: 'long', 
                 year: 'numeric', 
@@ -175,7 +201,15 @@ const AnaSayfa = ({ onSectionChange }) => {
             </Typography>
           </Box>
         </Box>
-        <Typography variant="h6" sx={{ opacity: 0.9 }}>
+        <Typography 
+          variant="body1" 
+          sx={{ 
+            opacity: 0.9,
+            fontSize: { xs: '0.875rem', sm: '1rem' },
+            lineHeight: 1.6,
+            fontWeight: 400
+          }}
+        >
           Günlük ders programınız aşağıda - Canlı takip aktif
         </Typography>
       </Paper>
@@ -184,7 +218,15 @@ const AnaSayfa = ({ onSectionChange }) => {
       {currentClass && (
         <Paper elevation={3} sx={{ p: 3, mb: 4, bgcolor: '#e8f5e8', borderLeft: '4px solid #4caf50' }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-            <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#2e7d32' }}>
+            <Typography 
+              variant="h6" 
+              sx={{ 
+                fontWeight: 600, 
+                color: '#2e7d32',
+                fontSize: { xs: '1rem', sm: '1.125rem' },
+                lineHeight: 1.4
+              }}
+            >
               🎯 Şu Anki Ders - CANLI
             </Typography>
             <Chip 
@@ -193,7 +235,9 @@ const AnaSayfa = ({ onSectionChange }) => {
               color="success" 
               variant="filled"
               sx={{ 
-                fontWeight: 'bold',
+                fontWeight: 500,
+                fontSize: '0.75rem',
+                letterSpacing: '0.02em',
                 '@keyframes pulse': {
                   '0%': { opacity: 1 },
                   '50%': { opacity: 0.5 },
@@ -202,14 +246,38 @@ const AnaSayfa = ({ onSectionChange }) => {
               }}
             />
           </Box>
-          <Typography variant="h5" sx={{ fontWeight: 'bold', color: '#1a237e', mb: 2 }}>
+          <Typography 
+            variant="h4" 
+            sx={{ 
+              fontWeight: 500, 
+              color: '#1a237e', 
+              mb: 2,
+              fontSize: { xs: '1.25rem', sm: '1.375rem', md: '1.5rem' },
+              lineHeight: 1.4
+            }}
+          >
             {currentClass.lesson}
           </Typography>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-            <Typography variant="body1" color="text.secondary">
+            <Typography 
+              variant="body2" 
+              sx={{ 
+                color: 'text.secondary',
+                fontSize: '0.875rem',
+                lineHeight: 1.5
+              }}
+            >
               ⏰ {currentClass.time} - {parseInt(currentClass.time.split(':')[0]) + 1}:{currentClass.time.split(':')[1]}
             </Typography>
-            <Typography variant="body1" sx={{ fontWeight: 'bold', color: '#2e7d32' }}>
+            <Typography 
+              variant="body1" 
+              sx={{ 
+                fontWeight: 500, 
+                color: '#2e7d32',
+                fontSize: '0.875rem',
+                letterSpacing: '0.01em'
+              }}
+            >
               Kalan: {Math.floor(currentClass.remainingMinutes / 60)}:{(currentClass.remainingMinutes % 60).toString().padStart(2, '0')} dk
             </Typography>
           </Box>
@@ -234,13 +302,38 @@ const AnaSayfa = ({ onSectionChange }) => {
       {/* Bir Sonraki Ders */}
       {!currentClass && nextClass && (
         <Paper elevation={3} sx={{ p: 3, mb: 4, bgcolor: '#fff3e0', borderLeft: '4px solid #ff9800' }}>
-          <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#f57c00', mb: 1 }}>
+          <Typography 
+            variant="h6" 
+            sx={{ 
+              fontWeight: 600, 
+              color: '#f57c00', 
+              mb: 1,
+              fontSize: { xs: '1rem', sm: '1.125rem' },
+              lineHeight: 1.4
+            }}
+          >
             ⏳ Bir Sonraki Ders
           </Typography>
-          <Typography variant="h5" sx={{ fontWeight: 'bold', color: '#1a237e' }}>
+          <Typography 
+            variant="h4" 
+            sx={{ 
+              fontWeight: 500, 
+              color: '#1a237e',
+              fontSize: { xs: '1.25rem', sm: '1.375rem', md: '1.5rem' },
+              lineHeight: 1.4,
+              mb: 1
+            }}
+          >
             {nextClass.lesson}
           </Typography>
-          <Typography variant="body1" color="text.secondary">
+          <Typography 
+            variant="body2" 
+            sx={{ 
+              color: 'text.secondary',
+              fontSize: '0.875rem',
+              lineHeight: 1.5
+            }}
+          >
             ⏰ {nextClass.time} - {nextClass.minutesUntil} dakika sonra başlayacak
           </Typography>
         </Paper>
@@ -249,7 +342,16 @@ const AnaSayfa = ({ onSectionChange }) => {
       {/* Akademik Takvim - Haftalık Ders Programı */}
       <Paper elevation={3} sx={{ p: 3 }}>
         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', mb: 3 }}>
-          <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#1a237e' }}>
+          <Typography 
+            variant="h3" 
+            sx={{ 
+              fontWeight: 600, 
+              color: '#1a237e',
+              fontSize: { xs: '1.25rem', sm: '1.375rem', md: '1.5rem' },
+              lineHeight: 1.4,
+              textAlign: 'center'
+            }}
+          >
             📅 Haftalık Ders Programı - CANLI TAKİP
           </Typography>
         </Box>
@@ -258,9 +360,28 @@ const AnaSayfa = ({ onSectionChange }) => {
           <Table sx={{ minWidth: 650 }} aria-label="ders programı">
             <TableHead>
               <TableRow sx={{ bgcolor: '#f5f5f5' }}>
-                <TableCell sx={{ fontWeight: 'bold', width: '100px' }}>Saat</TableCell>
+                <TableCell 
+                  sx={{ 
+                    fontWeight: 600, 
+                    width: '100px',
+                    fontSize: '0.875rem',
+                    letterSpacing: '0.01em',
+                    lineHeight: 1.5
+                  }}
+                >
+                  Saat
+                </TableCell>
                 {days.map((day) => (
-                  <TableCell key={day} align="center" sx={{ fontWeight: 'bold' }}>
+                  <TableCell 
+                    key={day} 
+                    align="center" 
+                    sx={{ 
+                      fontWeight: 600,
+                      fontSize: '0.875rem',
+                      letterSpacing: '0.01em',
+                      lineHeight: 1.5
+                    }}
+                  >
                     {day}
                   </TableCell>
                 ))}
@@ -273,9 +394,12 @@ const AnaSayfa = ({ onSectionChange }) => {
                     component="th" 
                     scope="row" 
                     sx={{ 
-                      fontWeight: 'bold', 
+                      fontWeight: 600, 
                       bgcolor: '#e3f2fd',
-                      borderRight: '2px solid #2196f3'
+                      borderRight: '2px solid #2196f3',
+                      fontSize: '0.875rem',
+                      letterSpacing: '0.02em',
+                      fontFamily: 'SF Mono, Monaco, Consolas, monospace'
                     }}
                   >
                     {timeSlot}
@@ -341,10 +465,12 @@ const AnaSayfa = ({ onSectionChange }) => {
                             <Typography 
                               variant="body2" 
                               sx={{ 
-                                fontWeight: isCurrentLesson ? 'bold' : 'normal',
+                                fontWeight: isCurrentLesson ? 500 : 400,
                                 fontSize: isCurrentLesson ? '0.8rem' : '0.75rem',
                                 textAlign: 'center',
                                 whiteSpace: 'pre-line',
+                                lineHeight: 1.4,
+                                letterSpacing: '0.01em',
                                 color: lesson.includes('Bayram') 
                                   ? '#f57c00' 
                                   : isCurrentLesson 
@@ -439,32 +565,93 @@ const AnaSayfa = ({ onSectionChange }) => {
 
         {/* Canlı Durum Açıklamaları */}
         <Box sx={{ mt: 3, p: 2, bgcolor: '#f8f9fa', borderRadius: 2 }}>
-          <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 2, textAlign: 'center' }}>
+          <Typography 
+            variant="h6" 
+            sx={{ 
+              fontWeight: 500, 
+              mb: 2, 
+              textAlign: 'center',
+              fontSize: '1rem',
+              lineHeight: 1.5
+            }}
+          >
             📊 Canlı Durum Göstergeleri
           </Typography>
           <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap', justifyContent: 'center' }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
               <Circle sx={{ color: '#4caf50', fontSize: 16, animation: 'pulse 2s infinite' }} />
-              <Typography variant="caption" sx={{ fontWeight: 'bold' }}>Şu Anda Devam Ediyor</Typography>
+              <Typography 
+                variant="caption" 
+                sx={{ 
+                  fontWeight: 500,
+                  fontSize: '0.75rem',
+                  lineHeight: 1.4
+                }}
+              >
+                Şu Anda Devam Ediyor
+              </Typography>
             </Box>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
               <Box sx={{ width: 12, height: 12, bgcolor: '#fff3e0', border: '2px solid #ff9800', borderRadius: 0.5 }} />
-              <Typography variant="caption">Yaklaşan Ders</Typography>
+              <Typography 
+                variant="caption"
+                sx={{ 
+                  fontSize: '0.75rem',
+                  lineHeight: 1.4
+                }}
+              >
+                Yaklaşan Ders
+              </Typography>
             </Box>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
               <Box sx={{ width: 12, height: 12, bgcolor: '#f5f5f5', border: '1px solid #9e9e9e', borderRadius: 0.5 }} />
-              <Typography variant="caption">Tamamlanan Ders</Typography>
+              <Typography 
+                variant="caption"
+                sx={{ 
+                  fontSize: '0.75rem',
+                  lineHeight: 1.4
+                }}
+              >
+                Tamamlanan Ders
+              </Typography>
             </Box>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
               <Box sx={{ width: 12, height: 12, bgcolor: '#e3f2fd', border: '1px solid #2196f3', borderRadius: 0.5 }} />
-              <Typography variant="caption">Normal Ders</Typography>
+              <Typography 
+                variant="caption"
+                sx={{ 
+                  fontSize: '0.75rem',
+                  lineHeight: 1.4
+                }}
+              >
+                Normal Ders
+              </Typography>
             </Box>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
               <Box sx={{ width: 12, height: 12, bgcolor: '#fff3e0', border: '1px solid #ff9800', borderRadius: 0.5 }} />
-              <Typography variant="caption">Özel Gün/Tatil</Typography>
+              <Typography 
+                variant="caption"
+                sx={{ 
+                  fontSize: '0.75rem',
+                  lineHeight: 1.4
+                }}
+              >
+                Özel Gün/Tatil
+              </Typography>
             </Box>
           </Box>
-          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', textAlign: 'center', mt: 1 }}>
+          <Typography 
+            variant="caption" 
+            color="text.secondary" 
+            sx={{ 
+              display: 'block', 
+              textAlign: 'center', 
+              mt: 1,
+              fontSize: '0.75rem',
+              lineHeight: 1.4,
+              opacity: 0.7
+            }}
+          >
             ⚡ Otomatik güncelleme aktif - Her saniye yenilenir
           </Typography>
         </Box>
