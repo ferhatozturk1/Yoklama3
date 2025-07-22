@@ -248,23 +248,10 @@ const AnaSayfa = ({ onSectionChange }) => {
 
       {/* Akademik Takvim - Haftalık Ders Programı */}
       <Paper elevation={3} sx={{ p: 3 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', mb: 3 }}>
           <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#1a237e' }}>
             📅 Haftalık Ders Programı - CANLI TAKİP
           </Typography>
-          <Box sx={{ textAlign: 'right' }}>
-            <Typography variant="body2" color="text.secondary">
-              {currentDate.toLocaleDateString('tr-TR', { 
-                weekday: 'long', 
-                day: 'numeric', 
-                month: 'long', 
-                year: 'numeric' 
-              })}
-            </Typography>
-            <Typography variant="caption" color="primary" sx={{ fontWeight: 'bold' }}>
-              Son Güncelleme: {currentTime.toLocaleTimeString('tr-TR')}
-            </Typography>
-          </Box>
         </Box>
 
         <TableContainer>

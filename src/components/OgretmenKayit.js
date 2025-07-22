@@ -130,10 +130,10 @@ const OgretmenKayit = () => {
           <Box sx={{ textAlign: 'center', mb: 4 }}>
             <SupervisorAccount sx={{ fontSize: 48, color: '#1a237e', mb: 2 }} />
             <Typography variant="h4" sx={{ fontWeight: 'bold', color: '#1a237e', mb: 1 }}>
-              Öğretmen Kayıt
+              Akademik Personel Kayıt
             </Typography>
             <Typography variant="body1" color="text.secondary">
-              Öğretmen hesabınızı oluşturmak için bilgilerinizi girin
+              Akademik personel hesabınızı oluşturmak için bilgilerinizi girin
             </Typography>
           </Box>
 
@@ -340,7 +340,7 @@ const OgretmenKayit = () => {
                 transition: 'all 0.3s ease'
               }}
             >
-              Öğretmen Olarak Kayıt Ol
+              Akademik Personel Olarak Kayıt Ol
             </Button>
           </form>
 
