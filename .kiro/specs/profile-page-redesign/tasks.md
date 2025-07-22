@@ -4,7 +4,7 @@
 
   - Create the Grid container with appropriate spacing and sizing for left and right sections
   - Implement responsive behavior for different screen sizes
-  - _Requirements: 1.1, 3.1, 3.4_
+  - _Requirements: 1.1, 3.1, 3.4_a
 
 - [ ] 2. Implement the left profile section
 
