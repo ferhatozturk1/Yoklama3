@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import React, { useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
   AppBar,
   Toolbar,
@@ -11,8 +11,8 @@ import {
   Menu,
   MenuItem,
   useTheme,
-  useMediaQuery
-} from '@mui/material';
+  useMediaQuery,
+} from "@mui/material";
 import {
   School,
   Home,
@@ -20,16 +20,16 @@ import {
   Class,
   Person,
   ExitToApp,
-  Menu as MenuIcon
-} from '@mui/icons-material';
-import { NAVIGATION_ITEMS } from '../utils/routes';
+  Menu as MenuIcon,
+} from "@mui/icons-material";
+import { NAVIGATION_ITEMS } from "../utils/routes";
 
 const TopNavigation = ({ currentSection, userProfile, onSectionChange }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+
   const [mobileMenuAnchor, setMobileMenuAnchor] = useState(null);
   const [profileMenuAnchor, setProfileMenuAnchor] = useState(null);
 
@@ -38,7 +38,7 @@ const TopNavigation = ({ currentSection, userProfile, onSectionChange }) => {
       Home: <Home />,
       Groups: <Groups />,
       Class: <Class />,
-      Person: <Person />
+      Person: <Person />,
     };
     return icons[iconName] || <Home />;
   };
@@ -62,15 +62,15 @@ const TopNavigation = ({ currentSection, userProfile, onSectionChange }) => {
 
   const handleProfileView = () => {
     if (onSectionChange) {
-      onSectionChange('profilim');
+      onSectionChange("profilim");
     } else {
-      navigate('/portal/profilim');
+      navigate("/portal/profilim");
     }
     handleProfileMenuClose();
   };
 
   const handleLogout = () => {
-    navigate('/');
+    navigate("/");
     handleProfileMenuClose();
   };
 
@@ -79,27 +79,27 @@ const TopNavigation = ({ currentSection, userProfile, onSectionChange }) => {
   };
 
   return (
-    <AppBar position="static" sx={{ bgcolor: '#1a237e' }}>
+    <AppBar position="static" sx={{ bgcolor: "#1a237e" }}>
       <Toolbar>
         <School sx={{ mr: 2 }} />
-        <Typography 
-          variant="h6" 
-          component="div" 
-          sx={{ 
-            flexGrow: 1, 
-            cursor: 'pointer',
-            '&:hover': {
-              opacity: 0.9
-            }
+        <Typography
+          variant="h6"
+          component="div"
+          sx={{
+            flexGrow: 1,
+            cursor: "pointer",
+            "&:hover": {
+              opacity: 0.9,
+            },
           }}
-          onClick={() => handleNavigation('/portal/ana-sayfa', 'ana-sayfa')}
+          onClick={() => handleNavigation("/portal/ana-sayfa", "ana-sayfa")}
         >
           Akademik Personel
         </Typography>
 
         {/* Desktop Navigation */}
         {!isMobile && (
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
             {NAVIGATION_ITEMS.map((item) => (
               <Button
                 key={item.key}
@@ -107,10 +107,12 @@ const TopNavigation = ({ currentSection, userProfile, onSectionChange }) => {
                 startIcon={getIcon(item.icon)}
                 onClick={() => handleNavigation(item.path, item.key)}
                 sx={{
-                  backgroundColor: isActive(item.key) ? 'rgba(255,255,255,0.1)' : 'transparent',
-                  '&:hover': {
-                    backgroundColor: 'rgba(255,255,255,0.2)'
-                  }
+                  backgroundColor: isActive(item.key)
+                    ? "rgba(255,255,255,0.1)"
+                    : "transparent",
+                  "&:hover": {
+                    backgroundColor: "rgba(255,255,255,0.2)",
+                  },
                 }}
               >
                 {item.label}
@@ -130,7 +132,7 @@ const TopNavigation = ({ currentSection, userProfile, onSectionChange }) => {
         )}
 
         {/* Profile Section */}
-        <Box sx={{ display: 'flex', alignItems: 'center', ml: 2 }}>
+        <Box sx={{ display: "flex", alignItems: "center", ml: 2 }}>
           <IconButton onClick={handleProfileClick} sx={{ p: 0 }}>
             <Avatar
               src={userProfile.profilePhoto}
@@ -154,7 +156,7 @@ const TopNavigation = ({ currentSection, userProfile, onSectionChange }) => {
               onClick={() => handleNavigation(item.path, item.key)}
               selected={isActive(item.key)}
             >
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                 {getIcon(item.icon)}
                 {item.label}
               </Box>

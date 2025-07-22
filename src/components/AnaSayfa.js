@@ -166,7 +166,7 @@ const AnaSayfa = ({ onSectionChange }) => {
               letterSpacing: '-0.01em'
             }}
           >
-            Hoşgeldin Dr. Ayşe Kaya! 👩‍🏫
+            Hoşgeldin Dr. Ayşe Kaya!
           </Typography>
           <Box sx={{ textAlign: 'right' }}>
             <Typography 
@@ -227,7 +227,7 @@ const AnaSayfa = ({ onSectionChange }) => {
                 lineHeight: 1.4
               }}
             >
-              🎯 Şu Anki Ders - CANLI
+              Şu Anki Ders - CANLI
             </Typography>
             <Chip 
               icon={<Circle sx={{ fontSize: 12, animation: 'pulse 2s infinite' }} />}
@@ -267,7 +267,7 @@ const AnaSayfa = ({ onSectionChange }) => {
                 lineHeight: 1.5
               }}
             >
-              ⏰ {currentClass.time} - {parseInt(currentClass.time.split(':')[0]) + 1}:{currentClass.time.split(':')[1]}
+              {currentClass.time} - {parseInt(currentClass.time.split(':')[0]) + 1}:{currentClass.time.split(':')[1]}
             </Typography>
             <Typography 
               variant="body1" 
@@ -312,7 +312,7 @@ const AnaSayfa = ({ onSectionChange }) => {
               lineHeight: 1.4
             }}
           >
-            ⏳ Bir Sonraki Ders
+            Bir Sonraki Ders
           </Typography>
           <Typography 
             variant="h4" 
@@ -334,7 +334,7 @@ const AnaSayfa = ({ onSectionChange }) => {
               lineHeight: 1.5
             }}
           >
-            ⏰ {nextClass.time} - {nextClass.minutesUntil} dakika sonra başlayacak
+            {nextClass.time} - {nextClass.minutesUntil} dakika sonra başlayacak
           </Typography>
         </Paper>
       )}
@@ -352,7 +352,7 @@ const AnaSayfa = ({ onSectionChange }) => {
               textAlign: 'center'
             }}
           >
-            📅 Haftalık Ders Programı - CANLI TAKİP
+            Haftalık Ders Programı - CANLI TAKİP
           </Typography>
         </Box>
 
@@ -575,7 +575,7 @@ const AnaSayfa = ({ onSectionChange }) => {
               lineHeight: 1.5
             }}
           >
-            📊 Canlı Durum Göstergeleri
+            Canlı Durum Göstergeleri
           </Typography>
           <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap', justifyContent: 'center' }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
@@ -652,7 +652,7 @@ const AnaSayfa = ({ onSectionChange }) => {
               opacity: 0.7
             }}
           >
-            ⚡ Otomatik güncelleme aktif - Her saniye yenilenir
+            Otomatik güncelleme aktif - Her saniye yenileninir
           </Typography>
         </Box>
       </Paper>

@@ -7,7 +7,7 @@ export const ROUTES = {
   // Portal routes
   PORTAL: "/portal",
   ANA_SAYFA: "/portal/ana-sayfa",
-  OGRENCI_ISLERIM: "/portal/ogrenci-islerim",
+
   DERSLERIM: "/portal/derslerim",
   YOKLAMA: "/portal/yoklama",
   PROFILIM: "/portal/profilim",
@@ -21,12 +21,7 @@ export const NAVIGATION_ITEMS = [
     path: ROUTES.ANA_SAYFA,
     icon: "Home",
   },
-  {
-    key: "ogrenci-islerim",
-    label: "Öğrenci İşlerim",
-    path: ROUTES.OGRENCI_ISLERIM,
-    icon: "Groups",
-  },
+
   {
     key: "derslerim",
     label: "Derslerim",
@@ -43,7 +38,6 @@ export const NAVIGATION_ITEMS = [
 
 // Navigation utilities
 export const getActiveSection = (pathname) => {
-  if (pathname.includes("/ogrenci-islerim")) return "ogrenci-islerim";
   if (pathname.includes("/derslerim")) return "derslerim";
   if (pathname.includes("/profilim")) return "profilim";
   return "ana-sayfa";
