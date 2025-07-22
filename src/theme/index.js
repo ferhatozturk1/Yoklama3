@@ -1,10 +1,16 @@
 // Enhanced Material-UI Theme with Professional Typography
 import { createTheme } from '@mui/material/styles';
 import { typographyConfig, typographyColors, typographySpacing } from './typography';
+import { 
+  fluidTypography, 
+  responsiveTypographyMixins, 
+  performanceTypography,
+  accessibleTypography 
+} from './responsiveTypography';
 
 // Create the enhanced theme with professional typography
 export const theme = createTheme({
-  // Typography configuration
+  // Typography configuration with responsive utilities
   typography: {
     ...typographyConfig,
     
@@ -14,6 +20,53 @@ export const theme = createTheme({
     
     // Responsive font sizes
     responsiveFontSizes: true,
+    
+    // Add fluid typography variants
+    welcomeHeading: {
+      ...fluidTypography.welcomeHeading,
+      fontWeight: 600,
+      lineHeight: 1.3,
+      letterSpacing: '-0.01em',
+      ...performanceTypography.fontOptimization
+    },
+    
+    timeDisplay: {
+      ...fluidTypography.timeDisplay,
+      fontFamily: typographyConfig.fontFamilyMonospace,
+      fontWeight: 500,
+      letterSpacing: '0.02em',
+      ...performanceTypography.fontOptimization
+    },
+    
+    sectionHeading: {
+      ...fluidTypography.sectionHeading,
+      fontWeight: 600,
+      lineHeight: 1.4,
+      ...performanceTypography.fontOptimization
+    },
+    
+    cardTitle: {
+      ...fluidTypography.cardTitle,
+      fontWeight: 500,
+      lineHeight: 1.4,
+      ...performanceTypography.fontOptimization
+    },
+    
+    bodyFluid: {
+      ...fluidTypography.bodyFluid,
+      fontWeight: 400,
+      lineHeight: accessibleTypography.lineHeights.relaxed,
+      ...performanceTypography.fontOptimization
+    },
+    
+    captionFluid: {
+      ...fluidTypography.caption,
+      fontWeight: 400,
+      lineHeight: accessibleTypography.lineHeights.normal,
+      letterSpacing: '0.02em',
+      opacity: 0.7,
+      ...performanceTypography.fontOptimization
+    }
   },
 
   // Color palette with accessibility in mind
@@ -63,11 +116,8 @@ export const theme = createTheme({
     MuiTypography: {
       styleOverrides: {
         root: {
-          // Ensure consistent font rendering
-          fontFeatureSettings: '"kern" 1',
-          textRendering: 'optimizeLegibility',
-          WebkitFontSmoothing: 'antialiased',
-          MozOsxFontSmoothing: 'grayscale'
+          // Ensure consistent font rendering with performance optimization
+          ...performanceTypography.fontOptimization
         },
         h1: {
           marginBottom: typographySpacing.margins.textGap
@@ -168,36 +218,12 @@ export const theme = createTheme({
   }
 });
 
-// Create responsive theme
-export const responsiveTheme = createTheme(theme, {
-  // Add responsive typography utilities
-  typography: {
-    ...theme.typography,
-    
-    // Custom responsive variants
-    welcomeHeading: {
-      fontSize: 'clamp(1.75rem, 4vw, 2.25rem)',
-      fontWeight: 600,
-      lineHeight: 1.3,
-      letterSpacing: '-0.01em',
-      [theme.breakpoints.down('sm')]: {
-        fontSize: '1.75rem'
-      }
-    },
-    
-    timeDisplay: {
-      fontFamily: typographyConfig.fontFamilyMonospace,
-      fontSize: 'clamp(1.125rem, 3vw, 1.375rem)',
-      fontWeight: 500,
-      letterSpacing: '0.02em'
-    },
-    
-    sectionHeading: {
-      fontSize: 'clamp(1.25rem, 3vw, 1.5rem)',
-      fontWeight: 600,
-      lineHeight: 1.4
-    }
-  }
-});
+// Export responsive typography utilities for use in components
+export { 
+  fluidTypography, 
+  responsiveTypographyMixins, 
+  performanceTypography,
+  accessibleTypography 
+} from './responsiveTypography';
 
-export default responsiveTheme;
+export default theme;
