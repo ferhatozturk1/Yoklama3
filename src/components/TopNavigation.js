@@ -18,7 +18,6 @@ import {
   Home,
   Groups,
   Class,
-  CheckCircle,
   Person,
   ExitToApp,
   Menu as MenuIcon
@@ -39,7 +38,6 @@ const TopNavigation = ({ currentSection, userProfile, onSectionChange }) => {
       Home: <Home />,
       Groups: <Groups />,
       Class: <Class />,
-      CheckCircle: <CheckCircle />,
       Person: <Person />
     };
     return icons[iconName] || <Home />;
@@ -84,8 +82,19 @@ const TopNavigation = ({ currentSection, userProfile, onSectionChange }) => {
     <AppBar position="static" sx={{ bgcolor: '#1a237e' }}>
       <Toolbar>
         <School sx={{ mr: 2 }} />
-        <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-          Öğretmen Paneli
+        <Typography 
+          variant="h6" 
+          component="div" 
+          sx={{ 
+            flexGrow: 1, 
+            cursor: 'pointer',
+            '&:hover': {
+              opacity: 0.9
+            }
+          }}
+          onClick={() => handleNavigation('/portal/ana-sayfa', 'ana-sayfa')}
+        >
+          Akademik Personel
         </Typography>
 
         {/* Desktop Navigation */}

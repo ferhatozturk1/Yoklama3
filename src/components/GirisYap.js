@@ -36,7 +36,7 @@ const GirisYap = () => {
       return;
     }
 
-    // Demo: Sadece öğretmen girişi
+    // Demo: Sadece akademik personel girişi
     if (email === 'ogretmen@example.com' && password === '1234') {
       navigate('/ogretmen-panel');
     } else {
@@ -60,7 +60,7 @@ const GirisYap = () => {
             textAlign: 'center',
             textShadow: '2px 2px 4px rgba(0,0,0,0.3)'
           }}>
-            Öğretmen Yoklama Sistemi
+            Akademik Personel Yoklama Sistemi
           </Typography>
         </Box>
 
@@ -170,7 +170,7 @@ const GirisYap = () => {
               🎯 Demo Giriş Bilgileri:
             </Typography>
             <Typography variant="body2">
-              <strong>Öğretmen:</strong> ogretmen@example.com / 1234
+              <strong>Akademik Personel:</strong> ogretmen@example.com / 1234
             </Typography>
           </Box>
 
@@ -186,7 +186,7 @@ const GirisYap = () => {
                   fontWeight: 'bold' 
                 }}
               >
-                Öğretmen Kayıt Ol
+                Akademik Personel Kayıt Ol
               </Link>
             </Typography>
           </Box>
