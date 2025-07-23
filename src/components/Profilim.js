@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useMemo, lazy, Suspense } from "react";
 import {
   Typography,
   Box,
@@ -13,11 +13,18 @@ import {
   Snackbar,
 } from "@mui/material";
 import { Edit, Save, Cancel } from "@mui/icons-material";
-import ProfilePhotoUpload from "./ProfilePhotoUpload";
+// Lazy load the ProfilePhotoUpload component with prefetching
+const ProfilePhotoUpload = lazy(() => {
+  // Prefetch the component when idle
+  const prefetchPromise = import("./ProfilePhotoUpload");
+  // Return the promise to React.lazy
+  return prefetchPromise;
+});
 import { useLocalization } from "../utils/localization";
 import { useFormValidation } from "../utils/validation";
 import ApiService from "../utils/ApiService";
 import MockApiService from "../utils/MockApiService";
+import { debounce } from "../utils/debounce";
 
 const Profilim = ({ userProfile: initialUserProfile, onProfileUpdate, userId = 'user123' }) => {
   const { t } = useLocalization();
@@ -64,30 +71,33 @@ const Profilim = ({ userProfile: initialUserProfile, onProfileUpdate, userId = '
     fetchUserProfile();
   }, [initialUserProfile, userId, t]);
 
-  // Initialize form with user profile data
-  const initialFormData = userProfile
-    ? {
-        firstName:
-          userProfile.firstName || userProfile.name?.split(" ")[0] || "",
-        lastName:
-          userProfile.lastName ||
-          (userProfile.name?.split(" ").length > 1
-            ? userProfile.name.split(" ").slice(1).join(" ")
-            : "") ||
-          "",
-        email: userProfile.email || "",
-        phone: userProfile.phone || "",
-        university:
-          userProfile.school ||
-          userProfile.university ||
-          "Manisa Celal Bayar Üniversitesi",
-        faculty: userProfile.faculty || "",
-        department: userProfile.department || "",
-        compulsoryEducation: userProfile.compulsoryEducation || "",
-        otherDetails: userProfile.otherDetails || "",
-        profilePhoto: userProfile.profilePhoto || "",
-      }
-    : {};
+  // Initialize form with user profile data - memoized to prevent recalculation
+  const initialFormData = useMemo(() => 
+    userProfile
+      ? {
+          firstName:
+            userProfile.firstName || userProfile.name?.split(" ")[0] || "",
+          lastName:
+            userProfile.lastName ||
+            (userProfile.name?.split(" ").length > 1
+              ? userProfile.name.split(" ").slice(1).join(" ")
+              : "") ||
+            "",
+          email: userProfile.email || "",
+          phone: userProfile.phone || "",
+          university:
+            userProfile.school ||
+            userProfile.university ||
+            "Manisa Celal Bayar Üniversitesi",
+          faculty: userProfile.faculty || "",
+          department: userProfile.department || "",
+          compulsoryEducation: userProfile.compulsoryEducation || "",
+          otherDetails: userProfile.otherDetails || "",
+          profilePhoto: userProfile.profilePhoto || "",
+        }
+      : {},
+    [userProfile]
+  );
 
   const {
     values,
@@ -99,7 +109,7 @@ const Profilim = ({ userProfile: initialUserProfile, onProfileUpdate, userId = '
     resetForm,
   } = useFormValidation(initialFormData);
 
-  if (!userProfile) {
+  if (!userProfile || isLoading) {
     return (
       <Container maxWidth="lg" sx={{ mt: 4, pb: 4 }}>
         <Typography
@@ -118,20 +128,21 @@ const Profilim = ({ userProfile: initialUserProfile, onProfileUpdate, userId = '
     );
   }
 
-  const handleEditClick = () => {
+  const handleEditClick = useCallback(() => {
     setIsEditing(true);
     setSaveMessage("");
-  };
+  }, []);
 
-  const handleCancelClick = () => {
+  const handleCancelClick = useCallback(() => {
     setIsEditing(false);
     resetForm(initialFormData);
     setUploadedPhoto(null);
     setPhotoPreview(null);
     setSaveMessage("");
-  };
+  }, [initialFormData, resetForm]);
 
-  const handleSaveClick = async () => {
+  // Define the save function
+  const saveProfile = async () => {
     if (!validateAll()) {
       return;
     }
@@ -188,21 +199,49 @@ const Profilim = ({ userProfile: initialUserProfile, onProfileUpdate, userId = '
       setIsSaving(false);
     }
   };
+  
+  // Create a memoized saveProfile function to prevent unnecessary recreations
+  const memoizedSaveProfile = useCallback(saveProfile, [
+    values, uploadedPhoto, photoPreview, userProfile, onProfileUpdate, t, validateAll
+  ]);
+  
+  // Create a debounced version of the save function to prevent multiple rapid saves
+  const handleSaveClick = useCallback(
+    debounce(() => {
+      memoizedSaveProfile();
+    }, 300),
+    [memoizedSaveProfile]
+  );
 
-  const handlePhotoChange = (file, preview) => {
+  // Use useCallback for event handlers to prevent unnecessary re-renders
+  const handlePhotoChange = useCallback((file, preview) => {
     setUploadedPhoto(file);
     setPhotoPreview(preview);
-  };
+  }, []);
 
-  const handlePhotoRemove = () => {
+  const handlePhotoRemove = useCallback(() => {
     setUploadedPhoto(null);
     setPhotoPreview(null);
-  };
+  }, []);
 
   // Handle closing the API error snackbar
-  const handleCloseApiError = () => {
+  const handleCloseApiError = useCallback(() => {
     setShowApiError(false);
-  };
+  }, []);
+
+  // Create a ref for the first focusable element when entering edit mode
+  const firstFieldRef = React.useRef(null);
+  
+  // Create a ref for the edit button to return focus after canceling
+  const editButtonRef = React.useRef(null);
+  
+  // Focus management for edit mode
+  React.useEffect(() => {
+    if (isEditing && firstFieldRef.current) {
+      // Focus the first field when entering edit mode
+      firstFieldRef.current.focus();
+    }
+  }, [isEditing]);
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, pb: 4, position: "relative" }}>
@@ -210,6 +249,9 @@ const Profilim = ({ userProfile: initialUserProfile, onProfileUpdate, userId = '
       <Typography
         variant="h4"
         sx={{ fontWeight: "bold", color: "#1a237e", mb: 4 }}
+        tabIndex="0"
+        role="heading"
+        aria-level="1"
       >
         👤 {t("myProfile")}
       </Typography>
@@ -241,14 +283,14 @@ const Profilim = ({ userProfile: initialUserProfile, onProfileUpdate, userId = '
         </Box>
       )}
 
-      {/* Main two-column layout */}
-      <Grid container spacing={4}>
+      {/* Main two-column layout - responsive for different screen sizes */}
+      <Grid container spacing={{ xs: 2, sm: 3, md: 4 }}>
         {/* Left Profile Section (narrower) */}
         <Grid item xs={12} md={4}>
           <Paper
             elevation={3}
             sx={{
-              p: 3,
+              p: { xs: 2, sm: 3 },
               textAlign: "center",
               height: "100%",
               display: "flex",
@@ -257,16 +299,22 @@ const Profilim = ({ userProfile: initialUserProfile, onProfileUpdate, userId = '
           >
             {/* Profile Photo Section */}
             {isEditing ? (
-              <ProfilePhotoUpload
-                currentPhoto={photoPreview || userProfile.profilePhoto}
-                onPhotoChange={handlePhotoChange}
-                onPhotoRemove={handlePhotoRemove}
-                disabled={isSaving}
-              />
+              <Suspense fallback={
+                <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 200 }}>
+                  <CircularProgress size={40} />
+                </Box>
+              }>
+                <ProfilePhotoUpload
+                  currentPhoto={photoPreview || userProfile.profilePhoto}
+                  onPhotoChange={handlePhotoChange}
+                  onPhotoRemove={handlePhotoRemove}
+                  disabled={isSaving}
+                />
+              </Suspense>
             ) : (
               <Avatar
                 src={photoPreview || userProfile.profilePhoto}
-                alt={userProfile.name}
+                alt={t("profilePhotoOf") + " " + (userProfile.name || t("user"))}
                 sx={{
                   width: 120,
                   height: 120,
@@ -275,6 +323,8 @@ const Profilim = ({ userProfile: initialUserProfile, onProfileUpdate, userId = '
                   fontSize: "3rem",
                   bgcolor: "#1a237e",
                 }}
+                role="img"
+                aria-label={t("profilePhotoOf") + " " + (userProfile.name || t("user"))}
               >
                 {userProfile.name
                   ? userProfile.name.charAt(0).toUpperCase()
@@ -437,6 +487,12 @@ const Profilim = ({ userProfile: initialUserProfile, onProfileUpdate, userId = '
                   sx: { borderRadius: 1 },
                 }}
                 sx={{ mb: 2 }}
+                inputRef={isEditing ? firstFieldRef : null}
+                inputProps={{
+                  "aria-required": "true",
+                  "aria-invalid": touched.firstName && !!errors.firstName ? "true" : "false",
+                }}
+                aria-describedby={touched.firstName && errors.firstName ? `firstName-error` : undefined}
               />
 
               {/* Last Name field */}
@@ -455,6 +511,11 @@ const Profilim = ({ userProfile: initialUserProfile, onProfileUpdate, userId = '
                   sx: { borderRadius: 1 },
                 }}
                 sx={{ mb: 2 }}
+                inputProps={{
+                  "aria-required": "true",
+                  "aria-invalid": touched.lastName && !!errors.lastName ? "true" : "false",
+                }}
+                aria-describedby={touched.lastName && errors.lastName ? `lastName-error` : undefined}
               />
 
               {/* Email field - duplicated from left side for consistency */}
@@ -473,6 +534,12 @@ const Profilim = ({ userProfile: initialUserProfile, onProfileUpdate, userId = '
                   sx: { borderRadius: 1 },
                 }}
                 sx={{ mb: 2 }}
+                inputProps={{
+                  "aria-required": "true",
+                  "aria-invalid": touched.email && !!errors.email ? "true" : "false",
+                  "type": "email"
+                }}
+                aria-describedby={touched.email && errors.email ? `email-error` : undefined}
               />
 
               {/* Phone Number field - duplicated from left side for consistency */}
@@ -569,6 +636,8 @@ const Profilim = ({ userProfile: initialUserProfile, onProfileUpdate, userId = '
                       bgcolor: "#0d1642",
                     },
                   }}
+                  ref={editButtonRef}
+                  aria-label={t("editProfile")}
                 >
                   {t("editProfile")}
                 </Button>
@@ -606,4 +675,5 @@ const Profilim = ({ userProfile: initialUserProfile, onProfileUpdate, userId = '
   );
 };
 
-export default Profilim;
+// Wrap component with React.memo to prevent unnecessary re-renders
+export default React.memo(Profilim);

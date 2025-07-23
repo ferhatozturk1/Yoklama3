@@ -15,6 +15,10 @@ export const turkishLabels = {
   lastName: "Soyad",
   email: "E-posta",
   phone: "Telefon",
+  title: "Unvan",
+  personalInfo: "Kişisel Bilgiler",
+  educationInfo: "Eğitim Bilgileri",
+  contactInfo: "İletişim Bilgileri",
   
   // Actions
   editProfile: "Profili Düzenle",
@@ -26,6 +30,7 @@ export const turkishLabels = {
   changePhoto: "Fotoğrafı Değiştir",
   removePhoto: "Fotoğrafı Kaldır",
   dragDropText: "Fotoğrafı buraya sürükleyin veya tıklayın",
+  fileTypeInfo: "JPG, PNG, GIF - Maksimum 5MB",
   
   // Validation messages
   requiredField: "Bu alan zorunludur.",
@@ -41,6 +46,8 @@ export const turkishLabels = {
   networkError: "Bağlantı hatası. İnternet bağlantınızı kontrol edin.",
   serverError: "Sunucu hatası. Lütfen daha sonra tekrar deneyin.",
   validationError: "Girilen bilgiler geçersiz. Lütfen kontrol edin.",
+  authError: "Yetkilendirme hatası. Lütfen tekrar giriş yapın.",
+  notFoundError: "Profil bulunamadı.",
   
   // Loading states
   loading: "Yükleniyor...",
@@ -54,7 +61,17 @@ export const turkishLabels = {
   // General
   profile: "Profil",
   myProfile: "Profilim",
-  onlyVisibleHere: "Sadece bu ekranda görünür"
+  onlyVisibleHere: "Sadece bu ekranda görünür",
+  yes: "Evet",
+  no: "Hayır",
+  ok: "Tamam",
+  close: "Kapat",
+  user: "Kullanıcı",
+  
+  // Accessibility
+  profilePhotoOf: "Profil fotoğrafı:",
+  currentProfilePhoto: "Mevcut profil fotoğrafı",
+  noProfilePhoto: "Profil fotoğrafı yok"
 };
 
 // Hook for accessing localized text

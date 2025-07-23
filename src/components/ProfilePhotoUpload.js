@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   Box,
   Button,
@@ -14,6 +14,7 @@ import {
   PhotoCamera
 } from '@mui/icons-material';
 import { useLocalization } from '../utils/localization';
+import { compressImage, createThumbnail, revokeObjectURL } from '../utils/imageCompression';
 
 const ProfilePhotoUpload = ({
   currentPhoto,
@@ -44,21 +45,60 @@ const ProfilePhotoUpload = ({
     return null;
   };
 
-  const handleFileSelect = (file) => {
+  // Clean up object URLs when component unmounts
+  useEffect(() => {
+    return () => {
+      if (preview && preview !== currentPhoto) {
+        revokeObjectURL(preview);
+      }
+    };
+  }, [preview, currentPhoto]);
+
+  // Memoize the file validation function to prevent recreation on each render
+  const validateFileMemoized = React.useCallback(validateFile, [acceptedFormats, maxSize, t]);
+  
+  const handleFileSelect = async (file) => {
     setError('');
     
-    const validationError = validateFile(file);
+    const validationError = validateFileMemoized(file);
     if (validationError) {
       setError(validationError);
       return;
     }
 
-    // Create preview URL
-    const previewUrl = URL.createObjectURL(file);
-    setPreview(previewUrl);
-    
-    // Call parent callback
-    onPhotoChange(file, previewUrl);
+    try {
+      // Use a web worker for image compression if available
+      const compressionPromise = compressImage(file, {
+        maxWidth: 1200,
+        maxHeight: 1200,
+        quality: 0.7,
+        useWebWorker: true
+      });
+      
+      // Start thumbnail creation in parallel
+      const thumbnailPromise = createThumbnail(file);
+      
+      // Wait for both operations to complete
+      const [compressedFile, thumbnailUrl] = await Promise.all([
+        compressionPromise,
+        thumbnailPromise
+      ]);
+      
+      // Convert compressed blob to File object
+      const optimizedFile = new File(
+        [compressedFile], 
+        file.name, 
+        { type: file.type }
+      );
+      
+      setPreview(thumbnailUrl);
+      
+      // Call parent callback with optimized file
+      onPhotoChange(optimizedFile, thumbnailUrl);
+    } catch (error) {
+      console.error('Image processing error:', error);
+      setError(t('uploadFailed'));
+    }
   };
 
   const handleFileInputChange = (event) => {
@@ -93,6 +133,11 @@ const ProfilePhotoUpload = ({
   };
 
   const handleRemovePhoto = () => {
+    // Revoke object URL if it's not the original photo
+    if (preview && preview !== currentPhoto) {
+      revokeObjectURL(preview);
+    }
+    
     setPreview('');
     setError('');
     onPhotoRemove();
@@ -121,8 +166,11 @@ const ProfilePhotoUpload = ({
             fontSize: '3rem',
             bgcolor: '#1a237e'
           }}
+          alt={t('profilePhoto')}
+          role="img"
+          aria-label={preview ? t('currentProfilePhoto') : t('noProfilePhoto')}
         >
-          {!preview && <PhotoCamera sx={{ fontSize: '3rem' }} />}
+          {!preview && <PhotoCamera sx={{ fontSize: '3rem' }} aria-hidden="true" />}
         </Avatar>
       </Box>
 
@@ -130,18 +178,32 @@ const ProfilePhotoUpload = ({
       <Paper
         elevation={dragOver ? 4 : 1}
         sx={{
-          p: 3,
+          p: { xs: 2, sm: 3 },
           textAlign: 'center',
           border: dragOver ? '2px dashed #1a237e' : '2px dashed #e0e0e0',
           backgroundColor: dragOver ? '#f3f4f6' : 'transparent',
           cursor: disabled ? 'not-allowed' : 'pointer',
           transition: 'all 0.3s ease',
-          opacity: disabled ? 0.6 : 1
+          opacity: disabled ? 0.6 : 1,
+          minHeight: { xs: '100px', sm: '120px' },
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          alignItems: 'center'
         }}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
         onClick={!disabled ? handleUploadClick : undefined}
+        role="button"
+        tabIndex={disabled ? -1 : 0}
+        aria-label={t('dragDropText')}
+        onKeyDown={(e) => {
+          if ((e.key === 'Enter' || e.key === ' ') && !disabled) {
+            e.preventDefault();
+            handleUploadClick();
+          }
+        }}
       >
         <CloudUpload 
           sx={{ 
@@ -154,7 +216,7 @@ const ProfilePhotoUpload = ({
           {t('dragDropText')}
         </Typography>
         <Typography variant="caption" color="text.secondary">
-          JPG, PNG, GIF - Maksimum {maxSize}MB
+          {t('fileTypeInfo')}
         </Typography>
       </Paper>
 
@@ -166,6 +228,8 @@ const ProfilePhotoUpload = ({
         onChange={handleFileInputChange}
         style={{ display: 'none' }}
         disabled={disabled}
+        aria-hidden="true"
+        aria-label={t('uploadPhoto')}
       />
 
       {/* Action Buttons */}
@@ -176,6 +240,7 @@ const ProfilePhotoUpload = ({
           onClick={handleUploadClick}
           disabled={disabled}
           size="small"
+          aria-label={preview ? t('changePhoto') : t('uploadPhoto')}
         >
           {preview ? t('changePhoto') : t('uploadPhoto')}
         </Button>
@@ -186,6 +251,7 @@ const ProfilePhotoUpload = ({
             onClick={handleRemovePhoto}
             disabled={disabled}
             size="small"
+            aria-label={t('removePhoto')}
           >
             <Delete />
           </IconButton>
@@ -194,7 +260,12 @@ const ProfilePhotoUpload = ({
 
       {/* Error Display */}
       {error && (
-        <Alert severity="error" sx={{ mt: 2 }}>
+        <Alert 
+          severity="error" 
+          sx={{ mt: 2 }}
+          role="alert"
+          aria-live="assertive"
+        >
           {error}
         </Alert>
       )}

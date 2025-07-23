@@ -1,185 +1,215 @@
 import ApiService from '../ApiService';
+import { getLocalizedText } from '../localization';
 
-// Mock fetch globally
+// Mock fetch and localization
 global.fetch = jest.fn();
-
-// Mock AbortController
-global.AbortController = class {
-  constructor() {
-    this.signal = {};
-    this.abort = jest.fn();
-  }
-};
-
-// Mock setTimeout and clearTimeout
-jest.useFakeTimers();
+jest.mock('../localization', () => ({
+  getLocalizedText: jest.fn(key => {
+    const translations = {
+      networkError: 'Bağlantı hatası. İnternet bağlantınızı kontrol edin.',
+      serverError: 'Sunucu hatası. Lütfen daha sonra tekrar deneyin.',
+      validationError: 'Girilen bilgiler geçersiz. Lütfen kontrol edin.'
+    };
+    return translations[key] || key;
+  })
+}));
 
 describe('ApiService', () => {
   beforeEach(() => {
-    // Clear all mocks before each test
     jest.clearAllMocks();
-    fetch.mockClear();
+    jest.useFakeTimers();
   });
-
+  
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+  
   describe('fetchUserProfile', () => {
-    it('should fetch user profile successfully', async () => {
-      // Mock successful response
-      const mockProfile = { id: 'user123', name: 'Test User' };
-      fetch.mockResolvedValueOnce({
+    test('fetches user profile successfully', async () => {
+      const mockProfile = {
+        id: 'user123',
+        name: 'Ahmet Yılmaz'
+      };
+      
+      global.fetch.mockResolvedValueOnce({
         ok: true,
         json: async () => mockProfile
       });
-
+      
       const result = await ApiService.fetchUserProfile('user123');
       
-      expect(fetch).toHaveBeenCalledWith(
-        `${ApiService.baseUrl}/users/user123/profile`,
-        expect.objectContaining({ signal: expect.anything() })
-      );
       expect(result).toEqual(mockProfile);
+      expect(global.fetch).toHaveBeenCalledWith(
+        `${ApiService.baseUrl}/users/user123/profile`,
+        expect.objectContaining({
+          signal: expect.any(Object)
+        })
+      );
     });
-
-    it('should handle HTTP errors', async () => {
-      // Mock error response
-      fetch.mockResolvedValueOnce({
+    
+    test('handles HTTP error', async () => {
+      global.fetch.mockResolvedValueOnce({
         ok: false,
         status: 404
       });
-
+      
       await expect(ApiService.fetchUserProfile('user123')).rejects.toThrow('Profil bulunamadı.');
     });
-
-    it('should handle network errors', async () => {
-      // Mock network error
-      fetch.mockRejectedValueOnce(new Error('Failed to fetch'));
-
-      await expect(ApiService.fetchUserProfile('user123')).rejects.toThrow('Bağlantı hatası. İnternet bağlantınızı kontrol edin.');
+    
+    test('handles network error', async () => {
+      global.fetch.mockRejectedValueOnce(new Error('Failed to fetch'));
+      
+      await expect(ApiService.fetchUserProfile('user123')).rejects.toThrow(getLocalizedText('networkError'));
     });
-
-    it('should handle timeout', async () => {
-      // Mock timeout
-      fetch.mockImplementationOnce(() => {
+    
+    test('handles timeout', async () => {
+      global.fetch.mockImplementationOnce(() => {
         return new Promise((_, reject) => {
-          setTimeout(() => {
-            const error = new Error('AbortError');
-            error.name = 'AbortError';
-            reject(error);
-          }, 11000);
+          setTimeout(() => {}, ApiService.timeout + 100);
         });
       });
-
-      const promise = ApiService.fetchUserProfile('user123');
-      jest.advanceTimersByTime(11000);
       
-      await expect(promise).rejects.toThrow('Bağlantı hatası. İnternet bağlantınızı kontrol edin.');
+      const fetchPromise = ApiService.fetchUserProfile('user123');
+      jest.advanceTimersByTime(ApiService.timeout + 10);
+      
+      await expect(fetchPromise).rejects.toThrow(getLocalizedText('networkError'));
     });
   });
-
+  
   describe('updateUserProfile', () => {
-    it('should update user profile successfully', async () => {
-      // Mock successful response
-      const mockProfile = { id: 'user123', name: 'Updated User' };
-      fetch.mockResolvedValueOnce({
+    test('updates user profile successfully', async () => {
+      const mockProfile = {
+        id: 'user123',
+        name: 'Ahmet Yılmaz'
+      };
+      
+      const updatedProfile = {
+        ...mockProfile,
+        name: 'Mehmet Yılmaz'
+      };
+      
+      global.fetch.mockResolvedValueOnce({
         ok: true,
-        json: async () => mockProfile
+        json: async () => updatedProfile
       });
-
+      
       const result = await ApiService.updateUserProfile(mockProfile);
       
-      expect(fetch).toHaveBeenCalledWith(
-        `${ApiService.baseUrl}/users/user123/profile`,
+      expect(result).toEqual(updatedProfile);
+      expect(global.fetch).toHaveBeenCalledWith(
+        `${ApiService.baseUrl}/users/${mockProfile.id}/profile`,
         expect.objectContaining({
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+          },
           body: JSON.stringify(mockProfile)
         })
       );
-      expect(result).toEqual(mockProfile);
     });
-
-    it('should handle validation errors', async () => {
-      // Mock validation error
-      fetch.mockResolvedValueOnce({
+    
+    test('handles validation error', async () => {
+      global.fetch.mockResolvedValueOnce({
         ok: false,
         status: 400
       });
-
-      await expect(ApiService.updateUserProfile({ id: 'user123' })).rejects.toThrow('Girilen bilgiler geçersiz. Lütfen kontrol edin.');
+      
+      await expect(ApiService.updateUserProfile({ id: 'user123' })).rejects.toThrow(getLocalizedText('validationError'));
     });
   });
-
+  
   describe('uploadProfilePhoto', () => {
-    it('should upload profile photo successfully', async () => {
-      // Mock successful response
-      const mockResponse = { photoUrl: 'https://example.com/photo.jpg' };
-      fetch.mockResolvedValueOnce({
+    test('uploads photo successfully', async () => {
+      const mockPhotoUrl = 'https://example.com/photo.jpg';
+      const mockFile = new File(['dummy content'], 'photo.jpg', { type: 'image/jpeg' });
+      
+      global.fetch.mockResolvedValueOnce({
         ok: true,
-        json: async () => mockResponse
+        json: async () => ({ photoUrl: mockPhotoUrl })
       });
-
-      const mockFile = new File([''], 'photo.jpg', { type: 'image/jpeg' });
+      
       const result = await ApiService.uploadProfilePhoto(mockFile);
       
-      expect(fetch).toHaveBeenCalledWith(
+      expect(result).toEqual(mockPhotoUrl);
+      expect(global.fetch).toHaveBeenCalledWith(
         `${ApiService.baseUrl}/profile/photo`,
         expect.objectContaining({
           method: 'POST',
           body: expect.any(FormData)
         })
       );
-      expect(result).toEqual(mockResponse.photoUrl);
-    });
-
-    it('should handle upload errors', async () => {
-      // Mock error response
-      fetch.mockResolvedValueOnce({
-        ok: false,
-        status: 500
-      });
-
-      const mockFile = new File([''], 'photo.jpg', { type: 'image/jpeg' });
-      await expect(ApiService.uploadProfilePhoto(mockFile)).rejects.toThrow('Sunucu hatası. Lütfen daha sonra tekrar deneyin.');
     });
   });
-
+  
   describe('deleteProfilePhoto', () => {
-    it('should delete profile photo successfully', async () => {
-      // Mock successful response
-      fetch.mockResolvedValueOnce({
+    test('deletes photo successfully', async () => {
+      global.fetch.mockResolvedValueOnce({
         ok: true
       });
-
+      
       const result = await ApiService.deleteProfilePhoto('photo123');
       
-      expect(fetch).toHaveBeenCalledWith(
+      expect(result).toBe(true);
+      expect(global.fetch).toHaveBeenCalledWith(
         `${ApiService.baseUrl}/profile/photo/photo123`,
         expect.objectContaining({
           method: 'DELETE'
         })
       );
-      expect(result).toBe(true);
-    });
-
-    it('should handle delete errors', async () => {
-      // Mock error response
-      fetch.mockResolvedValueOnce({
-        ok: false,
-        status: 404
-      });
-
-      await expect(ApiService.deleteProfilePhoto('photo123')).rejects.toThrow('Profil bulunamadı.');
     });
   });
-
+  
+  describe('handleApiError', () => {
+    test('handles AbortError', () => {
+      const error = new Error('The operation was aborted');
+      error.name = 'AbortError';
+      
+      expect(() => ApiService.handleApiError(error)).toThrow(getLocalizedText('networkError'));
+    });
+    
+    test('handles offline state', () => {
+      const originalNavigator = global.navigator;
+      Object.defineProperty(global, 'navigator', {
+        value: { onLine: false },
+        writable: true
+      });
+      
+      expect(() => ApiService.handleApiError(new Error('Some error'))).toThrow(getLocalizedText('networkError'));
+      
+      Object.defineProperty(global, 'navigator', {
+        value: originalNavigator,
+        writable: true
+      });
+    });
+    
+    test('handles different HTTP status codes', () => {
+      const testCases = [
+        { status: 400, expectedMessage: getLocalizedText('validationError') },
+        { status: 401, expectedMessage: 'Yetkilendirme hatası. Lütfen tekrar giriş yapın.' },
+        { status: 403, expectedMessage: 'Yetkilendirme hatası. Lütfen tekrar giriş yapın.' },
+        { status: 404, expectedMessage: 'Profil bulunamadı.' },
+        { status: 500, expectedMessage: getLocalizedText('serverError') }
+      ];
+      
+      testCases.forEach(({ status, expectedMessage }) => {
+        const error = new Error(`HTTP error ${status}`);
+        expect(() => ApiService.handleApiError(error)).toThrow(expectedMessage);
+      });
+    });
+  });
+  
   describe('getMockUserProfile', () => {
-    it('should return a mock user profile', () => {
+    test('returns mock profile data', () => {
       const mockProfile = ApiService.getMockUserProfile();
       
       expect(mockProfile).toHaveProperty('id');
       expect(mockProfile).toHaveProperty('firstName');
       expect(mockProfile).toHaveProperty('lastName');
+      expect(mockProfile).toHaveProperty('name');
       expect(mockProfile).toHaveProperty('email');
-      expect(mockProfile).toHaveProperty('profilePhoto');
+      expect(mockProfile).toHaveProperty('phone');
+      expect(mockProfile).toHaveProperty('university');
+      expect(mockProfile.university).toBe('Manisa Celal Bayar Üniversitesi');
     });
   });
 });

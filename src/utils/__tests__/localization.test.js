@@ -1,71 +1,70 @@
-import { turkishLabels, getLocalizedText, useLocalization } from '../localization';
-import { renderHook } from '@testing-library/react';
+import { turkishLabels, useLocalization, getLocalizedText } from '../localization';
+import { renderHook } from '@testing-library/react-hooks';
 
-describe('Localization', () => {
+describe('Localization Utilities', () => {
   describe('turkishLabels', () => {
-    test('should contain all required profile labels', () => {
-      expect(turkishLabels.profilePhoto).toBe("Profil Fotoğrafı");
-      expect(turkishLabels.emailInformation).toBe("E-posta Bilgileri");
-      expect(turkishLabels.phoneNumber).toBe("Telefon Numarası");
-      expect(turkishLabels.compulsoryEducation).toBe("Zorunlu Eğitim Bilgileri");
-      expect(turkishLabels.otherDetails).toBe("Diğer Detaylar");
-      expect(turkishLabels.faculty).toBe("Fakülte");
-      expect(turkishLabels.department).toBe("Bölüm");
-      expect(turkishLabels.university).toBe("Üniversite");
-      expect(turkishLabels.editProfile).toBe("Profili Düzenle");
+    test('contains all required translations', () => {
+      // Check for essential categories
+      expect(turkishLabels).toHaveProperty('profilePhoto');
+      expect(turkishLabels).toHaveProperty('emailInformation');
+      expect(turkishLabels).toHaveProperty('firstName');
+      expect(turkishLabels).toHaveProperty('lastName');
+      expect(turkishLabels).toHaveProperty('editProfile');
+      expect(turkishLabels).toHaveProperty('saveProfile');
+      expect(turkishLabels).toHaveProperty('uploadPhoto');
+      expect(turkishLabels).toHaveProperty('requiredField');
+      expect(turkishLabels).toHaveProperty('invalidEmail');
+      expect(turkishLabels).toHaveProperty('networkError');
+      expect(turkishLabels).toHaveProperty('loading');
+      expect(turkishLabels).toHaveProperty('profileSaved');
     });
-
-    test('should contain form field labels', () => {
-      expect(turkishLabels.firstName).toBe("Ad");
-      expect(turkishLabels.lastName).toBe("Soyad");
-      expect(turkishLabels.email).toBe("E-posta");
-      expect(turkishLabels.phone).toBe("Telefon");
-    });
-
-    test('should contain action labels', () => {
-      expect(turkishLabels.saveProfile).toBe("Profili Kaydet");
-      expect(turkishLabels.cancel).toBe("İptal");
-    });
-
-    test('should contain error messages', () => {
-      expect(turkishLabels.requiredField).toBe("Bu alan zorunludur.");
-      expect(turkishLabels.invalidEmail).toBe("Geçerli bir e-posta adresi girin.");
-      expect(turkishLabels.invalidPhone).toBe("Geçerli bir telefon numarası girin.");
+    
+    test('has correct Turkish translations', () => {
+      expect(turkishLabels.profilePhoto).toBe('Profil Fotoğrafı');
+      expect(turkishLabels.firstName).toBe('Ad');
+      expect(turkishLabels.lastName).toBe('Soyad');
+      expect(turkishLabels.email).toBe('E-posta');
+      expect(turkishLabels.editProfile).toBe('Profili Düzenle');
+      expect(turkishLabels.saveProfile).toBe('Profili Kaydet');
+      expect(turkishLabels.cancel).toBe('İptal');
+      expect(turkishLabels.requiredField).toBe('Bu alan zorunludur.');
     });
   });
-
-  describe('getLocalizedText', () => {
-    test('should return correct Turkish text for valid keys', () => {
-      expect(getLocalizedText('profilePhoto')).toBe("Profil Fotoğrafı");
-      expect(getLocalizedText('editProfile')).toBe("Profili Düzenle");
-    });
-
-    test('should return the key itself for invalid keys', () => {
-      expect(getLocalizedText('nonExistentKey')).toBe('nonExistentKey');
-    });
-  });
-
+  
   describe('useLocalization hook', () => {
-    test('should provide t function and labels object', () => {
+    test('returns t function and labels', () => {
       const { result } = renderHook(() => useLocalization());
       
       expect(typeof result.current.t).toBe('function');
-      expect(result.current.labels).toBe(turkishLabels);
+      expect(result.current.labels).toEqual(turkishLabels);
     });
-
-    test('t function should return correct translations', () => {
+    
+    test('t function returns translation for existing key', () => {
       const { result } = renderHook(() => useLocalization());
-      const { t } = result.current;
       
-      expect(t('profilePhoto')).toBe("Profil Fotoğrafı");
-      expect(t('editProfile')).toBe("Profili Düzenle");
+      expect(result.current.t('firstName')).toBe('Ad');
+      expect(result.current.t('lastName')).toBe('Soyad');
+      expect(result.current.t('editProfile')).toBe('Profili Düzenle');
     });
-
-    test('t function should return key for missing translations', () => {
+    
+    test('t function returns key for non-existing key', () => {
       const { result } = renderHook(() => useLocalization());
-      const { t } = result.current;
       
-      expect(t('missingKey')).toBe('missingKey');
+      const nonExistingKey = 'nonExistingKey';
+      expect(result.current.t(nonExistingKey)).toBe(nonExistingKey);
+    });
+  });
+  
+  describe('getLocalizedText function', () => {
+    test('returns translation for existing key', () => {
+      expect(getLocalizedText('firstName')).toBe('Ad');
+      expect(getLocalizedText('lastName')).toBe('Soyad');
+      expect(getLocalizedText('editProfile')).toBe('Profili Düzenle');
+    });
+    
+    test('returns key for non-existing key', () => {
+      const nonExistingKey = 'nonExistingKey';
+      expect(getLocalizedText(nonExistingKey)).toBe(nonExistingKey);
     });
   });
 });

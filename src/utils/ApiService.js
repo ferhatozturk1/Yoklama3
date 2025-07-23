@@ -1,4 +1,5 @@
 import { getLocalizedText } from './localization';
+import cacheService from './cacheService';
 
 /**
  * API Service for profile management
@@ -19,9 +20,20 @@ class ApiService {
   /**
    * Fetch user profile data from the API
    * @param {string} userId - User ID to fetch profile for
+   * @param {boolean} bypassCache - Whether to bypass the cache
    * @returns {Promise<Object>} - User profile data
    */
-  static async fetchUserProfile(userId) {
+  static async fetchUserProfile(userId, bypassCache = false) {
+    const cacheKey = `profile_${userId}`;
+    
+    // Check cache first if not bypassing
+    if (!bypassCache) {
+      const cachedData = cacheService.get(cacheKey);
+      if (cachedData) {
+        return cachedData;
+      }
+    }
+    
     try {
       const response = await this.fetchWithTimeout(`${this.baseUrl}/users/${userId}/profile`);
       
@@ -30,6 +42,10 @@ class ApiService {
       }
       
       const data = await response.json();
+      
+      // Cache the result for 5 minutes
+      cacheService.set(cacheKey, data, 5 * 60 * 1000);
+      
       return data;
     } catch (error) {
       this.handleApiError(error);
@@ -56,6 +72,11 @@ class ApiService {
       }
       
       const data = await response.json();
+      
+      // Update the cache with the new data
+      const cacheKey = `profile_${profile.id}`;
+      cacheService.set(cacheKey, data);
+      
       return data;
     } catch (error) {
       this.handleApiError(error);
@@ -120,10 +141,25 @@ class ApiService {
     const controller = new AbortController();
     const id = setTimeout(() => controller.abort(), this.timeout);
     
+    // Add default headers for better performance
+    const headers = {
+      ...options.headers,
+      'Accept': 'application/json',
+      'X-Requested-With': 'XMLHttpRequest'
+    };
+    
+    // Add cache control headers for GET requests
+    if (!options.method || options.method === 'GET') {
+      headers['Cache-Control'] = 'max-age=300'; // 5 minutes
+    }
+    
     try {
       const response = await fetch(url, {
         ...options,
+        headers,
         signal: controller.signal,
+        // Use keep-alive for better connection reuse
+        keepalive: true
       });
       clearTimeout(id);
       return response;
