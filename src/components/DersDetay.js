@@ -26,7 +26,8 @@ import {
   ListItemIcon,
   Avatar,
   LinearProgress,
-  Badge
+  Badge,
+  TextField
 } from '@mui/material';
 import { 
   ArrowBack,
@@ -44,7 +45,8 @@ import {
   Edit,
   Delete,
   MoreVert,
-  Visibility
+  Visibility,
+  Add
 } from '@mui/icons-material';
 import ÖğrenciDetay from './ÖğrenciDetay';
 
@@ -64,8 +66,17 @@ const DersDetay = ({ ders, onBack }) => {
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [showStudentDetail, setShowStudentDetail] = useState(false);
 
+  // Add student dialog state
+  const [openAddStudentDialog, setOpenAddStudentDialog] = useState(false);
+  const [newStudent, setNewStudent] = useState({
+    name: '',
+    number: '',
+    class: '',
+    department: ''
+  });
+
   // Sample students data
-  const [students] = useState([
+  const [students, setStudents] = useState([
     { 
       id: 1, 
       name: 'Ahmet Yılmaz', 
@@ -182,6 +193,47 @@ const DersDetay = ({ ders, onBack }) => {
     setShowStudentDetail(false);
     setSelectedStudent(null);
     setOpenStudentDialog(true);
+  };
+
+  // Öğrenci ekleme fonksiyonları
+  const handleAddStudent = () => {
+    setOpenAddStudentDialog(true);
+  };
+
+  const handleCloseAddStudentDialog = () => {
+    setOpenAddStudentDialog(false);
+    setNewStudent({
+      name: '',
+      number: '',
+      class: '',
+      department: ''
+    });
+  };
+
+  const handleStudentInputChange = (field, value) => {
+    setNewStudent(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const handleSaveStudent = () => {
+    const yeniOgrenci = {
+      id: students.length + 1,
+      name: newStudent.name,
+      number: newStudent.number,
+      class: newStudent.class || '10-A',
+      department: newStudent.department || 'Matematik Bölümü',
+      order: students.length + 1,
+      attendance: 0,
+      total: 0,
+      rate: 0,
+      lastAttendanceStatus: 'Henüz Katılmadı',
+      attendanceHistory: []
+    };
+
+    setStudents(prev => [...prev, yeniOgrenci]);
+    handleCloseAddStudentDialog();
   };
 
   // Eğer öğrenci detayı gösteriliyorsa ÖğrenciDetay bileşenini render et
@@ -508,6 +560,17 @@ const DersDetay = ({ ders, onBack }) => {
                 {sortOrder === 'asc' ? 'A-Z' : 'Z-A'}
               </Button>
               
+              <Button
+                variant="contained"
+                size="small"
+                color="success"
+                onClick={handleAddStudent}
+                startIcon={<Add />}
+                sx={{ ml: 1 }}
+              >
+                Öğrenci Ekle
+              </Button>
+              
               {checkEditPermission() && (
                 <Button
                   variant={editMode ? 'contained' : 'outlined'}
@@ -660,6 +723,71 @@ const DersDetay = ({ ders, onBack }) => {
               </Button>
             </Box>
           </Box>
+        </DialogActions>
+      </Dialog>
+
+      {/* Öğrenci Ekleme Dialog */}
+      <Dialog 
+        open={openAddStudentDialog} 
+        onClose={handleCloseAddStudentDialog}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>
+          <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#1a237e' }}>
+            👤 Yeni Öğrenci Ekle
+          </Typography>
+        </DialogTitle>
+        
+        <DialogContent>
+          <Box sx={{ mt: 2 }}>
+            <TextField
+              fullWidth
+              label="Öğrenci Adı Soyadı"
+              value={newStudent.name}
+              onChange={(e) => handleStudentInputChange('name', e.target.value)}
+              sx={{ mb: 2 }}
+              required
+            />
+            <TextField
+              fullWidth
+              label="Öğrenci Numarası"
+              value={newStudent.number}
+              onChange={(e) => handleStudentInputChange('number', e.target.value)}
+              sx={{ mb: 2 }}
+              required
+            />
+            <TextField
+              fullWidth
+              label="Sınıf"
+              value={newStudent.class}
+              onChange={(e) => handleStudentInputChange('class', e.target.value)}
+              placeholder="Örn: 10-A"
+              sx={{ mb: 2 }}
+            />
+            <TextField
+              fullWidth
+              label="Bölüm"
+              value={newStudent.department}
+              onChange={(e) => handleStudentInputChange('department', e.target.value)}
+              placeholder="Örn: Matematik Bölümü"
+              sx={{ mb: 2 }}
+            />
+          </Box>
+        </DialogContent>
+        
+        <DialogActions sx={{ p: 3 }}>
+          <Button onClick={handleCloseAddStudentDialog}>
+            İptal
+          </Button>
+          <Button 
+            variant="contained" 
+            onClick={handleSaveStudent}
+            disabled={!newStudent.name || !newStudent.number}
+            sx={{ bgcolor: '#4caf50', '&:hover': { bgcolor: '#388e3c' } }}
+          >
+            Öğrenciyi Ekle
+          </Button>
         </DialogActions>
       </Dialog>
     </Container>
