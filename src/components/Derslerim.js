@@ -25,34 +25,151 @@ const Derslerim = () => {
   const [selectedDers, setSelectedDers] = useState(null);
   
   // Ders ekleme dialog state
-  const [openAddDialog, setOpenAddDialog] = useState(false);
-  const [newDers, setNewDers] = useState({
-    name: '',
-    code: '',
-    info: '',
-    studentCount: '',
-    classroom: '',
-    building: '',
-    room: '',
-    days: {
-      pazartesi: false,
-      salı: false,
-      çarşamba: false,
-      perşembe: false,
-      cuma: false,
-      cumartesi: false,
-      pazar: false
-    },
-    times: {
-      pazartesi: { start: '', end: '' },
-      salı: { start: '', end: '' },
-      çarşamba: { start: '', end: '' },
-      perşembe: { start: '', end: '' },
-      cuma: { start: '', end: '' },
-      cumartesi: { start: '', end: '' },
-      pazar: { start: '', end: '' }
-    }
+// Ders ekleme dialog state
+const [openAddDialog, setOpenAddDialog] = useState(false);
+const [newDers, setNewDers] = useState({
+  name: '',
+  code: '',
+  info: '',
+  classroom: '',
+  building: '',
+  room: '',
+  days: {
+    pazartesi: false,
+    salı: false,
+    çarşamba: false,
+    perşembe: false,
+    cuma: false,
+    cumartesi: false,
+    pazar: false
+  },
+  times: {
+    pazartesi: { start: '', end: '' },
+    salı: { start: '', end: '' },
+    çarşamba: { start: '', end: '' },
+    perşembe: { start: '', end: '' },
+    cuma: { start: '', end: '' },
+    cumartesi: { start: '', end: '' },
+    pazar: { start: '', end: '' }
+  }
+});
+
+// Ders saati bilgilerini güncelleyerek, aynı gün için tekrar ders saati eklenmesini engelleme
+const handleTimeChange = (day, startTime, endTime) => {
+  if (!newDers.times[day].start && !newDers.times[day].end) {
+    setNewDers((prevState) => {
+      const updatedTimes = { ...prevState.times, [day]: { start: startTime, end: endTime } };
+      return { ...prevState, times: updatedTimes };
+    });
+  }
+};
+
+// Gün seçimini işlemek için fonksiyon
+const handleDayChange = (day) => {
+  setNewDers((prevState) => {
+    const updatedDays = { ...prevState.days, [day]: !prevState.days[day] };
+    return { ...prevState, days: updatedDays };
   });
+};
+
+// JSX kısmında (günlerin seçimi ve saatlerin düzenlenmesi)
+return (
+  <div>
+    <Dialog open={openAddDialog} onClose={() => setOpenAddDialog(false)}>
+      <DialogTitle>Ders Ekle</DialogTitle>
+      <DialogContent>
+        <TextField
+          label="Ders Adı"
+          value={newDers.name}
+          onChange={(e) => setNewDers({ ...newDers, name: e.target.value })}
+          fullWidth
+        />
+        <TextField
+          label="Ders Kodu"
+          value={newDers.code}
+          onChange={(e) => setNewDers({ ...newDers, code: e.target.value })}
+          fullWidth
+        />
+        <TextField
+          label="Ders Bilgisi"
+          value={newDers.info}
+          onChange={(e) => setNewDers({ ...newDers, info: e.target.value })}
+          fullWidth
+        />
+        <TextField
+          label="Sınıf"
+          value={newDers.classroom}
+          onChange={(e) => setNewDers({ ...newDers, classroom: e.target.value })}
+          fullWidth
+        />
+        <TextField
+          label="Bina"
+          value={newDers.building}
+          onChange={(e) => setNewDers({ ...newDers, building: e.target.value })}
+          fullWidth
+        />
+
+        {/* Gün Seçimi */}
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={newDers.days.pazartesi}
+              onChange={() => handleDayChange('pazartesi')}
+            />
+          }
+          label="Pazartesi"
+        />
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={newDers.days.salı}
+              onChange={() => handleDayChange('salı')}
+            />
+          }
+          label="Salı"
+        />
+        {/* Diğer günler aynı şekilde eklenebilir */}
+        
+        {/* Saat Seçimi */}
+        {newDers.days.pazartesi && !newDers.times.pazartesi.start && (
+          <div>
+            <TextField
+              label="Pazartesi Başlangıç Saati"
+              value={newDers.times.pazartesi.start}
+              onChange={(e) => handleTimeChange('pazartesi', e.target.value, newDers.times.pazartesi.end)}
+            />
+            <TextField
+              label="Pazartesi Bitiş Saati"
+              value={newDers.times.pazartesi.end}
+              onChange={(e) => handleTimeChange('pazartesi', newDers.times.pazartesi.start, e.target.value)}
+            />
+          </div>
+        )}
+        
+        {/* Salı saat bilgisi aynı şekilde */}
+        {newDers.days.salı && !newDers.times.salı.start && (
+          <div>
+            <TextField
+              label="Salı Başlangıç Saati"
+              value={newDers.times.salı.start}
+              onChange={(e) => handleTimeChange('salı', e.target.value, newDers.times.salı.end)}
+            />
+            <TextField
+              label="Salı Bitiş Saati"
+              value={newDers.times.salı.end}
+              onChange={(e) => handleTimeChange('salı', newDers.times.salı.start, e.target.value)}
+            />
+          </div>
+        )}
+        
+        {/* Diğer günler için aynı yapı tekrarlanır */}
+
+        <Button onClick={handleSubmit}>Ders Ekle</Button>
+      </DialogContent>
+    </Dialog>
+  </div>
+);
+
 
   const [dersler, setDersler] = useState([
     {

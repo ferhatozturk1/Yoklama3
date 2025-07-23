@@ -10,6 +10,7 @@ import Profilim from './Profilim';
 const MainPortal = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const [selectedSemester, setSelectedSemester] = useState('2025-2026-guz');
   const [userProfile] = useState({
     name: 'Dr. Ayşe Kaya',
     email: 'ayse.kaya@universite.edu.tr',
@@ -34,16 +35,22 @@ const MainPortal = () => {
     navigate(`/portal/${section}`);
   };
 
+  const handleSemesterChange = (semester) => {
+    setSelectedSemester(semester);
+  };
+
   return (
     <div>
       <TopNavigation 
         currentSection={getCurrentSection()}
         userProfile={userProfile}
         onSectionChange={handleSectionChange}
+        selectedSemester={selectedSemester}
+        onSemesterChange={handleSemesterChange}
       />
       <Routes>
         <Route path="/" element={<Navigate to="/portal/ana-sayfa" replace />} />
-        <Route path="/ana-sayfa" element={<AnaSayfa onSectionChange={handleSectionChange} />} />
+        <Route path="/ana-sayfa" element={<AnaSayfa onSectionChange={handleSectionChange} selectedSemester={selectedSemester} />} />
 
         <Route path="/derslerim" element={<Derslerim />} />
         <Route path="/yoklama" element={<Yoklama />} />
