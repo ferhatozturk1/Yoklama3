@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Typography,
   Box,
@@ -7,15 +7,8 @@ import {
   Card,
   CardContent,
   Button,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  TextField,
-  Checkbox,
-  FormControlLabel,
 } from "@mui/material";
-import { Edit, Add } from "@mui/icons-material";
+import { Edit } from "@mui/icons-material";
 
 import DersDetay from "./DersDetay";
 
@@ -24,37 +17,8 @@ const Derslerim = () => {
   const [currentView, setCurrentView] = useState("list");
   const [selectedDers, setSelectedDers] = useState(null);
   
-  // Ders ekleme dialog state
-  const [openAddDialog, setOpenAddDialog] = useState(false);
-  const [newDers, setNewDers] = useState({
-    name: '',
-    code: '',
-    info: '',
-    studentCount: '',
-    classroom: '',
-    building: '',
-    room: '',
-    days: {
-      pazartesi: false,
-      salı: false,
-      çarşamba: false,
-      perşembe: false,
-      cuma: false,
-      cumartesi: false,
-      pazar: false
-    },
-    times: {
-      pazartesi: { start: '', end: '' },
-      salı: { start: '', end: '' },
-      çarşamba: { start: '', end: '' },
-      perşembe: { start: '', end: '' },
-      cuma: { start: '', end: '' },
-      cumartesi: { start: '', end: '' },
-      pazar: { start: '', end: '' }
-    }
-  });
-
-  const [dersler, setDersler] = useState([
+  // Static courses (existing ones)
+  const staticCourses = [
     {
       id: 1,
       name: "Matematik",
@@ -121,7 +85,65 @@ const Derslerim = () => {
       attendanceRate: 0,
       files: [],
     },
-  ]);
+  ];
+
+  const [dersler, setDersler] = useState(staticCourses);
+
+  // Load courses from localStorage and combine with static courses
+  useEffect(() => {
+    const loadCourses = () => {
+      const activeCourses = JSON.parse(localStorage.getItem('activeCourses') || '[]');
+      
+      // Convert active courses to the format expected by Derslerim
+      const convertedCourses = activeCourses.map(course => ({
+        id: course.id || Date.now() + Math.random(),
+        name: course.courseName || course.courseTitle,
+        code: course.courseCode,
+        section: course.section,
+        sectionFull: `YP-${course.section}`,
+        building: "A Blok", // Default building
+        room: "A101", // Default room
+        class: `${course.classLevel || 1}-A`,
+        instructor: course.faculty || "Dr. Ayşe Kaya",
+        schedule: {
+          // Convert days array to schedule object
+          ...(course.days && course.days.length > 0 ? {
+            [course.days[0]?.toLowerCase()]: [{
+              startTime: course.times?.split('-')[0] || "08:40",
+              endTime: course.times?.split('-')[1] || "09:30",
+              room: "A101"
+            }]
+          } : {})
+        },
+        totalWeeks: 15,
+        currentWeek: 8,
+        studentCount: Math.floor(Math.random() * 30) + 20, // Random student count
+        attendanceStatus: "not_taken",
+        lastAttendance: null,
+        attendanceRate: 0,
+        files: [],
+      }));
+
+      // Combine static courses with converted active courses
+      const allCourses = [...staticCourses, ...convertedCourses];
+      setDersler(allCourses);
+    };
+
+    loadCourses();
+
+    // Listen for localStorage changes
+    const handleStorageChange = () => {
+      loadCourses();
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('teacherCoursesUpdated', handleStorageChange);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('teacherCoursesUpdated', handleStorageChange);
+    };
+  }, []);
 
   // Event handlers
   const handleDersClick = (ders) => {
@@ -138,110 +160,7 @@ const Derslerim = () => {
     return Object.keys(schedule).join(", ");
   };
 
-  // Ders ekleme fonksiyonları
-  const handleAddDers = () => {
-    setOpenAddDialog(true);
-  };
 
-  const handleCloseAddDialog = () => {
-    setOpenAddDialog(false);
-    setNewDers({
-      name: '',
-      code: '',
-      info: '',
-      studentCount: '',
-      classroom: '',
-      building: '',
-      room: '',
-      days: {
-        pazartesi: false,
-        salı: false,
-        çarşamba: false,
-        perşembe: false,
-        cuma: false,
-        cumartesi: false,
-        pazar: false
-      },
-      times: {
-        pazartesi: { start: '', end: '' },
-        salı: { start: '', end: '' },
-        çarşamba: { start: '', end: '' },
-        perşembe: { start: '', end: '' },
-        cuma: { start: '', end: '' },
-        cumartesi: { start: '', end: '' },
-        pazar: { start: '', end: '' }
-      }
-    });
-  };
-
-  const handleInputChange = (field, value) => {
-    setNewDers(prev => ({
-      ...prev,
-      [field]: value
-    }));
-  };
-
-  const handleDayChange = (day, checked) => {
-    setNewDers(prev => ({
-      ...prev,
-      days: {
-        ...prev.days,
-        [day]: checked
-      }
-    }));
-  };
-
-  const handleTimeChange = (day, timeType, value) => {
-    setNewDers(prev => ({
-      ...prev,
-      times: {
-        ...prev.times,
-        [day]: {
-          ...prev.times[day],
-          [timeType]: value
-        }
-      }
-    }));
-  };
-
-  const handleSaveDers = () => {
-    // Seçili günleri schedule formatına çevir
-    const schedule = {};
-    Object.keys(newDers.days).forEach(day => {
-      if (newDers.days[day] && newDers.times[day].start && newDers.times[day].end) {
-        schedule[day] = [{
-          startTime: newDers.times[day].start,
-          endTime: newDers.times[day].end,
-          room: newDers.room
-        }];
-      }
-    });
-
-    const yeniDers = {
-      id: dersler.length + 1,
-      name: newDers.name,
-      code: newDers.code,
-      section: "A1", // Varsayılan
-      sectionFull: "YP-A1", // Varsayılan
-      building: newDers.building,
-      room: newDers.room,
-      class: "10-A", // Varsayılan
-      instructor: "Dr. Ayşe Kaya", // Varsayılan
-      schedule: schedule,
-      totalWeeks: 15,
-      currentWeek: 1,
-      studentCount: parseInt(newDers.studentCount) || 0,
-      attendanceStatus: "not_taken",
-      lastAttendance: null,
-      attendanceRate: 0,
-      files: [],
-      info: newDers.info,
-      classroom: newDers.classroom
-    };
-
-    setDersler(prev => [...prev, yeniDers]);
-    handleCloseAddDialog();
-  };
 
   // Detay görünümü için DersDetay bileşenini kullan
   if (currentView === "detail" && selectedDers) {
@@ -257,20 +176,6 @@ const Derslerim = () => {
         >
           📚 Derslerim
         </Typography>
-        <Button
-          variant="contained"
-          startIcon={<Add />}
-          onClick={handleAddDers}
-          sx={{
-            bgcolor: "#1a237e",
-            "&:hover": { bgcolor: "#0d47a1" },
-            borderRadius: 2,
-            px: 3,
-            py: 1.5
-          }}
-        >
-          Ders Ekle
-        </Button>
       </Box>
 
       <Grid container spacing={3}>
@@ -383,137 +288,7 @@ const Derslerim = () => {
         ))}
       </Grid>
 
-      {/* Ders Ekleme Dialog */}
-      <Dialog 
-        open={openAddDialog} 
-        onClose={handleCloseAddDialog}
-        maxWidth="md"
-        fullWidth
-      >
-        <DialogTitle>
-          <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#1a237e' }}>
-            📚 Yeni Ders Ekle
-          </Typography>
-        </DialogTitle>
-        
-        <DialogContent>
-          <Box sx={{ mt: 2 }}>
-            <Grid container spacing={3}>
-              {/* Temel Bilgiler */}
-              <Grid item xs={12} md={6}>
-                <TextField
-                  fullWidth
-                  label="Ders Adı"
-                  value={newDers.name}
-                  onChange={(e) => handleInputChange('name', e.target.value)}
-                  sx={{ mb: 2 }}
-                />
-                <TextField
-                  fullWidth
-                  label="Ders Kodu"
-                  value={newDers.code}
-                  onChange={(e) => handleInputChange('code', e.target.value)}
-                  sx={{ mb: 2 }}
-                />
-                <TextField
-                  fullWidth
-                  multiline
-                  rows={3}
-                  label="Ders Bilgileri"
-                  value={newDers.info}
-                  onChange={(e) => handleInputChange('info', e.target.value)}
-                  sx={{ mb: 2 }}
-                />
-              </Grid>
 
-              {/* Derslik ve Öğrenci Bilgileri */}
-              <Grid item xs={12} md={6}>
-                <TextField
-                  fullWidth
-                  type="number"
-                  label="Öğrenci Sayısı"
-                  value={newDers.studentCount}
-                  onChange={(e) => handleInputChange('studentCount', e.target.value)}
-                  sx={{ mb: 2 }}
-                />
-                <TextField
-                  fullWidth
-                  label="Bina"
-                  value={newDers.building}
-                  onChange={(e) => handleInputChange('building', e.target.value)}
-                  sx={{ mb: 2 }}
-                />
-                <TextField
-                  fullWidth
-                  label="Derslik"
-                  value={newDers.room}
-                  onChange={(e) => handleInputChange('room', e.target.value)}
-                  sx={{ mb: 2 }}
-                />
-              </Grid>
-
-              {/* Günler ve Saatler */}
-              <Grid item xs={12}>
-                <Typography variant="h6" sx={{ mb: 2, color: '#1a237e' }}>
-                  Ders Günleri ve Saatleri
-                </Typography>
-                <Grid container spacing={2}>
-                  {Object.keys(newDers.days).map((day) => (
-                    <Grid item xs={12} sm={6} md={4} key={day}>
-                      <Box sx={{ p: 2, border: '1px solid #e0e0e0', borderRadius: 2 }}>
-                        <FormControlLabel
-                          control={
-                            <Checkbox
-                              checked={newDers.days[day]}
-                              onChange={(e) => handleDayChange(day, e.target.checked)}
-                            />
-                          }
-                          label={day.charAt(0).toUpperCase() + day.slice(1)}
-                          sx={{ mb: 1 }}
-                        />
-                        {newDers.days[day] && (
-                          <Box sx={{ display: 'flex', gap: 1 }}>
-                            <TextField
-                              size="small"
-                              type="time"
-                              label="Başlangıç"
-                              value={newDers.times[day].start}
-                              onChange={(e) => handleTimeChange(day, 'start', e.target.value)}
-                              InputLabelProps={{ shrink: true }}
-                            />
-                            <TextField
-                              size="small"
-                              type="time"
-                              label="Bitiş"
-                              value={newDers.times[day].end}
-                              onChange={(e) => handleTimeChange(day, 'end', e.target.value)}
-                              InputLabelProps={{ shrink: true }}
-                            />
-                          </Box>
-                        )}
-                      </Box>
-                    </Grid>
-                  ))}
-                </Grid>
-              </Grid>
-            </Grid>
-          </Box>
-        </DialogContent>
-        
-        <DialogActions sx={{ p: 3 }}>
-          <Button onClick={handleCloseAddDialog}>
-            İptal
-          </Button>
-          <Button 
-            variant="contained" 
-            onClick={handleSaveDers}
-            disabled={!newDers.name || !newDers.code}
-            sx={{ bgcolor: '#1a237e', '&:hover': { bgcolor: '#0d47a1' } }}
-          >
-            Dersi Kaydet
-          </Button>
-        </DialogActions>
-      </Dialog>
     </Container>
   );
 };

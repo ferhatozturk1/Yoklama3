@@ -39,8 +39,6 @@ import {
   ExpandMore,
   Info as InfoIcon,
   ManageAccounts as ManageAccountsIcon,
-  Schedule as ScheduleIcon,
-  Delete as DeleteIcon,
   Home as HomeIcon,
   Class as ClassIcon,
   Person as PersonIcon,
@@ -506,150 +504,21 @@ const Sidebar = ({
               Ders Ekle
             </Button>
 
-            {/* Courses Count */}
+            {/* Info Text */}
             <Typography
               variant="body2"
               sx={{
-                mb: 1,
                 color: "rgba(255,255,255,0.7)",
                 fontSize: "0.75rem",
+                textAlign: "center",
+                py: 1,
+                fontStyle: "italic",
               }}
             >
-              Dersler ({courses.length})
+              Hızlı ders ekleme için kullanın.
+              <br />
+              Derslerinizi "Derslerim" bölümünde görüntüleyebilirsiniz.
             </Typography>
-
-            {/* Course List */}
-            {courses.length === 0 ? (
-              <Typography
-                variant="body2"
-                sx={{
-                  color: "rgba(255,255,255,0.5)",
-                  fontSize: "0.75rem",
-                  textAlign: "center",
-                  py: 2,
-                }}
-              >
-                Ders bulunmamaktadır
-              </Typography>
-            ) : (
-              courses.map((course) => (
-                <Card
-                  key={course.id}
-                  sx={{ mb: 1, backgroundColor: "rgba(255,255,255,0.05)" }}
-                >
-                  <CardContent sx={{ p: 1.5, "&:last-child": { pb: 1.5 } }}>
-                    <Box
-                      sx={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "flex-start",
-                        mb: 1,
-                      }}
-                    >
-                      <Typography
-                        variant="subtitle2"
-                        sx={{
-                          fontWeight: 600,
-                          color: "white",
-                          fontSize: "0.8rem",
-                        }}
-                      >
-                        {course.courseCode}
-                      </Typography>
-                      <IconButton
-                        size="small"
-                        sx={{ color: "rgba(255,255,255,0.7)" }}
-                      >
-                        <DeleteIcon fontSize="small" />
-                      </IconButton>
-                    </Box>
-
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        color: "rgba(255,255,255,0.8)",
-                        fontSize: "0.7rem",
-                        display: "block",
-                        mb: 1,
-                      }}
-                    >
-                      {course.courseName}
-                    </Typography>
-
-                    <Box sx={{ display: "flex", gap: 0.5, mb: 1 }}>
-                      <Typography
-                        variant="caption"
-                        sx={{
-                          color: "rgba(255,255,255,0.6)",
-                          fontSize: "0.65rem",
-                        }}
-                      >
-                        Şube: {course.section}
-                      </Typography>
-                      <Chip
-                        label={`Seviye ${course.classLevel}`}
-                        size="small"
-                        sx={{
-                          height: 16,
-                          fontSize: "0.6rem",
-                          backgroundColor: "#2196f3",
-                          color: "white",
-                        }}
-                      />
-                    </Box>
-
-                    <Chip
-                      label={course.mandatoryElective}
-                      size="small"
-                      sx={{
-                        height: 16,
-                        fontSize: "0.6rem",
-                        backgroundColor:
-                          course.mandatoryElective === "Zorunlu"
-                            ? "#f44336"
-                            : "#ff9800",
-                        color: "white",
-                      }}
-                    />
-
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        color: "rgba(255,255,255,0.6)",
-                        fontSize: "0.65rem",
-                        display: "block",
-                        mt: 1,
-                      }}
-                    >
-                      {course.language} • {course.theoryPractice} •{" "}
-                      {course.credits} Kredi • {course.ects} ECTS
-                    </Typography>
-
-                    <Box
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 0.5,
-                        mt: 1,
-                      }}
-                    >
-                      <ScheduleIcon
-                        sx={{ fontSize: 12, color: "rgba(255,255,255,0.6)" }}
-                      />
-                      <Typography
-                        variant="caption"
-                        sx={{
-                          color: "rgba(255,255,255,0.6)",
-                          fontSize: "0.65rem",
-                        }}
-                      >
-                        {course.days?.join(", ")} • {course.times}
-                      </Typography>
-                    </Box>
-                  </CardContent>
-                </Card>
-              ))
-            )}
           </Box>
         </Collapse>
 
