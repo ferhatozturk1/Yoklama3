@@ -1,0 +1,159 @@
+# ===============================
+# 📦 NODE MODULES VE BAĞIMLILIKLAR
+# ===============================
+# Node modules
+node_modules/
+*/node_modules/
+**/node_modules/
+
+# NPM ve Yarn dosyaları
+.pnp
+.pnp.js
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+.pnp.*
+pnpm-debug.log*
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# ===============================
+# 🚀 REACT BUILD VE CACHE
+# ===============================
+# Build klasörleri
+build/
+dist/
+out/
+.output/
+.next/
+.nuxt/
+.cache/
+.parcel-cache/
+.vite/
+
+# React önbellekleri
+.eslintcache
+.stylelintcache
+coverage/
+storybook-static/
+.tmp/
+.temp/
+
+# ===============================
+# 🔐 ORTAM DEĞİŞKENLERİ
+# ===============================
+# Environment dosyaları
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.*.local
+
+# ===============================
+# 📝 LOG VE GEÇİCİ DOSYALAR
+# ===============================
+# Log dosyaları
+*.log
+logs/
+*.lcov
+.nyc_output
+.coverage
+htmlcov/
+
+# Geçici dosyalar
+.tmp/
+.temp/
+tmp/
+temp/
+*.tmp
+*.bak
+*.swp
+*~
+.nib
+
+# ===============================
+# 💻 EDITÖR VE IDE DOSYALARI
+# ===============================
+# VS Code
+.vscode/
+*.code-workspace
+
+# PyCharm / IntelliJ
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Vim
+*.swp
+*.swo
+
+# ===============================
+# 🖥 İŞLETIM SİSTEMİ DOSYALARI
+# ===============================
+# macOS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+
+# Windows
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+
+# Linux
+*~
+
+# ===============================
+# 🚀 DEPLOY VE SERVİS DOSYALARI
+# ===============================
+# Docker
+.dockerignore
+docker-compose.override.yml
+
+# Vercel
+.vercel
+
+# Firebase
+.firebase/
+firebase-debug.log
+firestore-debug.log
+
+# Sentry
+.sentryclirc
+
+# ===============================
+# 📦 PAKET YÖNETİCİLERİ
+# ===============================
+# NPM
+.npm
+*.tgz
+*.tar.gz
+
+# ===============================
+# 📝 MEDYA VE YÜKLENEN DOSYALAR
+# ===============================
+# Kullanıcı yüklenen dosyalar
+uploads/
+media/
+user_uploads/
+
+# ===============================
+# 🔐 GÜVENLİK DOSYALARI
+# ===============================
+# API anahtarları ve secrets
+.secrets
+secrets.json
+*.pem
+*.key
+*.crt

@@ -1,0 +1,921 @@
+import React, { useState, useEffect } from "react";
+import {
+  Container,
+  Typography,
+  Box,
+  Card,
+  Chip,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  useTheme,
+  useMediaQuery,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  Badge,
+  LinearProgress,
+  Avatar,
+} from "@mui/material";
+import {
+  Schedule as ScheduleIcon,
+  AccessTime as AccessTimeIcon,
+  ExpandMore as ExpandMoreIcon,
+  CalendarToday as CalendarIcon,
+  Circle as CircleIcon,
+  School as SchoolIcon,
+} from "@mui/icons-material";
+
+// Tab panel component
+function TabPanel({ children, value, index, ...other }) {
+  return (
+    <div
+      role="tabpanel"
+      hidden={value !== index}
+      id={`simple-tabpanel-${index}`}
+      aria-labelledby={`simple-tab-${index}`}
+      {...other}
+    >
+      {value === index && <Box sx={{ py: 3 }}>{children}</Box>}
+    </div>
+  );
+}
+
+const AnaSayfa = ({ onSectionChange, selectedSemester = "2025-2026-guz" }) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+  const [currentTime, setCurrentTime] = useState(new Date());
+  const [expandedDay, setExpandedDay] = useState(false);
+
+  // Update time every second
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, []);
+
+  const handleAccordionChange = (panel) => (event, isExpanded) => {
+    setExpandedDay(isExpanded ? panel : false);
+  };
+
+  // Comprehensive weekly schedule data until 8:00 PM
+  const weeklySchedule = {
+    "08:40": {
+      pazartesi: "MATH113/3\nYP-A1",
+      salı: "",
+      çarşamba: "",
+      perşembe: "",
+      cuma: "PHYS101\nFizik Lab",
+    },
+    "09:50": {
+      pazartesi: "",
+      salı: "ENG101/8\nYP-D101",
+      çarşamba: "23 Nisan\nUlusal Egemenlik\nve Çocuk\nBayramı",
+      perşembe: "MATH113/3\nYP-A2",
+      cuma: "",
+    },
+    "11:00": {
+      pazartesi: "BMC201\nAlgoritma",
+      salı: "ENG101/8\nBMC3",
+      çarşamba: "",
+      perşembe: "BMC3\nLab-1",
+      cuma: "STAT102\nİstatistik",
+    },
+    "13:40": {
+      pazartesi: "",
+      salı: "CHEM101\nKimya Lab",
+      çarşamba: "BMC301\nVeri Yapıları",
+      perşembe: "",
+      cuma: "",
+    },
+    "14:40": {
+      pazartesi: "ENG201\nİleri İngilizce",
+      salı: "",
+      çarşamba: "",
+      perşembe: "PHYS201\nFizik II",
+      cuma: "BMC401\nYazılım Müh.",
+    },
+    "15:40": {
+      pazartesi: "",
+      salı: "MATH201\nDifferansiyel",
+      çarşamba: "BMC302\nVeritabanı",
+      perşembe: "",
+      cuma: "",
+    },
+    "16:40": {
+      pazartesi: "BMC303\nAğ Programlama",
+      salı: "",
+      çarşamba: "",
+      perşembe: "ELEC201\nElektrik Devre",
+      cuma: "PROJ401\nBitirme Projesi",
+    },
+    "17:40": {
+      pazartesi: "",
+      salı: "BMC501\nYapay Zeka",
+      çarşamba: "",
+      perşembe: "",
+      cuma: "",
+    },
+    "18:40": {
+      pazartesi: "EVE101\nAkşam Dersi",
+      salı: "",
+      çarşamba: "EVE102\nMesleki İngilizce",
+      perşembe: "",
+      cuma: "",
+    },
+    "19:40": {
+      pazartesi: "",
+      salı: "EVE201\nProje Yönetimi",
+      çarşamba: "",
+      perşembe: "EVE301\nGirişimcilik",
+      cuma: "",
+    },
+  };
+
+  const timeSlots = [
+    "08:40",
+    "09:50",
+    "11:00",
+    "13:40",
+    "14:40",
+    "15:40",
+    "16:40",
+    "17:40",
+    "18:40",
+    "19:40",
+  ];
+  const days = ["Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma"];
+  const dayKeys = ["pazartesi", "salı", "çarşamba", "perşembe", "cuma"];
+
+  // Get lesson status for visual indicators
+  const getLessonStatus = (timeSlot, dayKey) => {
+    const currentTimeNum =
+      currentTime.getHours() * 100 + currentTime.getMinutes();
+    const currentDay = dayKeys[currentTime.getDay() - 1];
+    const [hour, minute] = timeSlot.split(":").map(Number);
+    const slotTime = hour * 100 + minute;
+    const endTime = slotTime + 50;
+    const lesson = weeklySchedule[timeSlot][dayKey];
+
+    if (!lesson) return "empty";
+    if (lesson.includes("Bayram") || lesson.includes("Tatil")) return "holiday";
+    if (currentDay !== dayKey) return "regular";
+
+    if (currentTimeNum >= slotTime && currentTimeNum <= endTime) {
+      return "current";
+    } else if (currentTimeNum < slotTime) {
+      return "upcoming";
+    } else {
+      return "completed";
+    }
+  };
+
+  // Get current class
+  const getCurrentClass = () => {
+    const currentTimeNum =
+      currentTime.getHours() * 100 + currentTime.getMinutes();
+    const currentDay = dayKeys[currentTime.getDay() - 1];
+
+    if (!currentDay) return null;
+
+    for (const timeSlot of timeSlots) {
+      const [hour, minute] = timeSlot.split(":").map(Number);
+      const slotTime = hour * 100 + minute;
+      const endTime = slotTime + 50;
+
+      if (currentTimeNum >= slotTime && currentTimeNum <= endTime) {
+        const lesson = weeklySchedule[timeSlot][currentDay];
+        if (lesson && !lesson.includes("Bayram")) {
+          const remainingMinutes =
+            Math.floor((endTime - currentTimeNum) / 100) * 60 +
+            ((endTime - currentTimeNum) % 100);
+          const progressPercent = ((currentTimeNum - slotTime) / 50) * 100;
+          return {
+            lesson,
+            time: timeSlot,
+            remainingMinutes: Math.max(0, remainingMinutes),
+            progressPercent: Math.min(100, Math.max(0, progressPercent)),
+          };
+        }
+      }
+    }
+    return null;
+  };
+
+  // Get next class
+  const getNextClass = () => {
+    const currentTimeNum =
+      currentTime.getHours() * 100 + currentTime.getMinutes();
+    const currentDay = dayKeys[currentTime.getDay() - 1];
+
+    if (!currentDay) return null;
+
+    for (const timeSlot of timeSlots) {
+      const [hour, minute] = timeSlot.split(":").map(Number);
+      const slotTime = hour * 100 + minute;
+
+      if (currentTimeNum < slotTime) {
+        const lesson = weeklySchedule[timeSlot][currentDay];
+        if (lesson && !lesson.includes("Bayram")) {
+          const minutesUntil =
+            Math.floor((slotTime - currentTimeNum) / 100) * 60 +
+            ((slotTime - currentTimeNum) % 100);
+          return {
+            lesson,
+            time: timeSlot,
+            minutesUntil,
+          };
+        }
+      }
+    }
+    return null;
+  };
+
+  const currentClass = getCurrentClass();
+
+  // Compact Welcome Header
+  const WelcomeHeader = () => (
+    <Paper
+      elevation={2}
+      sx={{
+        p: isMobile ? 1.5 : 3,
+        mb: isMobile ? 2 : 3,
+        background: "linear-gradient(135deg, #1B2E6D 0%, #4A90E2 100%)",
+        borderRadius: '8px',
+        color: "white",
+        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.12)',
+      }}
+    >
+      {/* Mobile Horizontal Layout */}
+      {isMobile ? (
+        <Box sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: 1,
+          flexWrap: 'wrap'
+        }}>
+          {/* Left: Avatar + Name */}
+          <Box sx={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1,
+            flex: '1 1 auto',
+            minWidth: 0 // Allow shrinking
+          }}>
+            <Avatar sx={{
+              bgcolor: 'rgba(255,255,255,0.2)',
+              width: 32,
+              height: 32,
+              flexShrink: 0
+            }}>
+              <SchoolIcon sx={{ fontSize: 18 }} />
+            </Avatar>
+            <Box sx={{
+              minWidth: 0, // Allow text truncation
+              flex: 1
+            }}>
+              <Typography sx={{
+                fontWeight: 500,
+                fontSize: '0.85rem',
+                lineHeight: 1.2,
+                mb: 0.25,
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis'
+              }}>
+                Öğr. Gör. M. N. Öğüt
+              </Typography>
+              <Typography sx={{
+                fontSize: '0.7rem',
+                opacity: 0.85,
+                lineHeight: 1.1,
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis'
+              }}>
+                2025-2026 Güz
+              </Typography>
+            </Box>
+          </Box>
+
+          {/* Right: Time + Date */}
+          <Box sx={{
+            textAlign: 'right',
+            flexShrink: 0,
+            bgcolor: 'rgba(255,255,255,0.1)',
+            px: 1.5,
+            py: 1,
+            borderRadius: '6px',
+            border: '1px solid rgba(255,255,255,0.15)'
+          }}>
+            <Typography sx={{
+              fontWeight: 600,
+              fontSize: '0.9rem',
+              lineHeight: 1.1,
+              mb: 0.25
+            }}>
+              {currentTime.toLocaleTimeString('tr-TR', {
+                hour: '2-digit',
+                minute: '2-digit'
+              })}
+            </Typography>
+            <Typography sx={{
+              fontSize: '0.7rem',
+              opacity: 0.85,
+              lineHeight: 1.1
+            }}>
+              {currentTime.toLocaleDateString('tr-TR', {
+                day: 'numeric',
+                month: 'short'
+              })}
+            </Typography>
+          </Box>
+        </Box>
+      ) : (
+        /* Desktop Layout - Keep original */
+        <Box sx={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: 2,
+        }}>
+          <Box sx={{
+            display: "flex",
+            alignItems: "center",
+            gap: 2,
+          }}>
+            <Avatar sx={{
+              bgcolor: 'rgba(255,255,255,0.2)',
+              width: 48,
+              height: 48,
+            }}>
+              <SchoolIcon sx={{ fontSize: 28 }} />
+            </Avatar>
+            <Box>
+              <Typography variant="h6" sx={{
+                fontWeight: 600,
+                mb: 0.5,
+                fontSize: "1.1rem",
+                lineHeight: 1.2,
+              }}>
+                Öğr. Gör. Mehmet Nuri Öğüt
+              </Typography>
+              <Typography variant="body2" sx={{
+                opacity: 0.9,
+                fontSize: "0.85rem",
+                lineHeight: 1.2,
+              }}>
+                2025-2026 Güz Dönemi
+              </Typography>
+            </Box>
+          </Box>
+          
+          <Box sx={{
+            textAlign: "center",
+            bgcolor: "rgba(255,255,255,0.1)",
+            px: 3,
+            py: 1.5,
+            borderRadius: '8px',
+            backdropFilter: "blur(10px)",
+            border: "1px solid rgba(255,255,255,0.2)",
+          }}>
+            <Typography variant="h6" sx={{
+              fontWeight: 500,
+              mb: 0.5,
+              fontSize: "1.1rem",
+              lineHeight: 1.2,
+            }}>
+              {currentTime.toLocaleTimeString("tr-TR")}
+            </Typography>
+            <Typography variant="body2" sx={{
+              opacity: 0.9,
+              fontSize: "0.85rem",
+              lineHeight: 1.2,
+            }}>
+              {currentTime.toLocaleDateString("tr-TR", {
+                weekday: "long",
+                day: "numeric",
+                month: "long",
+              })}
+            </Typography>
+          </Box>
+        </Box>
+      )}
+    </Paper>
+  );
+
+  // Get chip styling based on lesson status
+  const getChipStyling = (timeSlot, dayKey) => {
+    const status = getLessonStatus(timeSlot, dayKey);
+    const lesson = weeklySchedule[timeSlot][dayKey];
+
+    switch (status) {
+      case "current":
+        return {
+          bgcolor: "#E8F5E8",
+          color: "#27AE60",
+          border: "2px solid #27AE60",
+          fontWeight: 600,
+          animation: "pulse 2s infinite",
+        };
+      case "upcoming":
+        return {
+          bgcolor: "#FFFBF0",
+          color: "#B8860B",
+          border: "1px solid #DAA520",
+          fontWeight: 500,
+        };
+      case "completed":
+        return {
+          bgcolor: "#FAFAFA",
+          color: "#9E9E9E",
+          border: "1px solid #BDBDBD",
+          opacity: 0.8,
+        };
+      case "holiday":
+        return {
+          bgcolor: "#FFFDE7",
+          color: "#F57F17",
+          fontWeight: 500,
+          border: "1px solid #FFEB3B",
+        };
+      case "regular":
+      default:
+        return {
+          bgcolor: "#E3F2FD",
+          color: "#1565C0",
+          border: "1px solid #90CAF9",
+        };
+    }
+  };
+
+  // Desktop Schedule Table
+  const DesktopSchedule = () => (
+    <Box sx={{ mt: 3 }}>
+      <TableContainer
+        component={Paper}
+        elevation={2}
+        sx={{ borderRadius: 0, border: "1px solid #DEE2E6" }}
+      >
+        <Table
+          sx={{ "& .MuiTableCell-root": { borderRight: "1px solid #DEE2E6" } }}
+        >
+          <TableHead>
+            <TableRow
+              sx={{ bgcolor: "#F8F9FA", borderBottom: "2px solid #DEE2E6" }}
+            >
+              <TableCell
+                sx={{
+                  fontWeight: 600,
+                  color: "#2C3E50",
+                  fontSize: "0.875rem",
+                  py: 2,
+                }}
+              >
+                Saat
+              </TableCell>
+              {days.map((day, index) => (
+                <TableCell
+                  key={day}
+                  align="center"
+                  sx={{
+                    fontWeight: 600,
+                    color:
+                      index === currentTime.getDay() - 1
+                        ? "#1B2E6D"
+                        : "#2C3E50",
+                    fontSize: "0.875rem",
+                    py: 2,
+                    bgcolor:
+                      index === currentTime.getDay() - 1
+                        ? "#E3F2FD"
+                        : "#F8F9FA",
+                  }}
+                >
+                  {day}
+                </TableCell>
+              ))}
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {timeSlots.map((timeSlot, rowIndex) => (
+              <TableRow
+                key={timeSlot}
+                sx={{
+                  "&:hover": { bgcolor: "#F8F9FA" },
+                  borderBottom:
+                    rowIndex < timeSlots.length - 1
+                      ? "1px solid #DEE2E6"
+                      : "none",
+                }}
+              >
+                <TableCell
+                  sx={{
+                    fontWeight: 500,
+                    color: "#1B2E6D",
+                    bgcolor: "#F8F9FA",
+                    fontSize: "0.875rem",
+                    py: 2.5,
+                    minWidth: "80px",
+                  }}
+                >
+                  {timeSlot}
+                </TableCell>
+                {dayKeys.map((dayKey, index) => {
+                  const lesson = weeklySchedule[timeSlot][dayKey];
+                  const chipStyling = getChipStyling(timeSlot, dayKey);
+
+                  return (
+                    <TableCell
+                      key={dayKey}
+                      align="center"
+                      sx={{ p: 1.5, minHeight: "60px" }}
+                    >
+                      {lesson ? (
+                        <Chip
+                          label={lesson.replace("\n", " - ")}
+                          size="small"
+                          sx={{
+                            maxWidth: "100%",
+                            height: "auto",
+                            minHeight: "36px",
+                            "& .MuiChip-label": {
+                              display: "block",
+                              whiteSpace: "normal",
+                              textAlign: "center",
+                              padding: "8px 12px",
+                              fontSize: "0.75rem",
+                              lineHeight: 1.3,
+                            },
+                            ...chipStyling,
+                          }}
+                        />
+                      ) : (
+                        <Typography
+                          variant="body2"
+                          color="text.disabled"
+                          sx={{ py: 1 }}
+                        >
+                          -
+                        </Typography>
+                      )}
+                    </TableCell>
+                  );
+                })}
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+
+      {/* Legend */}
+      <Box
+        sx={{
+          mt: 3,
+          display: "flex",
+          flexWrap: "wrap",
+          gap: 2,
+          justifyContent: "center",
+        }}
+      >
+        <Chip
+          size="small"
+          label="Şu Anki Ders"
+          sx={{
+            bgcolor: "#E8F5E8",
+            color: "#27AE60",
+            border: "2px solid #27AE60",
+          }}
+        />
+        <Chip
+          size="small"
+          label="Gelecek Ders"
+          sx={{
+            bgcolor: "#FFFBF0",
+            color: "#B8860B",
+            border: "1px solid #DAA520",
+          }}
+        />
+        <Chip
+          size="small"
+          label="Tamamlanan Ders"
+          sx={{
+            bgcolor: "#FAFAFA",
+            color: "#9E9E9E",
+            border: "1px solid #BDBDBD",
+          }}
+        />
+        <Chip
+          size="small"
+          label="Normal Ders"
+          sx={{
+            bgcolor: "#E3F2FD",
+            color: "#1565C0",
+            border: "1px solid #90CAF9",
+          }}
+        />
+        <Chip
+          size="small"
+          label="Özel Gün/Tatil"
+          sx={{
+            bgcolor: "#FFFDE7",
+            color: "#F57F17",
+            border: "1px solid #FFEB3B",
+          }}
+        />
+      </Box>
+    </Box>
+  );
+
+  // Mobile Accordion Schedule
+  const MobileSchedule = () => (
+    <Box>
+      {days.map((day, dayIndex) => {
+        const dayClasses = timeSlots.filter(
+          (slot) => weeklySchedule[slot][dayKeys[dayIndex]]
+        );
+
+        return (
+          <Accordion
+            key={day}
+            expanded={expandedDay === day}
+            onChange={handleAccordionChange(day)}
+            sx={{ mb: 1, borderRadius: 2, "&:before": { display: "none" } }}
+          >
+            <AccordionSummary
+              expandIcon={<ExpandMoreIcon />}
+              sx={{
+                bgcolor:
+                  dayIndex === currentTime.getDay() - 1 ? "#E3F2FD" : "#F8F9FA",
+                borderRadius: 2,
+              }}
+            >
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 1,
+                  width: "100%",
+                }}
+              >
+                <CalendarIcon
+                  color={
+                    dayIndex === currentTime.getDay() - 1
+                      ? "primary"
+                      : "disabled"
+                  }
+                />
+                <Typography 
+                  variant="subtitle1" 
+                  sx={{ 
+                    fontWeight: 500,
+                    fontSize: isMobile ? '0.9rem' : '1rem'
+                  }}
+                >
+                  {day}
+                </Typography>
+                <Badge
+                  badgeContent={dayClasses.length}
+                  color="primary"
+                  sx={{ ml: "auto", mr: 2 }}
+                />
+              </Box>
+            </AccordionSummary>
+            <AccordionDetails>
+              {dayClasses.length > 0 ? (
+                dayClasses.map((slot) => (
+                  <Card key={slot} sx={{ mb: 1, p: 2 }}>
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                      <AccessTimeIcon color="primary" />
+                      <Box sx={{ flexGrow: 1 }}>
+                        <Typography
+                          variant="subtitle2"
+                          sx={{ 
+                            fontWeight: 500,
+                            fontSize: isMobile ? '0.85rem' : '0.9rem'
+                          }}
+                        >
+                          {slot} - {parseInt(slot.split(":")[0]) + 1}:
+                          {slot.split(":")[1]}
+                        </Typography>
+                        <Typography 
+                          variant="body2" 
+                          color="text.secondary"
+                          sx={{
+                            fontSize: isMobile ? '0.8rem' : '0.875rem'
+                          }}
+                        >
+                          {weeklySchedule[slot][dayKeys[dayIndex]].replace(
+                            "\n",
+                            " - "
+                          )}
+                        </Typography>
+                      </Box>
+                    </Box>
+                  </Card>
+                ))
+              ) : (
+                <Typography
+                  variant="body2"
+                  color="text.disabled"
+                  sx={{ textAlign: "center", py: 2 }}
+                >
+                  Bu gün ders bulunmuyor
+                </Typography>
+              )}
+            </AccordionDetails>
+          </Accordion>
+        );
+      })}
+    </Box>
+  );
+
+  return (
+    <Container
+      maxWidth={isMobile ? "sm" : "xl"}
+      sx={{
+        mt: isMobile ? 1 : 2,
+        pb: 4,
+        px: isMobile ? 1 : 3,
+      }}
+    >
+      <WelcomeHeader />
+
+      {/* Current/Next Class Status */}
+      <Box sx={{ mb: 4 }}>
+        {currentClass && (
+          <Paper
+            elevation={2}
+            sx={{
+              p: 3,
+              mb: 2,
+              bgcolor: "#E8F5E8",
+              borderLeft: "4px solid #27AE60",
+              borderRadius: 0,
+            }}
+          >
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                mb: 2,
+              }}
+            >
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                <CircleIcon
+                  sx={{
+                    color: "#27AE60",
+                    fontSize: 16,
+                    animation: "pulse 2s infinite",
+                  }}
+                />
+                <Typography
+                  variant="h6"
+                  sx={{ fontWeight: 600, color: "#27AE60" }}
+                >
+                  Şu Anki Ders
+                </Typography>
+              </Box>
+              <Chip
+                label="DEVAM EDİYOR"
+                size="small"
+                sx={{
+                  bgcolor: "#27AE60",
+                  color: "white",
+                  fontWeight: 500,
+                  fontSize: "0.75rem",
+                }}
+              />
+            </Box>
+            <Typography
+              variant="h5"
+              sx={{ fontWeight: 500, color: "#1B2E6D", mb: 2 }}
+            >
+              {currentClass.lesson.replace("\n", " - ")}
+            </Typography>
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                mb: 2,
+              }}
+            >
+              <Typography variant="body2" color="text.secondary">
+                {currentClass.time} -{" "}
+                {parseInt(currentClass.time.split(":")[0]) + 1}:
+                {currentClass.time.split(":")[1]}
+              </Typography>
+              <Typography
+                variant="body1"
+                sx={{ fontWeight: 500, color: "#27AE60" }}
+              >
+                Kalan: {Math.floor(currentClass.remainingMinutes / 60)}:
+                {(currentClass.remainingMinutes % 60)
+                  .toString()
+                  .padStart(2, "0")}{" "}
+                dk
+              </Typography>
+            </Box>
+            <LinearProgress
+              variant="determinate"
+              value={currentClass.progressPercent}
+              sx={{
+                height: 8,
+                borderRadius: 4,
+                bgcolor: "#C8E6C9",
+                "& .MuiLinearProgress-bar": { bgcolor: "#27AE60" },
+              }}
+            />
+          </Paper>
+        )}
+
+        {!currentClass &&
+          (() => {
+            const nextClass = getNextClass();
+            return (
+              nextClass && (
+                <Paper
+                  elevation={2}
+                  sx={{
+                    p: 3,
+                    mb: 2,
+                    bgcolor: "#FFF3E0",
+                    borderLeft: "4px solid #F39C12",
+                    borderRadius: 0,
+                  }}
+                >
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 1,
+                      mb: 2,
+                    }}
+                  >
+                    <AccessTimeIcon sx={{ color: "#F39C12", fontSize: 16 }} />
+                    <Typography
+                      variant="h6"
+                      sx={{ fontWeight: 600, color: "#F39C12" }}
+                    >
+                      Sıradaki Ders
+                    </Typography>
+                  </Box>
+                  <Typography
+                    variant="h5"
+                    sx={{ fontWeight: 500, color: "#1B2E6D", mb: 2 }}
+                  >
+                    {nextClass.lesson.replace("\n", " - ")}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {nextClass.time} - {Math.floor(nextClass.minutesUntil / 60)}{" "}
+                    saat {nextClass.minutesUntil % 60} dakika sonra
+                  </Typography>
+                </Paper>
+              )
+            );
+          })()}
+      </Box>
+
+      {/* Schedule Section */}
+      <Paper elevation={2} sx={{ borderRadius: 2 }}>
+        <Box
+          sx={{
+            p: 3,
+            borderBottom: "1px solid #E0E0E0",
+            bgcolor: "#F8F9FA",
+            borderRadius: "8px 8px 0 0",
+          }}
+        >
+          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+            <ScheduleIcon sx={{ color: "#1B2E6D", fontSize: 28 }} />
+            <Typography 
+              variant="h5" 
+              sx={{ 
+                fontWeight: 500, 
+                color: "#1B2E6D",
+                fontSize: isMobile ? '1.1rem' : '1.5rem'
+              }}
+            >
+              Ders Programı
+            </Typography>
+          </Box>
+        </Box>
+
+        <Box sx={{ p: 3 }}>
+          {isMobile ? <MobileSchedule /> : <DesktopSchedule />}
+        </Box>
+      </Paper>
+    </Container>
+  );
+};
+
+export default AnaSayfa;
