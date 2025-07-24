@@ -246,40 +246,15 @@ const DersKayit = ({ onBack, selectedSemester = "2025-2026-guz" }) => {
             </Typography>
 
             <Grid container spacing={3}>
-              <Grid item xs={12} sm={6}>
-                <FormControl fullWidth>
-                  <InputLabel>Dönem</InputLabel>
-                  <Select
-                    value={courseData.term}
-                    label="Dönem"
-                    onChange={(e) => handleInputChange("term", e.target.value)}
-                  >
-                    {termOptions.map((term) => (
-                      <MenuItem key={term} value={term}>
-                        {term}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Grid>
 
               <Grid item xs={12} sm={6}>
-                <FormControl fullWidth>
-                  <InputLabel>Branş</InputLabel>
-                  <Select
-                    value={courseData.branch}
-                    label="Branş"
-                    onChange={(e) =>
-                      handleInputChange("branch", e.target.value)
-                    }
-                  >
-                    {branchOptions.map((branch) => (
-                      <MenuItem key={branch} value={branch}>
-                        {branch}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
+                <TextField
+                  fullWidth
+                  label="Branş"
+                  value={courseData.branch}
+                  onChange={(e) => handleInputChange("branch", e.target.value)}
+                  placeholder="örn: Matematik"
+                />
               </Grid>
 
               <Grid item xs={12} sm={6}>

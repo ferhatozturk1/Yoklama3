@@ -69,11 +69,10 @@ const MainPortal = () => {
   return (
     <Box sx={{ display: 'flex', height: '100vh' }}>
       {/* Sidebar */}
-      <Sidebar 
+        <Sidebar 
         open={sidebarOpen} 
         onToggle={handleSidebarToggle}
         isMobile={isMobile}
-        selectedSemester={selectedSemester}
         onNavigate={handleSectionChange}
       />
       
@@ -116,7 +115,12 @@ const MainPortal = () => {
             {/* Course Management Routes */}
             <Route 
               path="/ders-ve-donem-islemleri" 
-              element={<DersVeDönemIslemleri onNavigate={handleCourseManagementNavigation} />} 
+              element={
+                <DersVeDönemIslemleri 
+                  onNavigate={handleCourseManagementNavigation}
+                  selectedSemester={selectedSemester}
+                  onSemesterChange={handleSemesterChange}
+                />} 
             />
             <Route 
               path="/ders-kayit" 

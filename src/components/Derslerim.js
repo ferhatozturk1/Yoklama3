@@ -7,8 +7,25 @@ import {
   Card,
   CardContent,
   Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Chip,
+  TextField,
+  Autocomplete,
+  FormLabel,
+  List,
+  ListItem,
+  ListItemText,
+  IconButton,
+  Paper
 } from "@mui/material";
-import { Edit } from "@mui/icons-material";
+import { Edit, Add as AddIcon, Delete as DeleteIcon, Schedule as ScheduleIcon } from "@mui/icons-material";
 
 import DersDetay from "./DersDetay";
 
@@ -16,6 +33,26 @@ const Derslerim = () => {
   // View state - 'list' veya 'detail'
   const [currentView, setCurrentView] = useState("list");
   const [selectedDers, setSelectedDers] = useState(null);
+  
+  // Schedule management state
+  const [scheduleModalOpen, setScheduleModalOpen] = useState(false);
+  const [selectedCourse, setSelectedCourse] = useState(null);
+  const [scheduleEntries, setScheduleEntries] = useState([]);
+  const [currentScheduleEntry, setCurrentScheduleEntry] = useState({
+    day: '',
+    startTime: '',
+    endTime: '',
+    room: ''
+  });
+  
+  // Days of the week
+  const daysOfWeek = ["Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma"];
+  
+  // Time options
+  const timeOptions = [
+    "08:40", "09:30", "09:50", "10:40", "11:00", "11:50", 
+    "13:40", "14:30", "14:40", "15:30", "15:40", "16:30", "16:40", "17:30"
+  ];
   
   // Static courses (existing ones)
   const staticCourses = [
@@ -159,6 +196,87 @@ const Derslerim = () => {
   const getDaysText = (schedule) => {
     return Object.keys(schedule).join(", ");
   };
+  
+  // Open schedule modal
+  const handleOpenScheduleModal = () => {
+    // Get registered courses from localStorage
+    const teacherCourses = JSON.parse(localStorage.getItem('teacherCourses') || '[]');
+    if (teacherCourses.length === 0) {
+      alert('Program eklemek için önce ders kayıt etmelisiniz.');
+      return;
+    }
+    setScheduleModalOpen(true);
+  };
+  
+  // Close schedule modal
+  const handleCloseScheduleModal = () => {
+    setScheduleModalOpen(false);
+    setSelectedCourse(null);
+    setScheduleEntries([]);
+    setCurrentScheduleEntry({ day: '', startTime: '', endTime: '', room: '' });
+  };
+  
+  // Handle course selection for scheduling
+  const handleCourseSelect = (courseId) => {
+    const teacherCourses = JSON.parse(localStorage.getItem('teacherCourses') || '[]');
+    const course = teacherCourses.find(c => c.id === courseId);
+    setSelectedCourse(course);
+  };
+  
+  // Add schedule entry
+  const handleAddScheduleEntry = () => {
+    if (!currentScheduleEntry.day || !currentScheduleEntry.startTime || !currentScheduleEntry.endTime) {
+      alert('Lütfen gün, başlangıç ve bitiş saatini seçin.');
+      return;
+    }
+    
+    const newEntry = {
+      id: Date.now(),
+      ...currentScheduleEntry
+    };
+    
+    setScheduleEntries([...scheduleEntries, newEntry]);
+    setCurrentScheduleEntry({ day: '', startTime: '', endTime: '', room: '' });
+  };
+  
+  // Remove schedule entry
+  const handleRemoveScheduleEntry = (entryId) => {
+    setScheduleEntries(scheduleEntries.filter(entry => entry.id !== entryId));
+  };
+  
+  // Save schedule
+  const handleSaveSchedule = () => {
+    if (!selectedCourse || scheduleEntries.length === 0) {
+      alert('Lütfen ders seçin ve en az bir program girişi ekleyin.');
+      return;
+    }
+    
+    // Create course with schedule for active courses
+    const courseWithSchedule = {
+      id: Date.now(),
+      courseName: selectedCourse.courseName,
+      courseCode: selectedCourse.courseCode,
+      section: 'A1', // Default section
+      term: selectedCourse.term,
+      days: scheduleEntries.map(entry => entry.day),
+      times: scheduleEntries.map(entry => `${entry.startTime}-${entry.endTime}`).join(', '),
+      scheduleEntries: scheduleEntries, // Store detailed schedule
+      faculty: selectedCourse.faculty,
+      classLevel: selectedCourse.classLevel || 1,
+      addedAt: new Date().toISOString()
+    };
+    
+    // Save to active courses
+    const existingActiveCourses = JSON.parse(localStorage.getItem('activeCourses') || '[]');
+    const updatedActiveCourses = [...existingActiveCourses, courseWithSchedule];
+    localStorage.setItem('activeCourses', JSON.stringify(updatedActiveCourses));
+    
+    // Trigger custom event for other components to update
+    window.dispatchEvent(new Event('teacherCoursesUpdated'));
+    
+    alert('Program başarıyla eklendi!');
+    handleCloseScheduleModal();
+  };
 
 
 
@@ -169,15 +287,21 @@ const Derslerim = () => {
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, pb: 4 }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
         <Typography
           variant="h4"
           sx={{ fontWeight: "bold", color: "#1a237e" }}
         >
           📚 Derslerim
         </Typography>
+        <Button 
+          variant="contained" 
+          startIcon={<ScheduleIcon />}
+          onClick={handleOpenScheduleModal}
+        >
+          Program Ekle
+        </Button>
       </Box>
-
       <Grid container spacing={3}>
         {dersler.map((ders) => (
           <Grid item xs={12} sm={6} md={4} key={ders.id}>
@@ -268,26 +392,162 @@ const Derslerim = () => {
 
                 {/* Dersi Düzenle Butonu */}
                 <Button
-                  variant="outlined"
-                  startIcon={<Edit />}
-                  fullWidth
-                  sx={{
-                    borderColor: "#1a237e",
-                    color: "#1a237e",
-                    "&:hover": {
-                      borderColor: "#1a237e",
-                      bgcolor: "rgba(26, 35, 126, 0.04)",
-                    },
-                  }}
-                >
-                  Dersi Düzenle
-                </Button>
+              variant="outlined"
+              startIcon={<Edit />}
+              fullWidth
+              sx={{
+                borderColor: "#1a237e",
+                color: "#1a237e",
+                "&:hover": {
+                  borderColor: "#1a237e",
+                  bgcolor: "rgba(26, 35, 126, 0.04)",
+                },
+              }}
+            >
+              Derse Git
+            </Button>
               </CardContent>
             </Card>
           </Grid>
         ))}
       </Grid>
-
+      
+      {/* Schedule Management Modal */}
+      <Dialog
+        open={scheduleModalOpen}
+        onClose={handleCloseScheduleModal}
+        maxWidth="md"
+        fullWidth
+      >
+        <DialogTitle>Ders Programı Ekle</DialogTitle>
+        <DialogContent>
+          <Box sx={{ pt: 2 }}>
+            {/* Course Selection */}
+            <FormControl fullWidth sx={{ mb: 3 }}>
+              <InputLabel>Ders Seçin</InputLabel>
+              <Select
+                value={selectedCourse?.id || ''}
+                label="Ders Seçin"
+                onChange={(e) => handleCourseSelect(e.target.value)}
+              >
+                {JSON.parse(localStorage.getItem('teacherCourses') || '[]').map((course) => (
+                  <MenuItem key={course.id} value={course.id}>
+                    {course.courseName} ({course.courseCode})
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            
+            {selectedCourse && (
+              <>
+                <Typography variant="h6" sx={{ mb: 2, color: 'primary.main' }}>
+                  Program Girişleri Ekle
+                </Typography>
+                
+                {/* Add Schedule Entry Form */}
+                <Paper sx={{ p: 2, mb: 3, bgcolor: 'grey.50' }}>
+                  <Grid container spacing={2}>
+                    <Grid item xs={12} sm={3}>
+                      <FormControl fullWidth>
+                        <InputLabel>Gün</InputLabel>
+                        <Select
+                          value={currentScheduleEntry.day}
+                          label="Gün"
+                          onChange={(e) => setCurrentScheduleEntry({...currentScheduleEntry, day: e.target.value})}
+                        >
+                          {daysOfWeek.map((day) => (
+                            <MenuItem key={day} value={day}>{day}</MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                    </Grid>
+                    <Grid item xs={12} sm={3}>
+                      <FormControl fullWidth>
+                        <InputLabel>Başlangıç</InputLabel>
+                        <Select
+                          value={currentScheduleEntry.startTime}
+                          label="Başlangıç"
+                          onChange={(e) => setCurrentScheduleEntry({...currentScheduleEntry, startTime: e.target.value})}
+                        >
+                          {timeOptions.map((time) => (
+                            <MenuItem key={time} value={time}>{time}</MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                    </Grid>
+                    <Grid item xs={12} sm={3}>
+                      <FormControl fullWidth>
+                        <InputLabel>Bitiş</InputLabel>
+                        <Select
+                          value={currentScheduleEntry.endTime}
+                          label="Bitiş"
+                          onChange={(e) => setCurrentScheduleEntry({...currentScheduleEntry, endTime: e.target.value})}
+                        >
+                          {timeOptions.map((time) => (
+                            <MenuItem key={time} value={time}>{time}</MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                    </Grid>
+                    <Grid item xs={12} sm={3}>
+                      <TextField
+                        fullWidth
+                        label="Derslik (Opsiyonel)"
+                        value={currentScheduleEntry.room}
+                        onChange={(e) => setCurrentScheduleEntry({...currentScheduleEntry, room: e.target.value})}
+                      />
+                    </Grid>
+                  </Grid>
+                  <Box sx={{ mt: 2, display: 'flex', justifyContent: 'flex-end' }}>
+                    <Button
+                      variant="outlined"
+                      startIcon={<AddIcon />}
+                      onClick={handleAddScheduleEntry}
+                    >
+                      Giriş Ekle
+                    </Button>
+                  </Box>
+                </Paper>
+                
+                {/* Schedule Entries List */}
+                {scheduleEntries.length > 0 && (
+                  <>
+                    <Typography variant="h6" sx={{ mb: 1 }}>Eklenen Program Girişleri:</Typography>
+                    <List>
+                      {scheduleEntries.map((entry) => (
+                        <ListItem
+                          key={entry.id}
+                          sx={{ border: 1, borderColor: 'grey.300', borderRadius: 1, mb: 1 }}
+                          secondaryAction={
+                            <IconButton onClick={() => handleRemoveScheduleEntry(entry.id)} color="error">
+                              <DeleteIcon />
+                            </IconButton>
+                          }
+                        >
+                          <ListItemText
+                            primary={`${entry.day} - ${entry.startTime} ile ${entry.endTime} arası`}
+                            secondary={entry.room ? `Derslik: ${entry.room}` : 'Derslik belirtilmedi'}
+                          />
+                        </ListItem>
+                      ))}
+                    </List>
+                  </>
+                )}
+              </>
+            )}
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseScheduleModal}>İptal</Button>
+          <Button 
+            onClick={handleSaveSchedule} 
+            variant="contained"
+            disabled={!selectedCourse || scheduleEntries.length === 0}
+          >
+            Programı Kaydet
+          </Button>
+        </DialogActions>
+      </Dialog>
 
     </Container>
   );

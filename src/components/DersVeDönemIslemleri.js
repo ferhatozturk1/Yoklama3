@@ -9,7 +9,12 @@ import {
   ListItemButton,
   ListItemIcon,
   ListItemText,
-  Divider
+  Divider,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Grid
 } from '@mui/material';
 import {
   AddCircle as AddCircleIcon,
@@ -18,7 +23,27 @@ import {
   School as SchoolIcon
 } from '@mui/icons-material';
 
-const DersVeDönemIslemleri = ({ onNavigate }) => {
+const DersVeDönemIslemleri = ({ onNavigate, selectedSemester, onSemesterChange }) => {
+  const [selectedTerm, setSelectedTerm] = useState(selectedSemester || "2025-2026 Güz");
+
+  // Available terms
+  const termOptions = [
+    "2023-2024 Güz",
+    "2023-2024 Bahar",
+    "2024-2025 Güz",
+    "2024-2025 Bahar",
+    "2025-2026 Güz",
+    "2025-2026 Bahar",
+  ];
+
+  const handleTermChange = (event) => {
+    const newTerm = event.target.value;
+    setSelectedTerm(newTerm);
+    if (onSemesterChange) {
+      onSemesterChange(newTerm);
+    }
+  };
+
   const menuItems = [
     {
       id: 'ders-kayit',
@@ -84,6 +109,40 @@ const DersVeDönemIslemleri = ({ onNavigate }) => {
             </Typography>
           </Box>
         </Box>
+      </Paper>
+
+      {/* Term Selection */}
+      <Paper elevation={3} sx={{ p: 3, mb: 4, borderRadius: 3 }}>
+        <Typography
+          variant="h6"
+          sx={{ mb: 2, color: "primary.main", fontWeight: 600 }}
+        >
+          Aktif Dönem Seçimi
+        </Typography>
+        <Grid container spacing={2}>
+          <Grid item xs={12} sm={6} md={4}>
+            <FormControl fullWidth>
+              <InputLabel>Dönem</InputLabel>
+              <Select
+                value={selectedTerm}
+                label="Dönem"
+                onChange={handleTermChange}
+              >
+                {termOptions.map((term) => (
+                  <MenuItem key={term} value={term}>
+                    {term}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Grid>
+        </Grid>
+        <Typography
+          variant="body2"
+          sx={{ mt: 2, color: "text.secondary" }}
+        >
+          Seçili dönem: <strong>{selectedTerm}</strong> - Tüm ders işlemleri bu dönem için gerçekleştirilecektir.
+        </Typography>
       </Paper>
 
       {/* Menu Items */}
