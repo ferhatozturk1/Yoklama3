@@ -30,7 +30,7 @@ npm list react react-scripts --depth=0 || true
 
 echo "🔨 Building project..."
 export NODE_OPTIONS="--max-old-space-size=4096"
-if ! npm run build:netlify; then
+if ! npm run build; then
     echo "❌ Error: Build failed"
     echo "📋 Build logs:"
     cat npm-debug.log 2>/dev/null || echo "No npm debug log found"
