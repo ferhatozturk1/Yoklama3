@@ -1,4 +1,4 @@
-  import React, { useState } from "react";
+  import React, { useState, useEffect } from "react";
   import { useNavigate, useLocation } from "react-router-dom";
   import {
     AppBar,
@@ -11,6 +11,13 @@
     Menu,
     MenuItem,
     useTheme,
+    Badge,
+    Chip,
+    Divider,
+    Card,
+    CardContent,
+    ListItemIcon,
+    ListItemText,
   } from "@mui/material";
   import {
     School,
@@ -20,6 +27,13 @@
     Person,
     ExitToApp,
     Menu as MenuIcon,
+    Notifications as NotificationsIcon,
+    AccessTime as ClockIcon,
+    DarkMode as DarkModeIcon,
+    LightMode as LightModeIcon,
+    Warning as WarningIcon,
+    Info as InfoIcon,
+    CheckCircle as CheckCircleIcon,
   } from "@mui/icons-material";
   import { NAVIGATION_ITEMS } from "../utils/routes";
 
@@ -30,6 +44,70 @@
 
     const [mobileMenuAnchor, setMobileMenuAnchor] = useState(null);
     const [profileMenuAnchor, setProfileMenuAnchor] = useState(null);
+    const [notificationAnchor, setNotificationAnchor] = useState(null);
+    const [currentTime, setCurrentTime] = useState(new Date());
+    const [isDarkMode, setIsDarkMode] = useState(false);
+
+    // Update time every second
+    useEffect(() => {
+      const timer = setInterval(() => {
+        setCurrentTime(new Date());
+      }, 1000);
+
+      return () => clearInterval(timer);
+    }, []);
+
+    // Mock notifications
+    const notifications = [
+      {
+        id: 1,
+        message: "Matematik dersinde yoklama alınmadı",
+        type: "warning",
+        time: "2 saat önce",
+      },
+      {
+        id: 2,
+        message: "Yeni ders programı güncellendi",
+        type: "info",
+        time: "1 gün önce",
+      },
+      {
+        id: 3,
+        message: "Sistem güncellemesi mevcut",
+        type: "info",
+        time: "2 gün önce",
+      },
+    ];
+
+    const formatTime = (date) => {
+      return date.toLocaleTimeString('tr-TR', {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+      });
+    };
+
+    const formatDate = (date) => {
+      return date.toLocaleDateString('tr-TR', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      });
+    };
+
+    const getNotificationIcon = (type) => {
+      switch (type) {
+        case 'warning':
+          return <WarningIcon sx={{ color: '#F39C12' }} />;
+        case 'info':
+          return <InfoIcon sx={{ color: '#3498DB' }} />;
+        case 'success':
+          return <CheckCircleIcon sx={{ color: '#27AE60' }} />;
+        default:
+          return <InfoIcon sx={{ color: '#3498DB' }} />;
+      }
+    };
 
     const getIcon = (iconName) => {
       const icons = {
@@ -58,6 +136,19 @@
       setProfileMenuAnchor(null);
     };
 
+    const handleNotificationClick = (event) => {
+      setNotificationAnchor(event.currentTarget);
+    };
+
+    const handleNotificationClose = () => {
+      setNotificationAnchor(null);
+    };
+
+    const handleThemeToggle = () => {
+      setIsDarkMode(!isDarkMode);
+      // Here you would implement actual theme switching
+    };
+
     const handleProfileView = () => {
       if (onSectionChange) {
         onSectionChange("profilim");
@@ -77,7 +168,7 @@
     };
 
     return (
-      <AppBar position="static" sx={{ bgcolor: "#1a237e" }}>
+      <AppBar position="static" sx={{ bgcolor: "#1B2E6D" }}>
         <Toolbar sx={{ minHeight: '64px !important', px: 2 }}>
           {/* Sidebar Toggle Button */}
           <IconButton
@@ -112,7 +203,68 @@
 
 
 
-          {/* Profile Section */}
+          {/* Notifications */}
+          <IconButton
+            color="inherit"
+            onClick={handleNotificationClick}
+            sx={{ mx: 1, color: 'white' }}
+          >
+            <Badge badgeContent={notifications.length} color="error">
+              <NotificationsIcon sx={{ color: 'white' }} />
+            </Badge>
+          </IconButton>
+
+          <Menu
+            anchorEl={notificationAnchor}
+            open={Boolean(notificationAnchor)}
+            onClose={handleNotificationClose}
+            PaperProps={{
+              elevation: 3,
+              sx: { 
+                width: 320, 
+                maxHeight: 400,
+                mt: 1,
+                '& .MuiMenuItem-root': {
+                  py: 2,
+                  px: 2,
+                }
+              },
+            }}
+          >
+            <Box sx={{ p: 2, borderBottom: '1px solid #E9ECEF' }}>
+              <Typography variant="h6" sx={{ fontWeight: 600, color: '#2C3E50' }}>
+                Bildirimler
+              </Typography>
+            </Box>
+            {notifications.map((notification) => (
+              <MenuItem 
+                key={notification.id} 
+                onClick={handleNotificationClose} 
+                divider
+                sx={{
+                  '&:hover': {
+                    backgroundColor: '#F8F9FA',
+                  }
+                }}
+              >
+                <ListItemIcon>
+                  {getNotificationIcon(notification.type)}
+                </ListItemIcon>
+                <ListItemText
+                  primary={
+                    <Typography variant="body2" sx={{ fontWeight: 500, color: '#2C3E50', mb: 0.5 }}>
+                      {notification.message}
+                    </Typography>
+                  }
+                  secondary={
+                    <Typography variant="caption" sx={{ color: '#7F8C8D' }}>
+                      {notification.time}
+                    </Typography>
+                  }
+                />
+              </MenuItem>
+            ))}
+          </Menu>
           <Box sx={{ display: "flex", alignItems: "center", ml: 2 }}>
             <IconButton onClick={handleProfileClick} sx={{ p: 0 }}>
               <Avatar
