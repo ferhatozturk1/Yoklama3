@@ -11,6 +11,7 @@
     Menu,
     MenuItem,
     useTheme,
+    useMediaQuery,
     Badge,
     Chip,
     Divider,
@@ -41,6 +42,7 @@
     const navigate = useNavigate();
     const location = useLocation();
     const theme = useTheme();
+    const isSmallScreen = useMediaQuery(theme.breakpoints.down('md'));
 
     const [mobileMenuAnchor, setMobileMenuAnchor] = useState(null);
     const [profileMenuAnchor, setProfileMenuAnchor] = useState(null);
@@ -169,39 +171,102 @@
 
     return (
       <AppBar position="static" sx={{ bgcolor: "#1B2E6D" }}>
-        <Toolbar sx={{ minHeight: '64px !important', px: 2 }}>
+        <Toolbar sx={{ 
+          minHeight: isSmallScreen ? '56px !important' : '64px !important', 
+          px: isSmallScreen ? 1.5 : 2,
+          position: 'relative',
+          display: 'flex',
+          alignItems: 'center'
+        }}>
           {/* Sidebar Toggle Button */}
           <IconButton
             color="inherit"
             onClick={onSidebarToggle}
-            sx={{ mr: 2 }}
+            sx={{ 
+              mr: isSmallScreen ? 1 : 2,
+              zIndex: 2,
+              p: isSmallScreen ? 1 : 1.25
+            }}
           >
-            <MenuIcon sx={{ color: 'white' }} />
+            <MenuIcon sx={{ 
+              color: 'white',
+              fontSize: isSmallScreen ? 20 : 24
+            }} />
           </IconButton>
 
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, flexGrow: 1 }}>
-            <School sx={{ fontSize: 28, color: 'white' }} />
-            <Typography
-              variant="h6"
-              component="div"
-              sx={{
-                cursor: "pointer",
-                fontWeight: 600,
-                fontSize: "1.25rem",
+          {/* Desktop Layout */}
+          {!isSmallScreen && (
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, flexGrow: 1 }}>
+              <School sx={{ fontSize: 28, color: 'white' }} />
+              <Typography
+                variant="h6"
+                component="div"
+                sx={{
+                  cursor: "pointer",
+                  fontWeight: 600,
+                  fontSize: "1.25rem",
+                  color: 'white',
+                  lineHeight: 1,
+                  "&:hover": {
+                    opacity: 0.9,
+                  },
+                }}
+                onClick={() => handleNavigation("/portal/ana-sayfa", "ana-sayfa")}
+              >
+                Akademik Personel
+              </Typography>
+            </Box>
+          )}
+
+          {/* Mobile Layout - Centered Title */}
+          {isSmallScreen && (
+            <Box sx={{ 
+              position: 'absolute',
+              left: '50%',
+              top: '50%',
+              transform: 'translate(-50%, -50%)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 0.75,
+              maxWidth: 'calc(100vw - 140px)', // Reserve space for side buttons
+              zIndex: 1
+            }}>
+              <School sx={{ 
+                fontSize: 18, 
                 color: 'white',
-                lineHeight: 1,
-                "&:hover": {
-                  opacity: 0.9,
-                },
-              }}
-              onClick={() => handleNavigation("/portal/ana-sayfa", "ana-sayfa")}
-            >
-              Akademik Personel
-            </Typography>
-          </Box>
+                flexShrink: 0
+              }} />
+              <Typography
+                variant="h6"
+                component="div"
+                sx={{
+                  cursor: "pointer",
+                  fontWeight: 500,
+                  fontSize: "0.95rem",
+                  color: 'white',
+                  lineHeight: 1.1,
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  "&:hover": {
+                    opacity: 0.9,
+                  },
+                }}
+                onClick={() => handleNavigation("/portal/ana-sayfa", "ana-sayfa")}
+              >
+                Akademik Personel
+              </Typography>
+            </Box>
+          )}
 
           {/* Right side components */}
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+          <Box sx={{ 
+            display: "flex", 
+            alignItems: "center", 
+            gap: isSmallScreen ? 0.75 : 1,
+            ml: 'auto',
+            zIndex: 2
+          }}>
             {/* Notifications */}
             <IconButton
               color="inherit"

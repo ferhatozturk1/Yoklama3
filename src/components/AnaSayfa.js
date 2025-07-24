@@ -19,6 +19,7 @@ import {
   AccordionDetails,
   Badge,
   LinearProgress,
+  Avatar,
 } from "@mui/material";
 import {
   Schedule as ScheduleIcon,
@@ -26,6 +27,7 @@ import {
   ExpandMore as ExpandMoreIcon,
   CalendarToday as CalendarIcon,
   Circle as CircleIcon,
+  School as SchoolIcon,
 } from "@mui/icons-material";
 
 // Tab panel component
@@ -240,112 +242,172 @@ const AnaSayfa = ({ onSectionChange, selectedSemester = "2025-2026-guz" }) => {
   // Compact Welcome Header
   const WelcomeHeader = () => (
     <Paper
-      elevation={1}
+      elevation={2}
       sx={{
         p: isMobile ? 1.5 : 3,
-        mb: 3,
+        mb: isMobile ? 2 : 3,
         background: "linear-gradient(135deg, #1B2E6D 0%, #4A90E2 100%)",
-        borderRadius: isMobile ? "16px" : "24px",
+        borderRadius: '8px',
         color: "white",
-        boxShadow: "0 8px 32px rgba(27, 46, 109, 0.15)",
+        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.12)',
       }}
     >
-      <Box
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          flexDirection: isMobile ? "column" : "row",
-          gap: isMobile ? 1.5 : 0,
-        }}
-      >
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            gap: isMobile ? 1.5 : 2,
-            width: isMobile ? "100%" : "auto",
-            justifyContent: isMobile ? "center" : "flex-start",
-          }}
-        >
-          <Box
-            sx={{
-              bgcolor: "rgba(255,255,255,0.1)",
-              px: isMobile ? 2 : 3,
-              py: isMobile ? 1 : 1.5,
-              borderRadius: isMobile ? "16px" : "20px",
-              backdropFilter: "blur(10px)",
-              border: "1px solid rgba(255,255,255,0.2)",
-              textAlign: isMobile ? "center" : "left",
-            }}
-          >
-            <Typography
-              variant={isMobile ? "subtitle1" : "h6"}
-              sx={{
-                fontWeight: 600,
-                mb: 0.5,
-                fontSize: isMobile ? "1rem" : "1.1rem",
+      {/* Mobile Horizontal Layout */}
+      {isMobile ? (
+        <Box sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: 1,
+          flexWrap: 'wrap'
+        }}>
+          {/* Left: Avatar + Name */}
+          <Box sx={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1,
+            flex: '1 1 auto',
+            minWidth: 0 // Allow shrinking
+          }}>
+            <Avatar sx={{
+              bgcolor: 'rgba(255,255,255,0.2)',
+              width: 32,
+              height: 32,
+              flexShrink: 0
+            }}>
+              <SchoolIcon sx={{ fontSize: 18 }} />
+            </Avatar>
+            <Box sx={{
+              minWidth: 0, // Allow text truncation
+              flex: 1
+            }}>
+              <Typography sx={{
+                fontWeight: 500,
+                fontSize: '0.85rem',
                 lineHeight: 1.2,
-              }}
-            >
-              Öğr. Gör.
-              {isMobile && <br />}
-              MEHMET NURİ ÖĞÜT
+                mb: 0.25,
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis'
+              }}>
+                Öğr. Gör. M. N. Öğüt
+              </Typography>
+              <Typography sx={{
+                fontSize: '0.7rem',
+                opacity: 0.85,
+                lineHeight: 1.1,
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis'
+              }}>
+                2025-2026 Güz
+              </Typography>
+            </Box>
+          </Box>
+
+          {/* Right: Time + Date */}
+          <Box sx={{
+            textAlign: 'right',
+            flexShrink: 0,
+            bgcolor: 'rgba(255,255,255,0.1)',
+            px: 1.5,
+            py: 1,
+            borderRadius: '6px',
+            border: '1px solid rgba(255,255,255,0.15)'
+          }}>
+            <Typography sx={{
+              fontWeight: 600,
+              fontSize: '0.9rem',
+              lineHeight: 1.1,
+              mb: 0.25
+            }}>
+              {currentTime.toLocaleTimeString('tr-TR', {
+                hour: '2-digit',
+                minute: '2-digit'
+              })}
             </Typography>
-            <Typography
-              variant="body2"
-              sx={{
-                opacity: 0.9,
-                fontSize: isMobile ? "0.8rem" : "0.85rem",
-                lineHeight: 1.2,
-              }}
-            >
-              2025-2026
-              {isMobile && <br />}
-              Güz Dönemi
+            <Typography sx={{
+              fontSize: '0.7rem',
+              opacity: 0.85,
+              lineHeight: 1.1
+            }}>
+              {currentTime.toLocaleDateString('tr-TR', {
+                day: 'numeric',
+                month: 'short'
+              })}
             </Typography>
           </Box>
         </Box>
-        <Box
-          sx={{
+      ) : (
+        /* Desktop Layout - Keep original */
+        <Box sx={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: 2,
+        }}>
+          <Box sx={{
+            display: "flex",
+            alignItems: "center",
+            gap: 2,
+          }}>
+            <Avatar sx={{
+              bgcolor: 'rgba(255,255,255,0.2)',
+              width: 48,
+              height: 48,
+            }}>
+              <SchoolIcon sx={{ fontSize: 28 }} />
+            </Avatar>
+            <Box>
+              <Typography variant="h6" sx={{
+                fontWeight: 600,
+                mb: 0.5,
+                fontSize: "1.1rem",
+                lineHeight: 1.2,
+              }}>
+                Öğr. Gör. Mehmet Nuri Öğüt
+              </Typography>
+              <Typography variant="body2" sx={{
+                opacity: 0.9,
+                fontSize: "0.85rem",
+                lineHeight: 1.2,
+              }}>
+                2025-2026 Güz Dönemi
+              </Typography>
+            </Box>
+          </Box>
+          
+          <Box sx={{
             textAlign: "center",
             bgcolor: "rgba(255,255,255,0.1)",
-            px: isMobile ? 2 : 3,
-            py: isMobile ? 1 : 1.5,
-            borderRadius: isMobile ? "16px" : "20px",
+            px: 3,
+            py: 1.5,
+            borderRadius: '8px',
             backdropFilter: "blur(10px)",
             border: "1px solid rgba(255,255,255,0.2)",
-            width: isMobile ? "auto" : "auto",
-            minWidth: isMobile ? "180px" : "auto",
-          }}
-        >
-          <Typography
-            variant="body1"
-            sx={{
+          }}>
+            <Typography variant="h6" sx={{
               fontWeight: 500,
               mb: 0.5,
-              fontSize: isMobile ? "1rem" : "1.1rem",
+              fontSize: "1.1rem",
               lineHeight: 1.2,
-            }}
-          >
-            {currentTime.toLocaleTimeString("tr-TR")}
-          </Typography>
-          <Typography
-            variant="body2"
-            sx={{
+            }}>
+              {currentTime.toLocaleTimeString("tr-TR")}
+            </Typography>
+            <Typography variant="body2" sx={{
               opacity: 0.9,
-              fontSize: isMobile ? "0.8rem" : "0.85rem",
+              fontSize: "0.85rem",
               lineHeight: 1.2,
-            }}
-          >
-            {currentTime.toLocaleDateString("tr-TR", {
-              weekday: isMobile ? "short" : "long",
-              day: "numeric",
-              month: isMobile ? "short" : "long",
-            })}
-          </Typography>
+            }}>
+              {currentTime.toLocaleDateString("tr-TR", {
+                weekday: "long",
+                day: "numeric",
+                month: "long",
+              })}
+            </Typography>
+          </Box>
         </Box>
-      </Box>
+      )}
     </Paper>
   );
 
@@ -610,7 +672,13 @@ const AnaSayfa = ({ onSectionChange, selectedSemester = "2025-2026-guz" }) => {
                       : "disabled"
                   }
                 />
-                <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                <Typography 
+                  variant="subtitle1" 
+                  sx={{ 
+                    fontWeight: 500,
+                    fontSize: isMobile ? '0.9rem' : '1rem'
+                  }}
+                >
                   {day}
                 </Typography>
                 <Badge
@@ -629,12 +697,21 @@ const AnaSayfa = ({ onSectionChange, selectedSemester = "2025-2026-guz" }) => {
                       <Box sx={{ flexGrow: 1 }}>
                         <Typography
                           variant="subtitle2"
-                          sx={{ fontWeight: 600 }}
+                          sx={{ 
+                            fontWeight: 500,
+                            fontSize: isMobile ? '0.85rem' : '0.9rem'
+                          }}
                         >
                           {slot} - {parseInt(slot.split(":")[0]) + 1}:
                           {slot.split(":")[1]}
                         </Typography>
-                        <Typography variant="body2" color="text.secondary">
+                        <Typography 
+                          variant="body2" 
+                          color="text.secondary"
+                          sx={{
+                            fontSize: isMobile ? '0.8rem' : '0.875rem'
+                          }}
+                        >
                           {weeklySchedule[slot][dayKeys[dayIndex]].replace(
                             "\n",
                             " - "
@@ -820,7 +897,14 @@ const AnaSayfa = ({ onSectionChange, selectedSemester = "2025-2026-guz" }) => {
         >
           <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
             <ScheduleIcon sx={{ color: "#1B2E6D", fontSize: 28 }} />
-            <Typography variant="h5" sx={{ fontWeight: 600, color: "#1B2E6D" }}>
+            <Typography 
+              variant="h5" 
+              sx={{ 
+                fontWeight: 500, 
+                color: "#1B2E6D",
+                fontSize: isMobile ? '1.1rem' : '1.5rem'
+              }}
+            >
               Ders Programı
             </Typography>
           </Box>
