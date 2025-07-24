@@ -77,7 +77,7 @@ const DersVeDönemIslemleri = ({ onNavigate, selectedSemester, onSemesterChange 
           p: 4,
           mb: 4,
           background: "linear-gradient(135deg, #1a237e 0%, #0d47a1 100%)",
-          borderRadius: 4,
+          borderRadius: 6,
           color: "white",
         }}
       >
@@ -112,7 +112,7 @@ const DersVeDönemIslemleri = ({ onNavigate, selectedSemester, onSemesterChange 
       </Paper>
 
       {/* Term Selection */}
-      <Paper elevation={3} sx={{ p: 3, mb: 4, borderRadius: 4 }}>
+      <Paper elevation={3} sx={{ p: 3, mb: 4, borderRadius: 6 }}>
         <Typography
           variant="h6"
           sx={{ mb: 2, color: "primary.main", fontWeight: 600 }}
@@ -146,7 +146,7 @@ const DersVeDönemIslemleri = ({ onNavigate, selectedSemester, onSemesterChange 
       </Paper>
 
       {/* Menu Items */}
-      <Paper elevation={3} sx={{ borderRadius: 4, overflow: 'hidden' }}>
+      <Paper elevation={3} sx={{ borderRadius: 6, overflow: 'hidden' }}>
         <List sx={{ p: 0 }}>
           {menuItems.map((item, index) => (
             <React.Fragment key={item.id}>
@@ -156,7 +156,7 @@ const DersVeDönemIslemleri = ({ onNavigate, selectedSemester, onSemesterChange 
                   sx={{
                     py: 3,
                     px: 4,
-                    borderRadius: 2,
+                    borderRadius: 4,
                     mx: 1,
                     my: 0.5,
                     transition: 'all 0.2s ease-in-out',

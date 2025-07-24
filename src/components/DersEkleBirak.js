@@ -152,7 +152,7 @@ const DersEkleBirak = ({ onBack, selectedSemester = '2025-2026-guz' }) => {
           p: 3,
           mb: 4,
           background: "linear-gradient(135deg, #1a237e 0%, #0d47a1 100%)",
-          borderRadius: 3,
+          borderRadius: 6,
           color: "white",
         }}
       >
@@ -192,7 +192,7 @@ const DersEkleBirak = ({ onBack, selectedSemester = '2025-2026-guz' }) => {
       <Grid container spacing={4}>
         {/* Add Course Section */}
         <Grid item xs={12} md={6}>
-          <Paper elevation={3} sx={{ p: 4, borderRadius: 3 }}>
+          <Paper elevation={3} sx={{ p: 4, borderRadius: 6 }}>
             <Typography variant="h6" sx={{ mb: 3, color: 'primary.main', fontWeight: 600 }}>
               Ders Ekle
             </Typography>
@@ -221,7 +221,7 @@ const DersEkleBirak = ({ onBack, selectedSemester = '2025-2026-guz' }) => {
                 />
 
                 {selectedCourse && (
-                  <Box sx={{ mb: 3, p: 2, bgcolor: 'grey.50', borderRadius: 2 }}>
+                  <Box sx={{ mb: 3, p: 2, bgcolor: 'grey.50', borderRadius: 4 }}>
                     <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>
                       Seçilen Ders Bilgileri:
                     </Typography>
@@ -332,7 +332,7 @@ const DersEkleBirak = ({ onBack, selectedSemester = '2025-2026-guz' }) => {
 
         {/* Active Courses Section */}
         <Grid item xs={12} md={6}>
-          <Paper elevation={3} sx={{ p: 4, borderRadius: 3 }}>
+          <Paper elevation={3} sx={{ p: 4, borderRadius: 6 }}>
             <Typography variant="h6" sx={{ mb: 3, color: 'primary.main', fontWeight: 600 }}>
               Aktif Dersler ({currentActiveCourses.length})
             </Typography>

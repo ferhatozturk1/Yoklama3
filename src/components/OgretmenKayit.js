@@ -279,39 +279,38 @@ const OgretmenKayit = () => {
               </Typography>
             </Box>
 
-                {/* Registration Card */}
-                <Grow in={showContent} timeout={1200}>
-                  <Paper
-                    elevation={0}
-                    sx={{
-                      p: { xs: 2.5, sm: 3.5, md: 4 },
-                      borderRadius: "24px",
-                      background: darkMode
-                        ? "rgba(30, 41, 59, 0.4)"
-                        : "rgba(255, 255, 255, 0.25)",
-                      backdropFilter: "blur(20px)",
-                      border: darkMode
-                        ? "1px solid rgba(255, 255, 255, 0.1)"
-                        : "1px solid rgba(255, 255, 255, 0.2)",
-                      boxShadow: darkMode
-                        ? "0 25px 50px -12px rgba(0, 0, 0, 0.5)"
-                        : "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
-                      position: "relative",
-                      overflow: "hidden",
-                      "&::before": {
-                        content: '""',
-                        position: "absolute",
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        height: "1px",
-                        background: darkMode
-                          ? "linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent)"
-                          : "linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent)",
-                      },
-                    }}
-                  >
-                    <Box sx={{ textAlign: "center", mb: 4 }}>
+            {/* Registration Card */}
+            <Grow in={showContent} timeout={1200}>
+              <Paper
+                elevation={0}
+                sx={{
+                  p: { xs: 2.5, sm: 3.5, md: 4 },
+                  borderRadius: "24px",
+                  background: darkMode
+                    ? "rgba(30, 41, 59, 0.4)"
+                    : "rgba(255, 255, 255, 0.25)",
+                  backdropFilter: "blur(20px)",
+                  border: darkMode
+                    ? "1px solid rgba(255, 255, 255, 0.1)"
+                    : "1px solid rgba(255, 255, 255, 0.2)",
+                  boxShadow: darkMode
+                    ? "0 25px 50px -12px rgba(0, 0, 0, 0.5)"
+                    : "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
+                  position: "relative",
+                  overflow: "hidden",
+                  "&::before": {
+                    content: '""',
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    height: "1px",
+                    background: darkMode
+                      ? "linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent)"
+                      : "linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent)",
+                  },
+                }}
+              >
                 {/* Header */}
                 <Box sx={{ textAlign: "center", mb: 4 }}>
                   <Box
@@ -1077,9 +1076,6 @@ const OgretmenKayit = () => {
                       />
                     </Grid>
                   </Grid>
-                    </Box>
-                  </Paper>
-                </Grow>
 
                   {/* Error and Success Messages */}
                   {error && (

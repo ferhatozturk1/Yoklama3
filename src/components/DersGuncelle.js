@@ -68,7 +68,7 @@ const DersGuncelle = ({ onBack, onEditCourse, selectedSemester = '2025-2026-guz'
           p: 3,
           mb: 4,
           background: "linear-gradient(135deg, #1a237e 0%, #0d47a1 100%)",
-          borderRadius: 3,
+          borderRadius: 6,
           color: "white",
         }}
       >
@@ -139,7 +139,7 @@ const DersGuncelle = ({ onBack, onEditCourse, selectedSemester = '2025-2026-guz'
       <Grid container spacing={4}>
         {/* Teacher's Registered Courses */}
         <Grid item xs={12} md={6}>
-          <Paper elevation={3} sx={{ p: 4, borderRadius: 3 }}>
+          <Paper elevation={3} sx={{ p: 4, borderRadius: 6 }}>
             <Typography variant="h6" sx={{ mb: 3, color: 'primary.main', fontWeight: 600 }}>
               Kayıtlı Dersler ({filteredTeacherCourses.length})
             </Typography>
@@ -193,7 +193,7 @@ const DersGuncelle = ({ onBack, onEditCourse, selectedSemester = '2025-2026-guz'
 
         {/* Active Courses */}
         <Grid item xs={12} md={6}>
-          <Paper elevation={3} sx={{ p: 4, borderRadius: 3 }}>
+          <Paper elevation={3} sx={{ p: 4, borderRadius: 6 }}>
             <Typography variant="h6" sx={{ mb: 3, color: 'secondary.main', fontWeight: 600 }}>
               Aktif Dersler ({filteredActiveCourses.length})
             </Typography>
@@ -241,7 +241,7 @@ const DersGuncelle = ({ onBack, onEditCourse, selectedSemester = '2025-2026-guz'
       </Grid>
 
       {/* Info Box */}
-      <Paper elevation={1} sx={{ p: 3, mt: 4, bgcolor: '#f5f5f5', borderRadius: 3 }}>
+      <Paper elevation={1} sx={{ p: 3, mt: 4, bgcolor: '#f5f5f5', borderRadius: 6 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
           <UpdateIcon color="info" />
           <Box>

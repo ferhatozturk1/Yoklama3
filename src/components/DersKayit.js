@@ -198,7 +198,7 @@ const DersKayit = ({ onBack, selectedSemester = "2025-2026-guz" }) => {
           p: 3,
           mb: 4,
           background: "linear-gradient(135deg, #1a237e 0%, #0d47a1 100%)",
-          borderRadius: 3,
+          borderRadius: 6,
           color: "white",
         }}
       >
@@ -237,7 +237,7 @@ const DersKayit = ({ onBack, selectedSemester = "2025-2026-guz" }) => {
       <Grid container spacing={4}>
         {/* Form Section */}
         <Grid item xs={12} md={8}>
-          <Paper elevation={3} sx={{ p: 4, borderRadius: 3 }}>
+          <Paper elevation={3} sx={{ p: 4, borderRadius: 6 }}>
             <Typography
               variant="h6"
               sx={{ mb: 3, color: "primary.main", fontWeight: 600 }}
@@ -395,7 +395,7 @@ const DersKayit = ({ onBack, selectedSemester = "2025-2026-guz" }) => {
 
         {/* Saved Courses List */}
         <Grid item xs={12} md={4}>
-          <Paper elevation={3} sx={{ p: 3, borderRadius: 3 }}>
+          <Paper elevation={3} sx={{ p: 3, borderRadius: 6 }}>
             <Typography
               variant="h6"
               sx={{ mb: 2, color: "primary.main", fontWeight: 600 }}

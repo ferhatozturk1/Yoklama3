@@ -315,7 +315,7 @@ const Derslerim = () => {
                   transform: "translateY(-4px)",
                   boxShadow: "0 8px 25px rgba(0,0,0,0.15)",
                 },
-                borderRadius: 2,
+                borderRadius: 4,
               }}
               onClick={() => handleDersClick(ders)}
             >
@@ -517,7 +517,7 @@ const Derslerim = () => {
                       {scheduleEntries.map((entry) => (
                         <ListItem
                           key={entry.id}
-                          sx={{ border: 1, borderColor: 'grey.300', borderRadius: 1, mb: 1 }}
+                          sx={{ border: 1, borderColor: 'grey.300', borderRadius: 3, mb: 1 }}
                           secondaryAction={
                             <IconButton onClick={() => handleRemoveScheduleEntry(entry.id)} color="error">
                               <DeleteIcon />

@@ -1441,8 +1441,7 @@ const OgretmenPanel = () => {
           </Grid>
         </Grid>
 
-        {/* Ana sayfa dışında yoklama listesi gösterme */}
-        {currentSection === 'ana-sayfa' && (
+        {/* Ana sayfa yoklama listesi */}
         <Grid container spacing={4}>
           {/* Aktif Yoklamalar */}
           <Grid item xs={12} lg={8}>
@@ -1595,6 +1594,21 @@ const OgretmenPanel = () => {
             </Paper>
           </Grid>
         </Grid>
+        )}
+
+        {/* Diğer bölümler için placeholder */}
+        {currentSection !== 'ana-sayfa' && (
+          <Box sx={{ textAlign: 'center', py: 8 }}>
+            <Typography variant="h4" color="text.secondary">
+              {currentSection === 'derslerim' && '📚 Derslerim'}
+              {currentSection === 'ogrenci-islerim' && '👥 Öğrenci İşlerim'}
+              {currentSection === 'yoklama' && '✅ Yoklama'}
+              {currentSection === 'profilim' && '👤 Profilim'}
+            </Typography>
+            <Typography variant="body1" color="text.secondary" sx={{ mt: 2 }}>
+              Bu bölüm henüz geliştirilmekte...
+            </Typography>
+          </Box>
         )}
       </Container>
 

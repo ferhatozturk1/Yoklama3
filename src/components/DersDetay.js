@@ -343,7 +343,7 @@ const DersDetay = ({ ders, onBack }) => {
               </Box>
               
               {Object.entries(ders.schedule).map(([day, schedules]) => (
-                <Box key={day} sx={{ mb: 2, p: 2, bgcolor: '#f8f9fa', borderRadius: 1 }}>
+                <Box key={day} sx={{ mb: 2, p: 2, bgcolor: '#f8f9fa', borderRadius: 3 }}>
                   <Typography variant="body1" sx={{ textTransform: 'capitalize', fontWeight: 'bold', mb: 1 }}>
                     {day}:
                   </Typography>
@@ -415,7 +415,7 @@ const DersDetay = ({ ders, onBack }) => {
               </Box>
 
               {/* Dönem İlerlemesi */}
-              <Box sx={{ p: 2, bgcolor: '#e3f2fd', borderRadius: 2, mb: 2 }}>
+              <Box sx={{ p: 2, bgcolor: '#e3f2fd', borderRadius: 4, mb: 2 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                   <Assessment sx={{ mr: 1, color: '#2196f3' }} />
                   <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
@@ -427,7 +427,7 @@ const DersDetay = ({ ders, onBack }) => {
                   value={(ders.currentWeek / ders.totalWeeks) * 100}
                   sx={{ 
                     height: 8, 
-                    borderRadius: 4,
+                    borderRadius: 6,
                     bgcolor: '#e0e0e0',
                     '& .MuiLinearProgress-bar': {
                       bgcolor: '#2196f3'
@@ -440,7 +440,7 @@ const DersDetay = ({ ders, onBack }) => {
               </Box>
 
               {/* Ders Dosyaları */}
-              <Box sx={{ p: 2, bgcolor: '#fff3e0', borderRadius: 2 }}>
+              <Box sx={{ p: 2, bgcolor: '#fff3e0', borderRadius: 4 }}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
                   <Box sx={{ display: 'flex', alignItems: 'center' }}>
                     <InsertDriveFile sx={{ mr: 1, color: '#ff9800' }} />
@@ -524,7 +524,7 @@ const DersDetay = ({ ders, onBack }) => {
         
         <DialogContent>
           {/* Kontrol Paneli */}
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, p: 2, bgcolor: '#f8f9fa', borderRadius: 2 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, p: 2, bgcolor: '#f8f9fa', borderRadius: 4 }}>
             <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
               <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
                 Görünüm:
