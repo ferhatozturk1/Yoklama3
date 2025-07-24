@@ -14,8 +14,13 @@ import {
   LinearProgress,
 } from "@mui/material";
 import { AccessTime, Circle } from "@mui/icons-material";
+import { useNavigate } from 'react-router-dom';
+import { useDersler } from '../contexts/DersContext';
 
 const AnaSayfa = ({ onSectionChange, selectedSemester = "2025-2026-guz" }) => {
+  const navigate = useNavigate();
+  const { getDersByScheduleInfo } = useDersler();
+  
   // Canlı saat state'i
   const [currentTime, setCurrentTime] = useState(new Date());
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -34,36 +39,57 @@ const AnaSayfa = ({ onSectionChange, selectedSemester = "2025-2026-guz" }) => {
   // Haftalık ders programı
   const [weeklySchedule] = useState({
     "08:40": {
-      pazartesi: "MATH113/3\nYP-A1",
+      pazartesi: "MATH113/3\n1.Ö-A1",
       salı: "",
       çarşamba: "",
       perşembe: "",
       cuma: "",
     },
-    "09:50": {
-      pazartesi: "",
-      salı: "ENG101/8\nYP-D101",
-      çarşamba: "23 Nisan\nUlusal Egemenlik\nve Çocuk\nBayramı",
-      perşembe: "",
-      cuma: "",
-    },
-    "10:40": {
+    "10:00": {
       pazartesi: "",
       salı: "",
       çarşamba: "",
       perşembe: "",
-      cuma: "",
+      cuma: "MATH113/3\n1.Ö-A1",
     },
     "11:00": {
       pazartesi: "",
-      salı: "ENG101/8\nBMC3",
+      salı: "BMC3/1\nKarma-Lab1",
+      çarşamba: "",
+      perşembe: "",
+      cuma: "",
+    },
+    "14:00": {
+      pazartesi: "",
+      salı: "",
+      çarşamba: "MATH113/3\n1.Ö-A1",
+      perşembe: "",
+      cuma: "",
+    },
+    "18:00": {
+      pazartesi: "",
+      salı: "ENG101/8\n2.Ö-D101",
+      çarşamba: "",
+      perşembe: "",
+      cuma: "",
+    },
+    "19:00": {
+      pazartesi: "",
+      salı: "",
+      çarşamba: "",
+      perşembe: "ENG101/8\n2.Ö-D101",
+      cuma: "",
+    },
+    "20:00": {
+      pazartesi: "",
+      salı: "BMC3/1\nKarma-Lab1",
       çarşamba: "",
       perşembe: "",
       cuma: "",
     },
   });
 
-  const timeSlots = ["08:40", "09:50", "10:40", "11:00"];
+  const timeSlots = ["08:40", "10:00", "11:00", "14:00", "18:00", "19:00", "20:00"];
   const days = ["Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma"];
   const dayKeys = ["pazartesi", "salı", "çarşamba", "perşembe", "cuma"];
 
@@ -161,6 +187,16 @@ const AnaSayfa = ({ onSectionChange, selectedSemester = "2025-2026-guz" }) => {
   };
 
   const semesterInfo = getSemesterInfo(selectedSemester);
+
+  // Ders tıklama fonksiyonu
+  const handleDersClick = (lesson) => {
+    if (!lesson || lesson.includes("Bayram")) return;
+    
+    const ders = getDersByScheduleInfo(lesson);
+    if (ders) {
+      navigate(`/portal/ders/${ders.id}`);
+    }
+  };
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, pb: 4 }}>
@@ -513,7 +549,13 @@ const AnaSayfa = ({ onSectionChange, selectedSemester = "2025-2026-guz" }) => {
                           border: cellBorder,
                           position: "relative",
                           transition: "all 0.3s ease",
+                          cursor: lesson && !lesson.includes("Bayram") ? "pointer" : "default",
+                          "&:hover": lesson && !lesson.includes("Bayram") ? {
+                            bgcolor: isCurrentLesson ? "#c8e6c9" : "#e3f2fd",
+                            transform: "scale(1.02)",
+                          } : {},
                         }}
+                        onClick={() => handleDersClick(lesson)}
                       >
                         {lesson && (
                           <Box
