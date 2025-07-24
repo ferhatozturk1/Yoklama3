@@ -163,7 +163,7 @@ const AnaSayfa = ({ onSectionChange, selectedSemester = "2025-2026-guz" }) => {
   const semesterInfo = getSemesterInfo(selectedSemester);
 
   return (
-    <Container maxWidth="lg" sx={{ mt: 4, pb: 4 }}>
+    <Container maxWidth="xl" sx={{ mt: 2, pb: 4, px: 3 }}>
       {/* Hoşgeldin Mesajı - Canlı Saat */}
       <Paper
         elevation={3}

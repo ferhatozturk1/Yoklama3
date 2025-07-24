@@ -1,7 +1,13 @@
 import React, { useState } from 'react';
 import { Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
+import { Box, useTheme, useMediaQuery } from '@mui/material';
 import TopNavigation from './TopNavigation';
+import Sidebar from './Sidebar';
 import AnaSayfa from './AnaSayfa';
+import DersVeDönemIslemleri from './DersVeDönemIslemleri';
+import DersKayit from './DersKayit';
+import DersEkleBirak from './DersEkleBirak';
+import DersGuncelle from './DersGuncelle';
 
 import Derslerim from './Derslerim';
 import Yoklama from './Yoklama';
@@ -10,7 +16,10 @@ import Profilim from './Profilim';
 const MainPortal = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [selectedSemester, setSelectedSemester] = useState('2025-2026-guz');
+  const [sidebarOpen, setSidebarOpen] = useState(!isMobile);
   const [userProfile] = useState({
     name: 'Dr. Ayşe Kaya',
     email: 'ayse.kaya@universite.edu.tr',
@@ -39,25 +48,97 @@ const MainPortal = () => {
     setSelectedSemester(semester);
   };
 
-  return (
-    <div>
-      <TopNavigation 
-        currentSection={getCurrentSection()}
-        userProfile={userProfile}
-        onSectionChange={handleSectionChange}
-        selectedSemester={selectedSemester}
-        onSemesterChange={handleSemesterChange}
-      />
-      <Routes>
-        <Route path="/" element={<Navigate to="/portal/ana-sayfa" replace />} />
-        <Route path="/ana-sayfa" element={<AnaSayfa onSectionChange={handleSectionChange} selectedSemester={selectedSemester} />} />
+  // Course management navigation handlers
+  const handleCourseManagementNavigation = (section) => {
+    navigate(`/portal/${section}`);
+  };
 
-        <Route path="/derslerim" element={<Derslerim />} />
-        <Route path="/yoklama" element={<Yoklama />} />
-        <Route path="/profilim" element={<Profilim userProfile={userProfile} />} />
-        <Route path="*" element={<Navigate to="/portal/ana-sayfa" replace />} />
-      </Routes>
-    </div>
+  const handleBackToCourseManagement = () => {
+    navigate('/portal/ders-ve-donem-islemleri');
+  };
+
+  const handleEditCourse = (course) => {
+    // Navigate to course registration with course data for editing
+    navigate('/portal/ders-kayit', { state: { editingCourse: course } });
+  };
+
+  const handleSidebarToggle = () => {
+    setSidebarOpen(!sidebarOpen);
+  };
+
+  return (
+    <Box sx={{ display: 'flex', height: '100vh' }}>
+      {/* Sidebar */}
+      <Sidebar 
+        open={sidebarOpen} 
+        onToggle={handleSidebarToggle}
+        isMobile={isMobile}
+        selectedSemester={selectedSemester}
+        onNavigate={handleSectionChange}
+      />
+      
+      {/* Main content area */}
+      <Box 
+        component="main" 
+        sx={{ 
+          flexGrow: 1, 
+          display: 'flex', 
+          flexDirection: 'column',
+          overflow: 'hidden',
+          width: isMobile ? '100%' : (sidebarOpen ? 'calc(100% - 280px)' : '100%'),
+          transition: 'width 0.3s ease'
+        }}
+      >
+        {/* Top Navigation */}
+        <TopNavigation 
+          currentSection={getCurrentSection()}
+          userProfile={userProfile}
+          onSectionChange={handleSectionChange}
+          selectedSemester={selectedSemester}
+          onSemesterChange={handleSemesterChange}
+          onSidebarToggle={handleSidebarToggle}
+          sidebarOpen={sidebarOpen}
+          isMobile={isMobile}
+        />
+        
+        {/* Content Area */}
+        <Box 
+          sx={{ 
+            flexGrow: 1, 
+            overflow: 'auto',
+            backgroundColor: 'background.default'
+          }}
+        >
+          <Routes>
+            <Route path="/" element={<Navigate to="/portal/ana-sayfa" replace />} />
+            <Route path="/ana-sayfa" element={<AnaSayfa onSectionChange={handleSectionChange} selectedSemester={selectedSemester} />} />
+
+            {/* Course Management Routes */}
+            <Route 
+              path="/ders-ve-donem-islemleri" 
+              element={<DersVeDönemIslemleri onNavigate={handleCourseManagementNavigation} />} 
+            />
+            <Route 
+              path="/ders-kayit" 
+              element={<DersKayit onBack={handleBackToCourseManagement} selectedSemester={selectedSemester} />} 
+            />
+            <Route 
+              path="/ders-ekle-birak" 
+              element={<DersEkleBirak onBack={handleBackToCourseManagement} selectedSemester={selectedSemester} />} 
+            />
+            <Route 
+              path="/ders-guncelle" 
+              element={<DersGuncelle onBack={handleBackToCourseManagement} onEditCourse={handleEditCourse} selectedSemester={selectedSemester} />} 
+            />
+
+            <Route path="/derslerim" element={<Derslerim />} />
+            <Route path="/yoklama" element={<Yoklama />} />
+            <Route path="/profilim" element={<Profilim userProfile={userProfile} />} />
+            <Route path="*" element={<Navigate to="/portal/ana-sayfa" replace />} />
+          </Routes>
+        </Box>
+      </Box>
+    </Box>
   );
 };
 
