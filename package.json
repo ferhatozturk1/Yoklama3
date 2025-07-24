@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 {
   "name": "frontend",
   "version": "1.0.0",
@@ -42,3 +43,49 @@
     "@types/react": "^19.1.8"
   }
 }
+=======
+{
+  "name": "frontend",
+  "version": "1.0.0",
+  "private": true,
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "dependencies": {
+    "@emotion/react": "^11.11.1",
+    "@emotion/styled": "^11.11.0",
+    "@mui/icons-material": "^5.18.0",
+    "@mui/material": "^5.15.15",
+    "html2canvas": "^1.4.1",
+    "jspdf": "^3.0.1",
+    "qrcode": "^1.5.4",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.23.1",
+    "react-scripts": "^5.0.1",
+    "xlsx": "^0.18.5"
+  },
+  "scripts": {
+    "dev": "react-scripts start",
+    "build": "set CI=false && set GENERATE_SOURCEMAP=false && react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject",
+    "build:netlify": "set CI=false && set GENERATE_SOURCEMAP=false && react-scripts build"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "@types/react": "^19.1.8"
+  }
+}
+>>>>>>> b458935077ae6d999bd4305048ef9f3ae0601500

@@ -20,6 +20,7 @@ class MockApiService {
   static mockUserData = {
     'user123': {
       id: 'user123',
+<<<<<<< HEAD
       firstName: 'MEHMET NURİ',
       lastName: 'ÖĞÜT',
       name: 'MEHMET NURİ ÖĞÜT',
@@ -32,6 +33,20 @@ class MockApiService {
       profilePhoto: 'https://randomuser.me/api/portraits/men/32.jpg',
       webUrl: 'https://avesis.mcbu.edu.tr/mehmetnuri.ogut',
       otherDetails: 'WoS Araştırma Alanları: Bilgisayar Bilimi, Yapay Zeka, Matematik\nDiğer E-posta: mehmetnuri.ogut@gmail.com',
+=======
+      firstName: 'Ahmet',
+      lastName: 'Yılmaz',
+      name: 'Ahmet Yılmaz',
+      title: 'Dr.',
+      email: 'ahmet.yilmaz@example.com',
+      phone: '+90 555 123 4567',
+      university: 'Manisa Celal Bayar Üniversitesi',
+      faculty: 'Mühendislik Fakültesi',
+      department: 'Bilgisayar Mühendisliği',
+      profilePhoto: 'https://randomuser.me/api/portraits/men/32.jpg',
+      compulsoryEducation: 'Lisans: Bilgisayar Mühendisliği, Yüksek Lisans: Yapay Zeka',
+      otherDetails: 'Veri bilimi ve makine öğrenmesi alanlarında uzmanlaşmış.',
+>>>>>>> b458935077ae6d999bd4305048ef9f3ae0601500
       createdAt: new Date('2023-01-15').toISOString(),
       updatedAt: new Date('2023-06-22').toISOString()
     },

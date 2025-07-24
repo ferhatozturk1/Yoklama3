@@ -10,6 +10,7 @@ import {
 
 // Create the enhanced theme with professional typography
 export const theme = createTheme({
+<<<<<<< HEAD
   // Modern Typography System
   typography: {
     fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
@@ -17,10 +18,20 @@ export const theme = createTheme({
     // Ensure consistent font rendering
     htmlFontSize: 16,
     fontSize: 16, // Increased base font size for better readability
+=======
+  // Typography configuration with responsive utilities
+  typography: {
+    ...typographyConfig,
+    
+    // Ensure consistent font rendering
+    htmlFontSize: 16,
+    fontSize: 14,
+>>>>>>> b458935077ae6d999bd4305048ef9f3ae0601500
     
     // Responsive font sizes
     responsiveFontSizes: true,
     
+<<<<<<< HEAD
     // Standard typography variants with modern styling
     h1: {
       fontSize: '2.5rem',
@@ -82,6 +93,8 @@ export const theme = createTheme({
       letterSpacing: '0.1em',
     },
     
+=======
+>>>>>>> b458935077ae6d999bd4305048ef9f3ae0601500
     // Add fluid typography variants
     welcomeHeading: {
       ...fluidTypography.welcomeHeading,
@@ -130,6 +143,7 @@ export const theme = createTheme({
     }
   },
 
+<<<<<<< HEAD
   // Modern Academic Color Palette
   palette: {
     mode: 'light',
@@ -196,6 +210,38 @@ export const theme = createTheme({
       main: '#3498DB',
       light: '#5DADE2',
       dark: '#2980B9'
+=======
+  // Color palette with accessibility in mind
+  palette: {
+    mode: 'light',
+    primary: {
+      main: '#1a237e',         // Deep blue for primary elements
+      light: '#3f51b5',        // Lighter blue
+      dark: '#0d47a1',         // Darker blue
+      contrastText: '#ffffff'
+    },
+    secondary: {
+      main: '#9c27b0',         // Purple accent
+      light: '#ba68c8',
+      dark: '#7b1fa2',
+      contrastText: '#ffffff'
+    },
+    text: typographyColors.text,
+    background: typographyColors.background,
+    
+    // Additional colors for better contrast
+    grey: {
+      50: '#fafafa',
+      100: '#f5f5f5',
+      200: '#eeeeee',
+      300: '#e0e0e0',
+      400: '#bdbdbd',
+      500: '#9e9e9e',
+      600: '#757575',
+      700: '#616161',
+      800: '#424242',
+      900: '#212121'
+>>>>>>> b458935077ae6d999bd4305048ef9f3ae0601500
     }
   },
 
@@ -204,7 +250,11 @@ export const theme = createTheme({
 
   // Shape and border radius
   shape: {
+<<<<<<< HEAD
     borderRadius: 0
+=======
+    borderRadius: 8
+>>>>>>> b458935077ae6d999bd4305048ef9f3ae0601500
   },
 
   // Component overrides for consistent typography
@@ -243,6 +293,7 @@ export const theme = createTheme({
       }
     },
 
+<<<<<<< HEAD
     // Modern Card Component
     MuiCard: {
       styleOverrides: {
@@ -258,10 +309,13 @@ export const theme = createTheme({
       },
     },
 
+=======
+>>>>>>> b458935077ae6d999bd4305048ef9f3ae0601500
     // Paper component for consistent elevation
     MuiPaper: {
       styleOverrides: {
         root: {
+<<<<<<< HEAD
           backgroundImage: 'none',
           borderRadius: 0,
         },
@@ -309,6 +363,22 @@ export const theme = createTheme({
             borderColor: '#1B2E6D',
           },
         },
+=======
+          backgroundImage: 'none' // Remove default gradient
+        }
+      }
+    },
+
+    // Button typography
+    MuiButton: {
+      styleOverrides: {
+        root: {
+          textTransform: 'none', // Prevent uppercase
+          fontWeight: 500,
+          fontSize: '0.875rem',
+          letterSpacing: '0.02em'
+        }
+>>>>>>> b458935077ae6d999bd4305048ef9f3ae0601500
       }
     },
 
@@ -338,6 +408,7 @@ export const theme = createTheme({
       }
     },
 
+<<<<<<< HEAD
     // Modern AppBar
     MuiAppBar: {
       styleOverrides: {
@@ -346,12 +417,19 @@ export const theme = createTheme({
           color: '#2C3E50',
           boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.12)',
           borderBottom: '1px solid #E9ECEF',
+=======
+    // AppBar typography
+    MuiAppBar: {
+      styleOverrides: {
+        root: {
+>>>>>>> b458935077ae6d999bd4305048ef9f3ae0601500
           '& .MuiTypography-h6': {
             fontWeight: 600,
             letterSpacing: '0.01em'
           }
         }
       }
+<<<<<<< HEAD
     },
 
     // Modern Drawer/Sidebar
@@ -426,6 +504,9 @@ export const theme = createTheme({
         },
       },
     },
+=======
+    }
+>>>>>>> b458935077ae6d999bd4305048ef9f3ae0601500
   },
 
   // Breakpoints for responsive design
