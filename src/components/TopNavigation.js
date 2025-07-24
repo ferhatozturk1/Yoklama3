@@ -176,21 +176,20 @@
             onClick={onSidebarToggle}
             sx={{ mr: 2 }}
           >
-            <MenuIcon />
+            <MenuIcon sx={{ color: 'white' }} />
           </IconButton>
 
-          <Box sx={{ display: "flex", alignItems: "center", gap: 2, flexGrow: 1 }}>
-            <School sx={{ fontSize: 32, color: 'white' }} />
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, flexGrow: 1 }}>
+            <School sx={{ fontSize: 28, color: 'white' }} />
             <Typography
               variant="h6"
               component="div"
               sx={{
                 cursor: "pointer",
                 fontWeight: 600,
-                fontSize: "1.3rem",
+                fontSize: "1.25rem",
                 color: 'white',
-                display: "flex",
-                alignItems: "center",
+                lineHeight: 1,
                 "&:hover": {
                   opacity: 0.9,
                 },
@@ -201,18 +200,18 @@
             </Typography>
           </Box>
 
-
-
-          {/* Notifications */}
-          <IconButton
-            color="inherit"
-            onClick={handleNotificationClick}
-            sx={{ mx: 1, color: 'white' }}
-          >
-            <Badge badgeContent={notifications.length} color="error">
-              <NotificationsIcon sx={{ color: 'white' }} />
-            </Badge>
-          </IconButton>
+          {/* Right side components */}
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            {/* Notifications */}
+            <IconButton
+              color="inherit"
+              onClick={handleNotificationClick}
+              sx={{ color: 'white' }}
+            >
+              <Badge badgeContent={notifications.length} color="error">
+                <NotificationsIcon sx={{ color: 'white' }} />
+              </Badge>
+            </IconButton>
 
           <Menu
             anchorEl={notificationAnchor}
@@ -265,7 +264,8 @@
               </MenuItem>
             ))}
           </Menu>
-          <Box sx={{ display: "flex", alignItems: "center", ml: 2 }}>
+
+            {/* Profile Avatar */}
             <IconButton onClick={handleProfileClick} sx={{ p: 0 }}>
               <Avatar
                 src={userProfile.profilePhoto}

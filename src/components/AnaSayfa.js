@@ -1,11 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   Container,
   Typography,
   Box,
-  Grid,
   Card,
-  CardContent,
   Chip,
   Table,
   TableBody,
@@ -16,34 +14,19 @@ import {
   Paper,
   useTheme,
   useMediaQuery,
-  Tabs,
-  Tab,
   Accordion,
   AccordionSummary,
   AccordionDetails,
-  Button,
-  Avatar,
-  Divider,
   Badge,
   LinearProgress,
-  AppBar,
-  IconButton,
-} from '@mui/material';
+} from "@mui/material";
 import {
   Schedule as ScheduleIcon,
-  CheckCircle as CheckCircleIcon,
   AccessTime as AccessTimeIcon,
-  School as SchoolIcon,
   ExpandMore as ExpandMoreIcon,
-  Class as ClassIcon,
-  Assignment as AssignmentIcon,
-  Notifications as NotificationsIcon,
-  TrendingUp as TrendingUpIcon,
   CalendarToday as CalendarIcon,
-  PersonAdd as PersonAddIcon,
-  Assignment as AttendanceIcon,
   Circle as CircleIcon,
-} from '@mui/icons-material';
+} from "@mui/icons-material";
 
 // Tab panel component
 function TabPanel({ children, value, index, ...other }) {
@@ -62,9 +45,8 @@ function TabPanel({ children, value, index, ...other }) {
 
 const AnaSayfa = ({ onSectionChange, selectedSemester = "2025-2026-guz" }) => {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const [currentTime, setCurrentTime] = useState(new Date());
-  const [activeTab, setActiveTab] = useState(0);
   const [expandedDay, setExpandedDay] = useState(false);
 
   // Update time every second
@@ -75,10 +57,6 @@ const AnaSayfa = ({ onSectionChange, selectedSemester = "2025-2026-guz" }) => {
 
     return () => clearInterval(timer);
   }, []);
-
-  const handleTabChange = (event, newValue) => {
-    setActiveTab(newValue);
-  };
 
   const handleAccordionChange = (panel) => (event, isExpanded) => {
     setExpandedDay(isExpanded ? panel : false);
@@ -158,35 +136,48 @@ const AnaSayfa = ({ onSectionChange, selectedSemester = "2025-2026-guz" }) => {
     },
   };
 
-  const timeSlots = ["08:40", "09:50", "11:00", "13:40", "14:40", "15:40", "16:40", "17:40", "18:40", "19:40"];
+  const timeSlots = [
+    "08:40",
+    "09:50",
+    "11:00",
+    "13:40",
+    "14:40",
+    "15:40",
+    "16:40",
+    "17:40",
+    "18:40",
+    "19:40",
+  ];
   const days = ["Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma"];
   const dayKeys = ["pazartesi", "salı", "çarşamba", "perşembe", "cuma"];
 
   // Get lesson status for visual indicators
   const getLessonStatus = (timeSlot, dayKey) => {
-    const currentTimeNum = currentTime.getHours() * 100 + currentTime.getMinutes();
+    const currentTimeNum =
+      currentTime.getHours() * 100 + currentTime.getMinutes();
     const currentDay = dayKeys[currentTime.getDay() - 1];
     const [hour, minute] = timeSlot.split(":").map(Number);
     const slotTime = hour * 100 + minute;
     const endTime = slotTime + 50;
     const lesson = weeklySchedule[timeSlot][dayKey];
 
-    if (!lesson) return 'empty';
-    if (lesson.includes('Bayram') || lesson.includes('Tatil')) return 'holiday';
-    if (currentDay !== dayKey) return 'regular';
-    
+    if (!lesson) return "empty";
+    if (lesson.includes("Bayram") || lesson.includes("Tatil")) return "holiday";
+    if (currentDay !== dayKey) return "regular";
+
     if (currentTimeNum >= slotTime && currentTimeNum <= endTime) {
-      return 'current';
+      return "current";
     } else if (currentTimeNum < slotTime) {
-      return 'upcoming';
+      return "upcoming";
     } else {
-      return 'completed';
+      return "completed";
     }
   };
 
   // Get current class
   const getCurrentClass = () => {
-    const currentTimeNum = currentTime.getHours() * 100 + currentTime.getMinutes();
+    const currentTimeNum =
+      currentTime.getHours() * 100 + currentTime.getMinutes();
     const currentDay = dayKeys[currentTime.getDay() - 1];
 
     if (!currentDay) return null;
@@ -198,8 +189,10 @@ const AnaSayfa = ({ onSectionChange, selectedSemester = "2025-2026-guz" }) => {
 
       if (currentTimeNum >= slotTime && currentTimeNum <= endTime) {
         const lesson = weeklySchedule[timeSlot][currentDay];
-        if (lesson && !lesson.includes('Bayram')) {
-          const remainingMinutes = Math.floor((endTime - currentTimeNum) / 100) * 60 + ((endTime - currentTimeNum) % 100);
+        if (lesson && !lesson.includes("Bayram")) {
+          const remainingMinutes =
+            Math.floor((endTime - currentTimeNum) / 100) * 60 +
+            ((endTime - currentTimeNum) % 100);
           const progressPercent = ((currentTimeNum - slotTime) / 50) * 100;
           return {
             lesson,
@@ -215,7 +208,8 @@ const AnaSayfa = ({ onSectionChange, selectedSemester = "2025-2026-guz" }) => {
 
   // Get next class
   const getNextClass = () => {
-    const currentTimeNum = currentTime.getHours() * 100 + currentTime.getMinutes();
+    const currentTimeNum =
+      currentTime.getHours() * 100 + currentTime.getMinutes();
     const currentDay = dayKeys[currentTime.getDay() - 1];
 
     if (!currentDay) return null;
@@ -226,8 +220,10 @@ const AnaSayfa = ({ onSectionChange, selectedSemester = "2025-2026-guz" }) => {
 
       if (currentTimeNum < slotTime) {
         const lesson = weeklySchedule[timeSlot][currentDay];
-        if (lesson && !lesson.includes('Bayram')) {
-          const minutesUntil = Math.floor((slotTime - currentTimeNum) / 100) * 60 + ((slotTime - currentTimeNum) % 100);
+        if (lesson && !lesson.includes("Bayram")) {
+          const minutesUntil =
+            Math.floor((slotTime - currentTimeNum) / 100) * 60 +
+            ((slotTime - currentTimeNum) % 100);
           return {
             lesson,
             time: timeSlot,
@@ -241,60 +237,111 @@ const AnaSayfa = ({ onSectionChange, selectedSemester = "2025-2026-guz" }) => {
 
   const currentClass = getCurrentClass();
 
-  // Mock data for tabs
-  const todaysClasses = [
-    { time: "08:40-09:30", subject: "MATH113/3", room: "YP-A1", status: "completed" },
-    { time: "09:50-10:40", subject: "ENG101/8", room: "YP-D101", status: "current" },
-    { time: "11:00-11:50", subject: "BMC3", room: "Lab-1", status: "upcoming" },
-  ];
-
-  const notifications = [
-    { id: 1, message: "Matematik dersinde yoklama alınmadı", type: "warning", time: "2 saat önce" },
-    { id: 2, message: "Yeni ders programı güncellendi", type: "info", time: "1 gün önce" },
-    { id: 3, message: "Öğrenci kaydı tamamlandı", type: "success", time: "3 gün önce" },
-  ];
-
-  const attendanceStats = [
-    { course: "MATH113", attendance: 85, trend: "up" },
-    { course: "ENG101", attendance: 78, trend: "down" },
-    { course: "BMC3", attendance: 92, trend: "up" },
-  ];
-
   // Compact Welcome Header
   const WelcomeHeader = () => (
     <Paper
-      elevation={2}
+      elevation={1}
       sx={{
-        p: 2,
+        p: isMobile ? 1.5 : 3,
         mb: 3,
         background: "linear-gradient(135deg, #1B2E6D 0%, #4A90E2 100%)",
-        borderRadius: 2,
+        borderRadius: isMobile ? "16px" : "24px",
         color: "white",
+        boxShadow: "0 8px 32px rgba(27, 46, 109, 0.15)",
       }}
     >
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <Avatar sx={{ bgcolor: 'rgba(255,255,255,0.2)', width: 48, height: 48 }}>
-            <SchoolIcon />
-          </Avatar>
-          <Box>
-            <Typography variant="h6" sx={{ fontWeight: 600, mb: 0.5 }}>
-              Öğr. Gör. Mehmet Nuri Öğüt
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          flexDirection: isMobile ? "column" : "row",
+          gap: isMobile ? 1.5 : 0,
+        }}
+      >
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            gap: isMobile ? 1.5 : 2,
+            width: isMobile ? "100%" : "auto",
+            justifyContent: isMobile ? "center" : "flex-start",
+          }}
+        >
+          <Box
+            sx={{
+              bgcolor: "rgba(255,255,255,0.1)",
+              px: isMobile ? 2 : 3,
+              py: isMobile ? 1 : 1.5,
+              borderRadius: isMobile ? "16px" : "20px",
+              backdropFilter: "blur(10px)",
+              border: "1px solid rgba(255,255,255,0.2)",
+              textAlign: isMobile ? "center" : "left",
+            }}
+          >
+            <Typography
+              variant={isMobile ? "subtitle1" : "h6"}
+              sx={{
+                fontWeight: 600,
+                mb: 0.5,
+                fontSize: isMobile ? "1rem" : "1.1rem",
+                lineHeight: 1.2,
+              }}
+            >
+              Öğr. Gör.
+              {isMobile && <br />}
+              MEHMET NURİ ÖĞÜT
             </Typography>
-            <Typography variant="body2" sx={{ opacity: 0.9 }}>
-              2025-2026 Güz Dönemi
+            <Typography
+              variant="body2"
+              sx={{
+                opacity: 0.9,
+                fontSize: isMobile ? "0.8rem" : "0.85rem",
+                lineHeight: 1.2,
+              }}
+            >
+              2025-2026
+              {isMobile && <br />}
+              Güz Dönemi
             </Typography>
           </Box>
         </Box>
-        <Box sx={{ textAlign: 'right' }}>
-          <Typography variant="body1" sx={{ fontWeight: 500, mb: 0.5 }}>
-            {currentTime.toLocaleTimeString('tr-TR')}
+        <Box
+          sx={{
+            textAlign: "center",
+            bgcolor: "rgba(255,255,255,0.1)",
+            px: isMobile ? 2 : 3,
+            py: isMobile ? 1 : 1.5,
+            borderRadius: isMobile ? "16px" : "20px",
+            backdropFilter: "blur(10px)",
+            border: "1px solid rgba(255,255,255,0.2)",
+            width: isMobile ? "auto" : "auto",
+            minWidth: isMobile ? "180px" : "auto",
+          }}
+        >
+          <Typography
+            variant="body1"
+            sx={{
+              fontWeight: 500,
+              mb: 0.5,
+              fontSize: isMobile ? "1rem" : "1.1rem",
+              lineHeight: 1.2,
+            }}
+          >
+            {currentTime.toLocaleTimeString("tr-TR")}
           </Typography>
-          <Typography variant="body2" sx={{ opacity: 0.9 }}>
-            {currentTime.toLocaleDateString('tr-TR', { 
-              weekday: 'long',
-              day: 'numeric',
-              month: 'long'
+          <Typography
+            variant="body2"
+            sx={{
+              opacity: 0.9,
+              fontSize: isMobile ? "0.8rem" : "0.85rem",
+              lineHeight: 1.2,
+            }}
+          >
+            {currentTime.toLocaleDateString("tr-TR", {
+              weekday: isMobile ? "short" : "long",
+              day: "numeric",
+              month: isMobile ? "short" : "long",
             })}
           </Typography>
         </Box>
@@ -306,43 +353,43 @@ const AnaSayfa = ({ onSectionChange, selectedSemester = "2025-2026-guz" }) => {
   const getChipStyling = (timeSlot, dayKey) => {
     const status = getLessonStatus(timeSlot, dayKey);
     const lesson = weeklySchedule[timeSlot][dayKey];
-    
+
     switch (status) {
-      case 'current':
+      case "current":
         return {
-          bgcolor: '#E8F5E8',
-          color: '#27AE60',
-          border: '2px solid #27AE60',
+          bgcolor: "#E8F5E8",
+          color: "#27AE60",
+          border: "2px solid #27AE60",
           fontWeight: 600,
-          animation: 'pulse 2s infinite',
+          animation: "pulse 2s infinite",
         };
-      case 'upcoming':
+      case "upcoming":
         return {
-          bgcolor: '#FFFBF0',
-          color: '#B8860B',
-          border: '1px solid #DAA520',
+          bgcolor: "#FFFBF0",
+          color: "#B8860B",
+          border: "1px solid #DAA520",
           fontWeight: 500,
         };
-      case 'completed':
+      case "completed":
         return {
-          bgcolor: '#F5F5F5',
-          color: '#6C757D',
-          border: '1px solid #ADB5BD',
+          bgcolor: "#FAFAFA",
+          color: "#9E9E9E",
+          border: "1px solid #BDBDBD",
           opacity: 0.8,
         };
-      case 'holiday':
+      case "holiday":
         return {
-          bgcolor: '#FFE0B2',
-          color: '#E65100',
+          bgcolor: "#FFFDE7",
+          color: "#F57F17",
           fontWeight: 500,
-          border: '1px solid #FF9800',
+          border: "1px solid #FFEB3B",
         };
-      case 'regular':
+      case "regular":
       default:
         return {
-          bgcolor: '#E3F2FD',
-          color: '#1565C0',
-          border: '1px solid #90CAF9',
+          bgcolor: "#E3F2FD",
+          color: "#1565C0",
+          border: "1px solid #90CAF9",
         };
     }
   };
@@ -350,21 +397,44 @@ const AnaSayfa = ({ onSectionChange, selectedSemester = "2025-2026-guz" }) => {
   // Desktop Schedule Table
   const DesktopSchedule = () => (
     <Box sx={{ mt: 3 }}>
-      <TableContainer component={Paper} elevation={2} sx={{ borderRadius: 0, border: '1px solid #DEE2E6' }}>
-        <Table sx={{ '& .MuiTableCell-root': { borderRight: '1px solid #DEE2E6' } }}>
+      <TableContainer
+        component={Paper}
+        elevation={2}
+        sx={{ borderRadius: 0, border: "1px solid #DEE2E6" }}
+      >
+        <Table
+          sx={{ "& .MuiTableCell-root": { borderRight: "1px solid #DEE2E6" } }}
+        >
           <TableHead>
-            <TableRow sx={{ bgcolor: '#F8F9FA', borderBottom: '2px solid #DEE2E6' }}>
-              <TableCell sx={{ fontWeight: 600, color: '#2C3E50', fontSize: '0.875rem', py: 2 }}>Saat</TableCell>
+            <TableRow
+              sx={{ bgcolor: "#F8F9FA", borderBottom: "2px solid #DEE2E6" }}
+            >
+              <TableCell
+                sx={{
+                  fontWeight: 600,
+                  color: "#2C3E50",
+                  fontSize: "0.875rem",
+                  py: 2,
+                }}
+              >
+                Saat
+              </TableCell>
               {days.map((day, index) => (
-                <TableCell 
-                  key={day} 
-                  align="center" 
-                  sx={{ 
-                    fontWeight: 600, 
-                    color: index === currentTime.getDay() - 1 ? '#1B2E6D' : '#2C3E50',
-                    fontSize: '0.875rem',
+                <TableCell
+                  key={day}
+                  align="center"
+                  sx={{
+                    fontWeight: 600,
+                    color:
+                      index === currentTime.getDay() - 1
+                        ? "#1B2E6D"
+                        : "#2C3E50",
+                    fontSize: "0.875rem",
                     py: 2,
-                    bgcolor: index === currentTime.getDay() - 1 ? '#E3F2FD' : '#F8F9FA'
+                    bgcolor:
+                      index === currentTime.getDay() - 1
+                        ? "#E3F2FD"
+                        : "#F8F9FA",
                   }}
                 >
                   {day}
@@ -374,21 +444,24 @@ const AnaSayfa = ({ onSectionChange, selectedSemester = "2025-2026-guz" }) => {
           </TableHead>
           <TableBody>
             {timeSlots.map((timeSlot, rowIndex) => (
-              <TableRow 
-                key={timeSlot} 
-                sx={{ 
-                  '&:hover': { bgcolor: '#F8F9FA' },
-                  borderBottom: rowIndex < timeSlots.length - 1 ? '1px solid #DEE2E6' : 'none'
+              <TableRow
+                key={timeSlot}
+                sx={{
+                  "&:hover": { bgcolor: "#F8F9FA" },
+                  borderBottom:
+                    rowIndex < timeSlots.length - 1
+                      ? "1px solid #DEE2E6"
+                      : "none",
                 }}
               >
-                <TableCell 
-                  sx={{ 
-                    fontWeight: 500, 
-                    color: '#1B2E6D', 
-                    bgcolor: '#F8F9FA',
-                    fontSize: '0.875rem',
+                <TableCell
+                  sx={{
+                    fontWeight: 500,
+                    color: "#1B2E6D",
+                    bgcolor: "#F8F9FA",
+                    fontSize: "0.875rem",
                     py: 2.5,
-                    minWidth: '80px'
+                    minWidth: "80px",
                   }}
                 >
                   {timeSlot}
@@ -396,30 +469,38 @@ const AnaSayfa = ({ onSectionChange, selectedSemester = "2025-2026-guz" }) => {
                 {dayKeys.map((dayKey, index) => {
                   const lesson = weeklySchedule[timeSlot][dayKey];
                   const chipStyling = getChipStyling(timeSlot, dayKey);
-                  
+
                   return (
-                    <TableCell key={dayKey} align="center" sx={{ p: 1.5, minHeight: '60px' }}>
+                    <TableCell
+                      key={dayKey}
+                      align="center"
+                      sx={{ p: 1.5, minHeight: "60px" }}
+                    >
                       {lesson ? (
                         <Chip
-                          label={lesson.replace('\n', ' - ')}
+                          label={lesson.replace("\n", " - ")}
                           size="small"
                           sx={{
-                            maxWidth: '100%',
-                            height: 'auto',
-                            minHeight: '36px',
-                            '& .MuiChip-label': {
-                              display: 'block',
-                              whiteSpace: 'normal',
-                              textAlign: 'center',
-                              padding: '8px 12px',
-                              fontSize: '0.75rem',
+                            maxWidth: "100%",
+                            height: "auto",
+                            minHeight: "36px",
+                            "& .MuiChip-label": {
+                              display: "block",
+                              whiteSpace: "normal",
+                              textAlign: "center",
+                              padding: "8px 12px",
+                              fontSize: "0.75rem",
                               lineHeight: 1.3,
                             },
-                            ...chipStyling
+                            ...chipStyling,
                           }}
                         />
                       ) : (
-                        <Typography variant="body2" color="text.disabled" sx={{ py: 1 }}>
+                        <Typography
+                          variant="body2"
+                          color="text.disabled"
+                          sx={{ py: 1 }}
+                        >
                           -
                         </Typography>
                       )}
@@ -431,14 +512,62 @@ const AnaSayfa = ({ onSectionChange, selectedSemester = "2025-2026-guz" }) => {
           </TableBody>
         </Table>
       </TableContainer>
-      
+
       {/* Legend */}
-      <Box sx={{ mt: 3, display: 'flex', flexWrap: 'wrap', gap: 2, justifyContent: 'center' }}>
-        <Chip size="small" label="Şu Anki Ders" sx={{ bgcolor: '#E8F5E8', color: '#27AE60', border: '2px solid #27AE60' }} />
-        <Chip size="small" label="Gelecek Ders" sx={{ bgcolor: '#FFFBF0', color: '#B8860B', border: '1px solid #DAA520' }} />
-        <Chip size="small" label="Tamamlanan Ders" sx={{ bgcolor: '#F5F5F5', color: '#6C757D', border: '1px solid #ADB5BD' }} />
-        <Chip size="small" label="Normal Ders" sx={{ bgcolor: '#E3F2FD', color: '#1565C0', border: '1px solid #90CAF9' }} />
-        <Chip size="small" label="Özel Gün/Tatil" sx={{ bgcolor: '#FFE0B2', color: '#E65100', border: '1px solid #FF9800' }} />
+      <Box
+        sx={{
+          mt: 3,
+          display: "flex",
+          flexWrap: "wrap",
+          gap: 2,
+          justifyContent: "center",
+        }}
+      >
+        <Chip
+          size="small"
+          label="Şu Anki Ders"
+          sx={{
+            bgcolor: "#E8F5E8",
+            color: "#27AE60",
+            border: "2px solid #27AE60",
+          }}
+        />
+        <Chip
+          size="small"
+          label="Gelecek Ders"
+          sx={{
+            bgcolor: "#FFFBF0",
+            color: "#B8860B",
+            border: "1px solid #DAA520",
+          }}
+        />
+        <Chip
+          size="small"
+          label="Tamamlanan Ders"
+          sx={{
+            bgcolor: "#FAFAFA",
+            color: "#9E9E9E",
+            border: "1px solid #BDBDBD",
+          }}
+        />
+        <Chip
+          size="small"
+          label="Normal Ders"
+          sx={{
+            bgcolor: "#E3F2FD",
+            color: "#1565C0",
+            border: "1px solid #90CAF9",
+          }}
+        />
+        <Chip
+          size="small"
+          label="Özel Gün/Tatil"
+          sx={{
+            bgcolor: "#FFFDE7",
+            color: "#F57F17",
+            border: "1px solid #FFEB3B",
+          }}
+        />
       </Box>
     </Box>
   );
@@ -447,53 +576,80 @@ const AnaSayfa = ({ onSectionChange, selectedSemester = "2025-2026-guz" }) => {
   const MobileSchedule = () => (
     <Box>
       {days.map((day, dayIndex) => {
-        const dayClasses = timeSlots.filter(slot => weeklySchedule[slot][dayKeys[dayIndex]]);
-        
+        const dayClasses = timeSlots.filter(
+          (slot) => weeklySchedule[slot][dayKeys[dayIndex]]
+        );
+
         return (
           <Accordion
             key={day}
             expanded={expandedDay === day}
             onChange={handleAccordionChange(day)}
-            sx={{ mb: 1, borderRadius: 2, '&:before': { display: 'none' } }}
+            sx={{ mb: 1, borderRadius: 2, "&:before": { display: "none" } }}
           >
             <AccordionSummary
               expandIcon={<ExpandMoreIcon />}
-              sx={{ 
-                bgcolor: dayIndex === currentTime.getDay() - 1 ? '#E3F2FD' : '#F8F9FA',
+              sx={{
+                bgcolor:
+                  dayIndex === currentTime.getDay() - 1 ? "#E3F2FD" : "#F8F9FA",
                 borderRadius: 2,
               }}
             >
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, width: '100%' }}>
-                <CalendarIcon color={dayIndex === currentTime.getDay() - 1 ? 'primary' : 'disabled'} />
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 1,
+                  width: "100%",
+                }}
+              >
+                <CalendarIcon
+                  color={
+                    dayIndex === currentTime.getDay() - 1
+                      ? "primary"
+                      : "disabled"
+                  }
+                />
                 <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
                   {day}
                 </Typography>
-                <Badge 
-                  badgeContent={dayClasses.length} 
-                  color="primary" 
-                  sx={{ ml: 'auto', mr: 2 }}
+                <Badge
+                  badgeContent={dayClasses.length}
+                  color="primary"
+                  sx={{ ml: "auto", mr: 2 }}
                 />
               </Box>
             </AccordionSummary>
             <AccordionDetails>
               {dayClasses.length > 0 ? (
-                dayClasses.map(slot => (
+                dayClasses.map((slot) => (
                   <Card key={slot} sx={{ mb: 1, p: 2 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
                       <AccessTimeIcon color="primary" />
                       <Box sx={{ flexGrow: 1 }}>
-                        <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
-                          {slot} - {parseInt(slot.split(':')[0]) + 1}:{slot.split(':')[1]}
+                        <Typography
+                          variant="subtitle2"
+                          sx={{ fontWeight: 600 }}
+                        >
+                          {slot} - {parseInt(slot.split(":")[0]) + 1}:
+                          {slot.split(":")[1]}
                         </Typography>
                         <Typography variant="body2" color="text.secondary">
-                          {weeklySchedule[slot][dayKeys[dayIndex]].replace('\n', ' - ')}
+                          {weeklySchedule[slot][dayKeys[dayIndex]].replace(
+                            "\n",
+                            " - "
+                          )}
                         </Typography>
                       </Box>
                     </Box>
                   </Card>
                 ))
               ) : (
-                <Typography variant="body2" color="text.disabled" sx={{ textAlign: 'center', py: 2 }}>
+                <Typography
+                  variant="body2"
+                  color="text.disabled"
+                  sx={{ textAlign: "center", py: 2 }}
+                >
                   Bu gün ders bulunmuyor
                 </Typography>
               )}
@@ -505,7 +661,14 @@ const AnaSayfa = ({ onSectionChange, selectedSemester = "2025-2026-guz" }) => {
   );
 
   return (
-    <Container maxWidth="xl" sx={{ mt: 2, pb: 4 }}>
+    <Container
+      maxWidth={isMobile ? "sm" : "xl"}
+      sx={{
+        mt: isMobile ? 1 : 2,
+        pb: 4,
+        px: isMobile ? 1 : 3,
+      }}
+    >
       <WelcomeHeader />
 
       {/* Current/Next Class Status */}
@@ -521,10 +684,26 @@ const AnaSayfa = ({ onSectionChange, selectedSemester = "2025-2026-guz" }) => {
               borderRadius: 0,
             }}
           >
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <CircleIcon sx={{ color: '#27AE60', fontSize: 16, animation: 'pulse 2s infinite' }} />
-                <Typography variant="h6" sx={{ fontWeight: 600, color: "#27AE60" }}>
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                mb: 2,
+              }}
+            >
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                <CircleIcon
+                  sx={{
+                    color: "#27AE60",
+                    fontSize: 16,
+                    animation: "pulse 2s infinite",
+                  }}
+                />
+                <Typography
+                  variant="h6"
+                  sx={{ fontWeight: 600, color: "#27AE60" }}
+                >
                   Şu Anki Ders
                 </Typography>
               </Box>
@@ -532,22 +711,41 @@ const AnaSayfa = ({ onSectionChange, selectedSemester = "2025-2026-guz" }) => {
                 label="DEVAM EDİYOR"
                 size="small"
                 sx={{
-                  bgcolor: '#27AE60',
-                  color: 'white',
+                  bgcolor: "#27AE60",
+                  color: "white",
                   fontWeight: 500,
-                  fontSize: '0.75rem'
+                  fontSize: "0.75rem",
                 }}
               />
             </Box>
-            <Typography variant="h5" sx={{ fontWeight: 500, color: "#1B2E6D", mb: 2 }}>
-              {currentClass.lesson.replace('\n', ' - ')}
+            <Typography
+              variant="h5"
+              sx={{ fontWeight: 500, color: "#1B2E6D", mb: 2 }}
+            >
+              {currentClass.lesson.replace("\n", " - ")}
             </Typography>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                mb: 2,
+              }}
+            >
               <Typography variant="body2" color="text.secondary">
-                {currentClass.time} - {parseInt(currentClass.time.split(':')[0]) + 1}:{currentClass.time.split(':')[1]}
+                {currentClass.time} -{" "}
+                {parseInt(currentClass.time.split(":")[0]) + 1}:
+                {currentClass.time.split(":")[1]}
               </Typography>
-              <Typography variant="body1" sx={{ fontWeight: 500, color: "#27AE60" }}>
-                Kalan: {Math.floor(currentClass.remainingMinutes / 60)}:{(currentClass.remainingMinutes % 60).toString().padStart(2, '0')} dk
+              <Typography
+                variant="body1"
+                sx={{ fontWeight: 500, color: "#27AE60" }}
+              >
+                Kalan: {Math.floor(currentClass.remainingMinutes / 60)}:
+                {(currentClass.remainingMinutes % 60)
+                  .toString()
+                  .padStart(2, "0")}{" "}
+                dk
               </Typography>
             </Box>
             <LinearProgress
@@ -562,78 +760,75 @@ const AnaSayfa = ({ onSectionChange, selectedSemester = "2025-2026-guz" }) => {
             />
           </Paper>
         )}
-        
-        {!currentClass && (() => {
-          const nextClass = getNextClass();
-          return nextClass && (
-            <Paper
-              elevation={2}
-              sx={{
-                p: 3,
-                mb: 2,
-                bgcolor: "#FFF3E0",
-                borderLeft: "4px solid #F39C12",
-                borderRadius: 0,
-              }}
-            >
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-                <AccessTimeIcon sx={{ color: '#F39C12', fontSize: 16 }} />
-                <Typography variant="h6" sx={{ fontWeight: 600, color: "#F39C12" }}>
-                  Sıradaki Ders
-                </Typography>
-              </Box>
-              <Typography variant="h5" sx={{ fontWeight: 500, color: "#1B2E6D", mb: 2 }}>
-                {nextClass.lesson.replace('\n', ' - ')}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                {nextClass.time} - {Math.floor(nextClass.minutesUntil / 60)} saat {nextClass.minutesUntil % 60} dakika sonra
-              </Typography>
-            </Paper>
-          );
-        })()}
-      </Box>
 
-      {/* Tab Navigation for Mobile/Desktop */}
-      <Paper elevation={2} sx={{ borderRadius: 2 }}>
-        <AppBar position="static" color="transparent" elevation={0} sx={{ borderRadius: '8px 8px 0 0' }}>
-          <Tabs
-            value={activeTab}
-            onChange={handleTabChange}
-            variant={isMobile ? "fullWidth" : "standard"}
-            textColor="primary"
-            indicatorColor="primary"
-            sx={{ bgcolor: '#F8F9FA' }}
-          >
-            <Tab icon={<ScheduleIcon />} label="Ders Programı" />
-            <Tab icon={<NotificationsIcon />} label="Bildirimler" />
-          </Tabs>
-        </AppBar>
-
-        <TabPanel value={activeTab} index={0}>
-          {isMobile ? <MobileSchedule /> : <DesktopSchedule />}
-        </TabPanel>
-
-        <TabPanel value={activeTab} index={1}>
-          <Box>
-            {notifications.map((notification) => (
-              <Card key={notification.id} sx={{ mb: 2, p: 2 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                  <NotificationsIcon 
-                    color={notification.type === 'warning' ? 'warning' : notification.type === 'success' ? 'success' : 'info'} 
-                  />
-                  <Box sx={{ flexGrow: 1 }}>
-                    <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                      {notification.message}
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      {notification.time}
+        {!currentClass &&
+          (() => {
+            const nextClass = getNextClass();
+            return (
+              nextClass && (
+                <Paper
+                  elevation={2}
+                  sx={{
+                    p: 3,
+                    mb: 2,
+                    bgcolor: "#FFF3E0",
+                    borderLeft: "4px solid #F39C12",
+                    borderRadius: 0,
+                  }}
+                >
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 1,
+                      mb: 2,
+                    }}
+                  >
+                    <AccessTimeIcon sx={{ color: "#F39C12", fontSize: 16 }} />
+                    <Typography
+                      variant="h6"
+                      sx={{ fontWeight: 600, color: "#F39C12" }}
+                    >
+                      Sıradaki Ders
                     </Typography>
                   </Box>
-                </Box>
-              </Card>
-            ))}
+                  <Typography
+                    variant="h5"
+                    sx={{ fontWeight: 500, color: "#1B2E6D", mb: 2 }}
+                  >
+                    {nextClass.lesson.replace("\n", " - ")}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {nextClass.time} - {Math.floor(nextClass.minutesUntil / 60)}{" "}
+                    saat {nextClass.minutesUntil % 60} dakika sonra
+                  </Typography>
+                </Paper>
+              )
+            );
+          })()}
+      </Box>
+
+      {/* Schedule Section */}
+      <Paper elevation={2} sx={{ borderRadius: 2 }}>
+        <Box
+          sx={{
+            p: 3,
+            borderBottom: "1px solid #E0E0E0",
+            bgcolor: "#F8F9FA",
+            borderRadius: "8px 8px 0 0",
+          }}
+        >
+          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+            <ScheduleIcon sx={{ color: "#1B2E6D", fontSize: 28 }} />
+            <Typography variant="h5" sx={{ fontWeight: 600, color: "#1B2E6D" }}>
+              Ders Programı
+            </Typography>
           </Box>
-        </TabPanel>
+        </Box>
+
+        <Box sx={{ p: 3 }}>
+          {isMobile ? <MobileSchedule /> : <DesktopSchedule />}
+        </Box>
       </Paper>
     </Container>
   );

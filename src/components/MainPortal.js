@@ -21,13 +21,15 @@ const MainPortal = () => {
   const [selectedSemester, setSelectedSemester] = useState('2025-2026-guz');
   const [sidebarOpen, setSidebarOpen] = useState(!isMobile);
   const [userProfile] = useState({
-    name: 'Dr. Ayşe Kaya',
-    email: 'ayse.kaya@universite.edu.tr',
-    phone: '+90 555 123 4567',
-    title: 'Doktor Öğretim Üyesi',
-    school: 'Teknik Üniversite',
-    department: 'Matematik Bölümü',
-    biography: 'Matematik alanında 15 yıllık deneyime sahip öğretim üyesi.',
+    name: 'MEHMET NURİ ÖĞÜT',
+    email: 'mehmetnuri.ogut@cbu.edu.tr',
+    phone: '+90 236 201 1163',
+    title: 'Öğretim Görevlisi',
+    school: 'MANİSA TEKNİK BİLİMLER MESLEK YÜKSEKOKULU',
+    faculty: 'MAKİNE VE METAL TEKNOLOJİLERİ',
+    department: 'ENDÜSTRİYEL KALIPÇILIK',
+    webUrl: 'https://avesis.mcbu.edu.tr/mehmetnuri.ogut',
+    otherDetails: 'WoS Araştırma Alanları: Bilgisayar Bilimi, Yapay Zeka, Matematik\nDiğer E-posta: mehmetnuri.ogut@gmail.com',
     profilePhoto: '/default-avatar.png'
   });
 

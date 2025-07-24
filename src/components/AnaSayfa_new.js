@@ -96,7 +96,7 @@ const AnaSayfa = ({ onSectionChange, selectedSemester = "2025-2026-guz" }) => {
     "09:50": {
       pazartesi: "",
       salı: "ENG101/8\nYP-D101",
-      çarşamba: "23 Nisan\nUlusal Egemenlik\nve Çocuk\nBayramı",
+      çarşamba: "15 Temmuz\nDemokrasi ve\nMillî Birlik\nGünü",
       perşembe: "",
       cuma: "",
     },
