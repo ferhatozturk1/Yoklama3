@@ -65,74 +65,96 @@ const DersGuncelle = ({ onBack, onEditCourse, selectedSemester = '2025-2026-guz'
       <Paper
         elevation={3}
         sx={{
-          p: 3,
+          p: 4,
           mb: 4,
           background: "linear-gradient(135deg, #1a237e 0%, #0d47a1 100%)",
-          borderRadius: 6,
+          borderRadius: "32px",
           color: "white",
+          position: 'relative',
+          overflow: 'hidden'
         }}
       >
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <IconButton
-            onClick={onBack}
-            sx={{ color: 'white', mr: 1 }}
-          >
-            <ArrowBackIcon />
-          </IconButton>
-          <Box sx={{ flexGrow: 1 }}>
-            <Typography
-              variant="h5"
-              sx={{
-                fontWeight: 600,
-                fontSize: { xs: "1.25rem", sm: "1.5rem" },
-                lineHeight: 1.3,
-                mb: 0.5
-              }}
-            >
-              Ders Güncelle
-            </Typography>
-            <Typography
-              variant="body2"
-              sx={{
-                opacity: 0.9,
-                fontSize: "0.875rem",
-                lineHeight: 1.5,
-              }}
-            >
-              Kayıtlı ders bilgilerini güncelleyin
-            </Typography>
+        <Box sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          position: 'relative',
+          zIndex: 1
+        }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Box sx={{
+              backgroundColor: 'rgba(255, 255, 255, 0.2)',
+              borderRadius: '16px',
+              p: 1.5,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              <IconButton onClick={onBack} sx={{ color: "white", p: 0 }}>
+                <ArrowBackIcon sx={{ fontSize: 28 }} />
+              </IconButton>
+            </Box>
+            <Box>
+              <Typography
+                variant="h4"
+                sx={{
+                  fontWeight: 700,
+                  fontSize: { xs: "1.5rem", sm: "1.75rem", md: "2rem" },
+                  lineHeight: 1.2,
+                  letterSpacing: "-0.02em",
+                  mb: 0.5
+                }}
+              >
+                Ders Güncelle
+              </Typography>
+              <Typography
+                variant="body1"
+                sx={{
+                  opacity: 0.85,
+                  fontSize: { xs: "0.875rem", sm: "1rem" },
+                  lineHeight: 1.4,
+                  fontWeight: 400,
+                }}
+              >
+                Kayıtlı ders bilgilerini güncelleyin
+              </Typography>
+            </Box>
           </Box>
           
           {/* Term Selector */}
-          <FormControl size="small" sx={{ minWidth: 200 }}>
-            <InputLabel sx={{ color: 'white' }}>Dönem</InputLabel>
-            <Select
-              value={selectedTerm}
-              label="Dönem"
-              onChange={(e) => setSelectedTerm(e.target.value)}
-              sx={{
-                color: 'white',
-                '& .MuiOutlinedInput-notchedOutline': {
-                  borderColor: 'rgba(255,255,255,0.5)',
-                },
-                '&:hover .MuiOutlinedInput-notchedOutline': {
-                  borderColor: 'rgba(255,255,255,0.7)',
-                },
-                '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                  borderColor: 'white',
-                },
-                '& .MuiSelect-icon': {
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <FormControl size="small" sx={{ minWidth: 200 }}>
+              <InputLabel sx={{ color: 'white' }}>Dönem</InputLabel>
+              <Select
+                value={selectedTerm}
+                label="Dönem"
+                onChange={(e) => setSelectedTerm(e.target.value)}
+                sx={{
                   color: 'white',
-                },
-              }}
-            >
-              {termOptions.map((term) => (
-                <MenuItem key={term} value={term}>
-                  {term}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+                  borderRadius: '16px',
+                  '& .MuiOutlinedInput-notchedOutline': {
+                    borderColor: 'rgba(255,255,255,0.5)',
+                    borderRadius: '16px'
+                  },
+                  '&:hover .MuiOutlinedInput-notchedOutline': {
+                    borderColor: 'rgba(255,255,255,0.7)',
+                  },
+                  '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                    borderColor: 'white',
+                  },
+                  '& .MuiSelect-icon': {
+                    color: 'white',
+                  },
+                }}
+              >
+                {termOptions.map((term) => (
+                  <MenuItem key={term} value={term}>
+                    {term}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Box>
         </Box>
       </Paper>
 

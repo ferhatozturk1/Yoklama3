@@ -149,44 +149,97 @@ const DersEkleBirak = ({ onBack, selectedSemester = '2025-2026-guz' }) => {
       <Paper
         elevation={3}
         sx={{
-          p: 3,
+          p: 4,
           mb: 4,
           background: "linear-gradient(135deg, #1a237e 0%, #0d47a1 100%)",
-          borderRadius: 6,
+          borderRadius: "32px",
           color: "white",
+          position: 'relative',
+          overflow: 'hidden'
         }}
       >
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <IconButton
-            onClick={onBack}
-            sx={{ color: 'white', mr: 1 }}
-          >
-            <ArrowBackIcon />
-          </IconButton>
-          <Box>
+        <Box sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          position: 'relative',
+          zIndex: 1
+        }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Box sx={{
+              backgroundColor: 'rgba(255, 255, 255, 0.2)',
+              borderRadius: '16px',
+              p: 1.5,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              <IconButton onClick={onBack} sx={{ color: "white", p: 0 }}>
+                <ArrowBackIcon sx={{ fontSize: 28 }} />
+              </IconButton>
+            </Box>
+            <Box>
+              <Typography
+                variant="h4"
+                sx={{
+                  fontWeight: 700,
+                  fontSize: { xs: "1.5rem", sm: "1.75rem", md: "2rem" },
+                  lineHeight: 1.2,
+                  letterSpacing: "-0.02em",
+                  mb: 0.5
+                }}
+              >
+                Ders Ekle/Bırak
+              </Typography>
+              <Typography
+                variant="body1"
+                sx={{
+                  opacity: 0.85,
+                  fontSize: { xs: "0.875rem", sm: "1rem" },
+                  lineHeight: 1.4,
+                  fontWeight: 400,
+                }}
+              >
+                {selectedSemester} dönemi için ders ekleme ve çıkarma işlemleri
+              </Typography>
+            </Box>
+          </Box>
+          
+          {/* Sağ tarafta tarih/saat bilgisi */}
+          <Box sx={{ 
+            textAlign: 'right',
+            display: { xs: 'none', sm: 'block' }
+          }}>
             <Typography
-              variant="h5"
+              variant="h6"
               sx={{
                 fontWeight: 600,
-                fontSize: { xs: "1.25rem", sm: "1.5rem" },
-                lineHeight: 1.3,
+                fontSize: "1.1rem",
                 mb: 0.5
               }}
             >
-              Ders Ekle/Bırak
+              {new Date().toLocaleTimeString('tr-TR', { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+              })}
             </Typography>
             <Typography
               variant="body2"
               sx={{
-                opacity: 0.9,
-                fontSize: "0.875rem",
-                lineHeight: 1.5,
+                opacity: 0.8,
+                fontSize: "0.875rem"
               }}
             >
-              {selectedSemester} dönemi için ders ekleme ve çıkarma işlemleri
+              {new Date().toLocaleDateString('tr-TR', { 
+                day: '2-digit',
+                month: 'long',
+                weekday: 'long'
+              })}
             </Typography>
           </Box>
         </Box>
+        
+
       </Paper>
 
       <Grid container spacing={4}>
