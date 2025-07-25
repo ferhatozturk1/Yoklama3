@@ -358,21 +358,36 @@ const OgretmenKayit = () => {
                   <Grid container spacing={3}>
                     {/* Ad */}
                     <Grid item xs={12} sm={6}>
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          color: darkMode
+                            ? "rgba(255, 255, 255, 0.8)"
+                            : "rgba(30, 41, 59, 0.8)",
+                          fontFamily: '"Inter", "Roboto", sans-serif',
+                          fontWeight: 500,
+                          fontSize: "14px",
+                          mb: 1,
+                          ml: 0.5,
+                        }}
+                      >
+                        Ad
+                      </Typography>
                       <TextField
-                        label="Ad"
                         name="ad"
                         fullWidth
                         value={form.ad}
                         onChange={handleChange}
                         required
+                        placeholder="Adınızı girin"
                         InputProps={{
                           startAdornment: (
-                            <InputAdornment position="start" sx={{ ml: 0.5 }}>
+                            <InputAdornment position="start">
                               <Person
                                 sx={{
                                   color: "#4F46E5",
                                   fontSize: 20,
-                                  opacity: 0.8,
+                                  opacity: 0.7,
                                 }}
                               />
                             </InputAdornment>
@@ -380,47 +395,34 @@ const OgretmenKayit = () => {
                         }}
                         sx={{
                           "& .MuiOutlinedInput-root": {
-                            borderRadius: "16px",
+                            borderRadius: "12px",
                             height: "56px",
                             background: darkMode
-                              ? "rgba(255, 255, 255, 0.08)"
-                              : "rgba(255, 255, 255, 0.9)",
-                            backdropFilter: "blur(20px)",
+                              ? "rgba(255, 255, 255, 0.05)"
+                              : "rgba(255, 255, 255, 0.95)",
+                            backdropFilter: "blur(10px)",
                             border: darkMode
                               ? "1px solid rgba(255, 255, 255, 0.1)"
-                              : "1px solid rgba(79, 70, 229, 0.1)",
-                            transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                              : "1px solid rgba(79, 70, 229, 0.15)",
+                            transition: "all 0.2s ease-in-out",
                             "& fieldset": {
                               border: "none",
                             },
                             "&:hover": {
                               background: darkMode
-                                ? "rgba(255, 255, 255, 0.12)"
+                                ? "rgba(255, 255, 255, 0.08)"
                                 : "rgba(255, 255, 255, 1)",
                               border: darkMode
                                 ? "1px solid rgba(255, 255, 255, 0.2)"
-                                : "1px solid rgba(79, 70, 229, 0.2)",
-                              transform: "translateY(-1px)",
-                              boxShadow: "0 8px 25px rgba(79, 70, 229, 0.1)",
+                                : "1px solid rgba(79, 70, 229, 0.25)",
+                              boxShadow: "0 4px 12px rgba(79, 70, 229, 0.08)",
                             },
                             "&.Mui-focused": {
                               background: darkMode
-                                ? "rgba(255, 255, 255, 0.15)"
+                                ? "rgba(255, 255, 255, 0.1)"
                                 : "rgba(255, 255, 255, 1)",
                               border: "2px solid #4F46E5",
-                              transform: "translateY(-2px)",
-                              boxShadow: "0 12px 30px rgba(79, 70, 229, 0.2)",
-                            },
-                          },
-                          "& .MuiInputLabel-root": {
-                            color: darkMode
-                              ? "rgba(255, 255, 255, 0.8)"
-                              : "rgba(30, 41, 59, 0.8)",
-                            fontFamily: '"Inter", "Roboto", sans-serif',
-                            fontWeight: 500,
-                            "&.Mui-focused": {
-                              color: "#4F46E5",
-                              fontWeight: 600,
+                              boxShadow: "0 0 0 3px rgba(79, 70, 229, 0.1)",
                             },
                           },
                           "& .MuiOutlinedInput-input": {
@@ -428,9 +430,16 @@ const OgretmenKayit = () => {
                             fontFamily: '"Inter", "Roboto", sans-serif',
                             fontWeight: 500,
                             fontSize: "16px",
-                            padding: "16px 14px 16px 8px",
+                            padding: "16px 16px 16px 8px",
+                            "&::placeholder": {
+                              color: darkMode
+                                ? "rgba(255, 255, 255, 0.5)"
+                                : "rgba(30, 41, 59, 0.5)",
+                              opacity: 1,
+                            },
                           },
                           "& .MuiInputAdornment-root": {
+                            marginLeft: "14px",
                             marginRight: "12px",
                           },
                         }}
@@ -439,21 +448,36 @@ const OgretmenKayit = () => {
 
                     {/* Soyad */}
                     <Grid item xs={12} sm={6}>
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          color: darkMode
+                            ? "rgba(255, 255, 255, 0.8)"
+                            : "rgba(30, 41, 59, 0.8)",
+                          fontFamily: '"Inter", "Roboto", sans-serif',
+                          fontWeight: 500,
+                          fontSize: "14px",
+                          mb: 1,
+                          ml: 0.5,
+                        }}
+                      >
+                        Soyad
+                      </Typography>
                       <TextField
-                        label="Soyad"
                         name="soyad"
                         fullWidth
                         value={form.soyad}
                         onChange={handleChange}
                         required
+                        placeholder="Soyadınızı girin"
                         InputProps={{
                           startAdornment: (
-                            <InputAdornment position="start" sx={{ ml: 0.5 }}>
+                            <InputAdornment position="start">
                               <Person
                                 sx={{
                                   color: "#4F46E5",
                                   fontSize: 20,
-                                  opacity: 0.8,
+                                  opacity: 0.7,
                                 }}
                               />
                             </InputAdornment>
@@ -461,47 +485,34 @@ const OgretmenKayit = () => {
                         }}
                         sx={{
                           "& .MuiOutlinedInput-root": {
-                            borderRadius: "16px",
+                            borderRadius: "12px",
                             height: "56px",
                             background: darkMode
-                              ? "rgba(255, 255, 255, 0.08)"
-                              : "rgba(255, 255, 255, 0.9)",
-                            backdropFilter: "blur(20px)",
+                              ? "rgba(255, 255, 255, 0.05)"
+                              : "rgba(255, 255, 255, 0.95)",
+                            backdropFilter: "blur(10px)",
                             border: darkMode
                               ? "1px solid rgba(255, 255, 255, 0.1)"
-                              : "1px solid rgba(79, 70, 229, 0.1)",
-                            transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                              : "1px solid rgba(79, 70, 229, 0.15)",
+                            transition: "all 0.2s ease-in-out",
                             "& fieldset": {
                               border: "none",
                             },
                             "&:hover": {
                               background: darkMode
-                                ? "rgba(255, 255, 255, 0.12)"
+                                ? "rgba(255, 255, 255, 0.08)"
                                 : "rgba(255, 255, 255, 1)",
                               border: darkMode
                                 ? "1px solid rgba(255, 255, 255, 0.2)"
-                                : "1px solid rgba(79, 70, 229, 0.2)",
-                              transform: "translateY(-1px)",
-                              boxShadow: "0 8px 25px rgba(79, 70, 229, 0.1)",
+                                : "1px solid rgba(79, 70, 229, 0.25)",
+                              boxShadow: "0 4px 12px rgba(79, 70, 229, 0.08)",
                             },
                             "&.Mui-focused": {
                               background: darkMode
-                                ? "rgba(255, 255, 255, 0.15)"
+                                ? "rgba(255, 255, 255, 0.1)"
                                 : "rgba(255, 255, 255, 1)",
                               border: "2px solid #4F46E5",
-                              transform: "translateY(-2px)",
-                              boxShadow: "0 12px 30px rgba(79, 70, 229, 0.2)",
-                            },
-                          },
-                          "& .MuiInputLabel-root": {
-                            color: darkMode
-                              ? "rgba(255, 255, 255, 0.8)"
-                              : "rgba(30, 41, 59, 0.8)",
-                            fontFamily: '"Inter", "Roboto", sans-serif',
-                            fontWeight: 500,
-                            "&.Mui-focused": {
-                              color: "#4F46E5",
-                              fontWeight: 600,
+                              boxShadow: "0 0 0 3px rgba(79, 70, 229, 0.1)",
                             },
                           },
                           "& .MuiOutlinedInput-input": {
@@ -509,9 +520,16 @@ const OgretmenKayit = () => {
                             fontFamily: '"Inter", "Roboto", sans-serif',
                             fontWeight: 500,
                             fontSize: "16px",
-                            padding: "16px 14px 16px 8px",
+                            padding: "16px 16px 16px 8px",
+                            "&::placeholder": {
+                              color: darkMode
+                                ? "rgba(255, 255, 255, 0.5)"
+                                : "rgba(30, 41, 59, 0.5)",
+                              opacity: 1,
+                            },
                           },
                           "& .MuiInputAdornment-root": {
+                            marginLeft: "14px",
                             marginRight: "12px",
                           },
                         }}
@@ -520,21 +538,36 @@ const OgretmenKayit = () => {
 
                     {/* Sicil Numarası */}
                     <Grid item xs={12} sm={6}>
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          color: darkMode
+                            ? "rgba(255, 255, 255, 0.8)"
+                            : "rgba(30, 41, 59, 0.8)",
+                          fontFamily: '"Inter", "Roboto", sans-serif',
+                          fontWeight: 500,
+                          fontSize: "14px",
+                          mb: 1,
+                          ml: 0.5,
+                        }}
+                      >
+                        Sicil Numarası
+                      </Typography>
                       <TextField
-                        label="Sicil Numarası"
                         name="sicilNo"
                         fullWidth
                         value={form.sicilNo}
                         onChange={handleChange}
                         required
+                        placeholder="Sicil numaranızı girin"
                         InputProps={{
                           startAdornment: (
-                            <InputAdornment position="start" sx={{ ml: 0.5 }}>
+                            <InputAdornment position="start">
                               <Badge
                                 sx={{
                                   color: "#4F46E5",
                                   fontSize: 20,
-                                  opacity: 0.8,
+                                  opacity: 0.7,
                                 }}
                               />
                             </InputAdornment>
@@ -542,47 +575,34 @@ const OgretmenKayit = () => {
                         }}
                         sx={{
                           "& .MuiOutlinedInput-root": {
-                            borderRadius: "16px",
+                            borderRadius: "12px",
                             height: "56px",
                             background: darkMode
-                              ? "rgba(255, 255, 255, 0.08)"
-                              : "rgba(255, 255, 255, 0.9)",
-                            backdropFilter: "blur(20px)",
+                              ? "rgba(255, 255, 255, 0.05)"
+                              : "rgba(255, 255, 255, 0.95)",
+                            backdropFilter: "blur(10px)",
                             border: darkMode
                               ? "1px solid rgba(255, 255, 255, 0.1)"
-                              : "1px solid rgba(79, 70, 229, 0.1)",
-                            transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                              : "1px solid rgba(79, 70, 229, 0.15)",
+                            transition: "all 0.2s ease-in-out",
                             "& fieldset": {
                               border: "none",
                             },
                             "&:hover": {
                               background: darkMode
-                                ? "rgba(255, 255, 255, 0.12)"
+                                ? "rgba(255, 255, 255, 0.08)"
                                 : "rgba(255, 255, 255, 1)",
                               border: darkMode
                                 ? "1px solid rgba(255, 255, 255, 0.2)"
-                                : "1px solid rgba(79, 70, 229, 0.2)",
-                              transform: "translateY(-1px)",
-                              boxShadow: "0 8px 25px rgba(79, 70, 229, 0.1)",
+                                : "1px solid rgba(79, 70, 229, 0.25)",
+                              boxShadow: "0 4px 12px rgba(79, 70, 229, 0.08)",
                             },
                             "&.Mui-focused": {
                               background: darkMode
-                                ? "rgba(255, 255, 255, 0.15)"
+                                ? "rgba(255, 255, 255, 0.1)"
                                 : "rgba(255, 255, 255, 1)",
                               border: "2px solid #4F46E5",
-                              transform: "translateY(-2px)",
-                              boxShadow: "0 12px 30px rgba(79, 70, 229, 0.2)",
-                            },
-                          },
-                          "& .MuiInputLabel-root": {
-                            color: darkMode
-                              ? "rgba(255, 255, 255, 0.8)"
-                              : "rgba(30, 41, 59, 0.8)",
-                            fontFamily: '"Inter", "Roboto", sans-serif',
-                            fontWeight: 500,
-                            "&.Mui-focused": {
-                              color: "#4F46E5",
-                              fontWeight: 600,
+                              boxShadow: "0 0 0 3px rgba(79, 70, 229, 0.1)",
                             },
                           },
                           "& .MuiOutlinedInput-input": {
@@ -590,9 +610,16 @@ const OgretmenKayit = () => {
                             fontFamily: '"Inter", "Roboto", sans-serif',
                             fontWeight: 500,
                             fontSize: "16px",
-                            padding: "16px 14px 16px 8px",
+                            padding: "16px 16px 16px 8px",
+                            "&::placeholder": {
+                              color: darkMode
+                                ? "rgba(255, 255, 255, 0.5)"
+                                : "rgba(30, 41, 59, 0.5)",
+                              opacity: 1,
+                            },
                           },
                           "& .MuiInputAdornment-root": {
+                            marginLeft: "14px",
                             marginRight: "12px",
                           },
                         }}
@@ -601,22 +628,37 @@ const OgretmenKayit = () => {
 
                     {/* Branş */}
                     <Grid item xs={12} sm={6}>
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          color: darkMode
+                            ? "rgba(255, 255, 255, 0.8)"
+                            : "rgba(30, 41, 59, 0.8)",
+                          fontFamily: '"Inter", "Roboto", sans-serif',
+                          fontWeight: 500,
+                          fontSize: "14px",
+                          mb: 1,
+                          ml: 0.5,
+                        }}
+                      >
+                        Branş
+                      </Typography>
                       <TextField
-                        label="Branş"
                         name="brans"
                         select
                         fullWidth
                         value={form.brans}
                         onChange={handleChange}
                         required
+                        placeholder="Branşınızı seçin"
                         InputProps={{
                           startAdornment: (
-                            <InputAdornment position="start" sx={{ ml: 0.5 }}>
+                            <InputAdornment position="start">
                               <Subject
                                 sx={{
                                   color: "#4F46E5",
                                   fontSize: 20,
-                                  opacity: 0.8,
+                                  opacity: 0.7,
                                 }}
                               />
                             </InputAdornment>
@@ -624,47 +666,34 @@ const OgretmenKayit = () => {
                         }}
                         sx={{
                           "& .MuiOutlinedInput-root": {
-                            borderRadius: "16px",
+                            borderRadius: "12px",
                             height: "56px",
                             background: darkMode
-                              ? "rgba(255, 255, 255, 0.08)"
-                              : "rgba(255, 255, 255, 0.9)",
-                            backdropFilter: "blur(20px)",
+                              ? "rgba(255, 255, 255, 0.05)"
+                              : "rgba(255, 255, 255, 0.95)",
+                            backdropFilter: "blur(10px)",
                             border: darkMode
                               ? "1px solid rgba(255, 255, 255, 0.1)"
-                              : "1px solid rgba(79, 70, 229, 0.1)",
-                            transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                              : "1px solid rgba(79, 70, 229, 0.15)",
+                            transition: "all 0.2s ease-in-out",
                             "& fieldset": {
                               border: "none",
                             },
                             "&:hover": {
                               background: darkMode
-                                ? "rgba(255, 255, 255, 0.12)"
+                                ? "rgba(255, 255, 255, 0.08)"
                                 : "rgba(255, 255, 255, 1)",
                               border: darkMode
                                 ? "1px solid rgba(255, 255, 255, 0.2)"
-                                : "1px solid rgba(79, 70, 229, 0.2)",
-                              transform: "translateY(-1px)",
-                              boxShadow: "0 8px 25px rgba(79, 70, 229, 0.1)",
+                                : "1px solid rgba(79, 70, 229, 0.25)",
+                              boxShadow: "0 4px 12px rgba(79, 70, 229, 0.08)",
                             },
                             "&.Mui-focused": {
                               background: darkMode
-                                ? "rgba(255, 255, 255, 0.15)"
+                                ? "rgba(255, 255, 255, 0.1)"
                                 : "rgba(255, 255, 255, 1)",
                               border: "2px solid #4F46E5",
-                              transform: "translateY(-2px)",
-                              boxShadow: "0 12px 30px rgba(79, 70, 229, 0.2)",
-                            },
-                          },
-                          "& .MuiInputLabel-root": {
-                            color: darkMode
-                              ? "rgba(255, 255, 255, 0.8)"
-                              : "rgba(30, 41, 59, 0.8)",
-                            fontFamily: '"Inter", "Roboto", sans-serif',
-                            fontWeight: 500,
-                            "&.Mui-focused": {
-                              color: "#4F46E5",
-                              fontWeight: 600,
+                              boxShadow: "0 0 0 3px rgba(79, 70, 229, 0.1)",
                             },
                           },
                           "& .MuiOutlinedInput-input": {
@@ -672,9 +701,16 @@ const OgretmenKayit = () => {
                             fontFamily: '"Inter", "Roboto", sans-serif',
                             fontWeight: 500,
                             fontSize: "16px",
-                            padding: "16px 14px 16px 8px",
+                            padding: "16px 16px 16px 8px",
+                            "&::placeholder": {
+                              color: darkMode
+                                ? "rgba(255, 255, 255, 0.5)"
+                                : "rgba(30, 41, 59, 0.5)",
+                              opacity: 1,
+                            },
                           },
                           "& .MuiInputAdornment-root": {
+                            marginLeft: "14px",
                             marginRight: "12px",
                           },
                         }}
@@ -689,23 +725,37 @@ const OgretmenKayit = () => {
 
                     {/* E-posta */}
                     <Grid item xs={12} sm={6}>
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          color: darkMode
+                            ? "rgba(255, 255, 255, 0.8)"
+                            : "rgba(30, 41, 59, 0.8)",
+                          fontFamily: '"Inter", "Roboto", sans-serif',
+                          fontWeight: 500,
+                          fontSize: "14px",
+                          mb: 1,
+                          ml: 0.5,
+                        }}
+                      >
+                        E-posta Adresi
+                      </Typography>
                       <TextField
-                        label="E-posta Adresi"
                         name="email"
                         type="email"
                         fullWidth
                         value={form.email}
                         onChange={handleChange}
                         required
-                        helperText="Sadece .edu.tr uzantılı kurumsal e-posta adresleri kabul edilir"
+                        placeholder="ornek@cbu.edu.tr"
                         InputProps={{
                           startAdornment: (
-                            <InputAdornment position="start" sx={{ ml: 0.5 }}>
+                            <InputAdornment position="start">
                               <Email
                                 sx={{
                                   color: "#4F46E5",
                                   fontSize: 20,
-                                  opacity: 0.8,
+                                  opacity: 0.7,
                                 }}
                               />
                             </InputAdornment>
@@ -775,12 +825,42 @@ const OgretmenKayit = () => {
                           },
                         }}
                       />
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          color: darkMode
+                            ? "rgba(255, 255, 255, 0.6)"
+                            : "rgba(30, 41, 59, 0.6)",
+                          fontFamily: '"Inter", "Roboto", sans-serif',
+                          fontSize: "12px",
+                          mt: 0.5,
+                          ml: 0.5,
+                          display: "block",
+                        }}
+                      >
+                        Sadece .edu.tr uzantılı kurumsal e-posta adresleri kabul
+                        edilir
+                      </Typography>
                     </Grid>
 
                     {/* Telefon */}
                     <Grid item xs={12} sm={6}>
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          color: darkMode
+                            ? "rgba(255, 255, 255, 0.8)"
+                            : "rgba(30, 41, 59, 0.8)",
+                          fontFamily: '"Inter", "Roboto", sans-serif',
+                          fontWeight: 500,
+                          fontSize: "14px",
+                          mb: 1,
+                          ml: 0.5,
+                        }}
+                      >
+                        Telefon (Opsiyonel)
+                      </Typography>
                       <TextField
-                        label="Telefon (Opsiyonel)"
                         name="telefon"
                         fullWidth
                         placeholder="0555 123 45 67"
@@ -788,12 +868,12 @@ const OgretmenKayit = () => {
                         onChange={handleChange}
                         InputProps={{
                           startAdornment: (
-                            <InputAdornment position="start" sx={{ ml: 0.5 }}>
+                            <InputAdornment position="start">
                               <Phone
                                 sx={{
                                   color: "#4F46E5",
                                   fontSize: 20,
-                                  opacity: 0.8,
+                                  opacity: 0.7,
                                 }}
                               />
                             </InputAdornment>
@@ -860,37 +940,52 @@ const OgretmenKayit = () => {
 
                     {/* Şifre */}
                     <Grid item xs={12} sm={6}>
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          color: darkMode
+                            ? "rgba(255, 255, 255, 0.8)"
+                            : "rgba(30, 41, 59, 0.8)",
+                          fontFamily: '"Inter", "Roboto", sans-serif',
+                          fontWeight: 500,
+                          fontSize: "14px",
+                          mb: 1,
+                          ml: 0.5,
+                        }}
+                      >
+                        Şifre
+                      </Typography>
                       <TextField
-                        label="Şifre"
                         name="sifre"
                         type={showPassword ? "text" : "password"}
                         fullWidth
                         value={form.sifre}
                         onChange={handleChange}
                         required
+                        placeholder="Şifrenizi girin"
                         InputProps={{
                           startAdornment: (
-                            <InputAdornment position="start" sx={{ ml: 0.5 }}>
+                            <InputAdornment position="start">
                               <Lock
                                 sx={{
                                   color: "#4F46E5",
                                   fontSize: 20,
-                                  opacity: 0.8,
+                                  opacity: 0.7,
                                 }}
                               />
                             </InputAdornment>
                           ),
                           endAdornment: (
-                            <InputAdornment position="end" sx={{ mr: 1 }}>
+                            <InputAdornment position="end">
                               <IconButton
                                 onClick={() => setShowPassword(!showPassword)}
                                 edge="end"
                                 size="medium"
                                 sx={{
                                   color: "#4F46E5",
-                                  opacity: 0.7,
+                                  opacity: 0.6,
                                   "&:hover": {
-                                    backgroundColor: "rgba(79, 70, 229, 0.1)",
+                                    backgroundColor: "rgba(79, 70, 229, 0.08)",
                                     opacity: 1,
                                   },
                                 }}
@@ -968,28 +1063,43 @@ const OgretmenKayit = () => {
 
                     {/* Şifre Tekrar */}
                     <Grid item xs={12} sm={6}>
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          color: darkMode
+                            ? "rgba(255, 255, 255, 0.8)"
+                            : "rgba(30, 41, 59, 0.8)",
+                          fontFamily: '"Inter", "Roboto", sans-serif',
+                          fontWeight: 500,
+                          fontSize: "14px",
+                          mb: 1,
+                          ml: 0.5,
+                        }}
+                      >
+                        Şifre Tekrar
+                      </Typography>
                       <TextField
-                        label="Şifre Tekrar"
                         name="sifreTekrar"
                         type={showPasswordConfirm ? "text" : "password"}
                         fullWidth
                         value={form.sifreTekrar}
                         onChange={handleChange}
                         required
+                        placeholder="Şifrenizi tekrar girin"
                         InputProps={{
                           startAdornment: (
-                            <InputAdornment position="start" sx={{ ml: 0.5 }}>
+                            <InputAdornment position="start">
                               <Lock
                                 sx={{
                                   color: "#4F46E5",
                                   fontSize: 20,
-                                  opacity: 0.8,
+                                  opacity: 0.7,
                                 }}
                               />
                             </InputAdornment>
                           ),
                           endAdornment: (
-                            <InputAdornment position="end" sx={{ mr: 1 }}>
+                            <InputAdornment position="end">
                               <IconButton
                                 onClick={() =>
                                   setShowPasswordConfirm(!showPasswordConfirm)
@@ -998,7 +1108,7 @@ const OgretmenKayit = () => {
                                 size="medium"
                                 sx={{
                                   color: "#4F46E5",
-                                  opacity: 0.7,
+                                  opacity: 0.6,
                                   "&:hover": {
                                     backgroundColor: "rgba(79, 70, 229, 0.1)",
                                     opacity: 1,

@@ -55,6 +55,7 @@ const DersDetay = ({ ders, onBack }) => {
   const [openStudentDialog, setOpenStudentDialog] = useState(false);
   const [openFileDialog, setOpenFileDialog] = useState(false);
   const [openReportDialog, setOpenReportDialog] = useState(false);
+  const [openYoklamaYenileDialog, setOpenYoklamaYenileDialog] = useState(false);
   
   // Student list states
   const [sortOrder, setSortOrder] = useState('asc');
@@ -117,7 +118,13 @@ const DersDetay = ({ ders, onBack }) => {
 
   // Event handlers
   const handleYoklamaYenile = () => {
-    console.log('Yoklama yenileniyor');
+    setOpenYoklamaYenileDialog(true);
+  };
+
+  const handleConfirmYoklamaYenile = () => {
+    console.log('Yoklama yenileniyor - onaylandı');
+    setOpenYoklamaYenileDialog(false);
+    // Burada yoklama yenileme işlemi yapılacak
   };
 
   const handleTelafiDers = () => {
@@ -440,27 +447,7 @@ const DersDetay = ({ ders, onBack }) => {
                   Genel Katılım Oranı: %{ders.attendanceRate}
                 </Typography>
 
-                {/* Yoklama Butonları */}
-                <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 3 }}>
-                  <Button 
-                    variant="outlined" 
-                    color="primary"
-                    startIcon={<Refresh />}
-                    onClick={handleYoklamaYenile}
-                    size="small"
-                  >
-                    YOKLAMAYI YENİLE
-                  </Button>
-                  <Button 
-                    variant="outlined" 
-                    color="secondary"
-                    startIcon={<CalendarToday />}
-                    onClick={handleTelafiDers}
-                    size="small"
-                  >
-                    TELAFİ DERS
-                  </Button>
-                </Box>
+
               </Box>
 
               {/* Dönem İlerlemesi */}
@@ -813,6 +800,111 @@ const DersDetay = ({ ders, onBack }) => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Yoklama Yenileme Onay Dialog */}
+      <Dialog 
+        open={openYoklamaYenileDialog} 
+        onClose={() => setOpenYoklamaYenileDialog(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Refresh sx={{ color: '#ff9800' }} />
+            <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#1a237e' }}>
+              Yoklamayı Yenile
+            </Typography>
+          </Box>
+        </DialogTitle>
+        
+        <DialogContent>
+          <Typography variant="body1" sx={{ mb: 2 }}>
+            Bu işlem, <strong>{ders.name}</strong> dersi için mevcut tüm yoklama bilgilerini sıfırlayacaktır.
+          </Typography>
+          <Typography variant="body2" color="error" sx={{ mb: 2 }}>
+            ⚠️ <strong>Dikkat:</strong> Bu ders için diğer yoklama bilgileriniz silinecektir ve bu işlem geri alınamaz.
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Devam etmek istediğinizden emin misiniz?
+          </Typography>
+        </DialogContent>
+        
+        <DialogActions sx={{ p: 3 }}>
+          <Button 
+            onClick={() => setOpenYoklamaYenileDialog(false)}
+            variant="outlined"
+          >
+            İptal
+          </Button>
+          <Button 
+            onClick={handleConfirmYoklamaYenile}
+            variant="contained"
+            color="warning"
+            startIcon={<Refresh />}
+          >
+            Evet, Yenile
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Sağ Alt Sabit Butonlar */}
+      <Box
+        sx={{
+          position: 'fixed',
+          bottom: 20,
+          right: 20,
+          display: 'flex',
+          gap: 0.8,
+          zIndex: 1000,
+        }}
+      >
+        <Button 
+          variant="contained" 
+          color="primary"
+          startIcon={<Refresh />}
+          onClick={handleYoklamaYenile}
+          size="small"
+          sx={{
+            minWidth: 120,
+            height: 36,
+            fontSize: '0.75rem',
+            fontWeight: 'bold',
+            borderRadius: '20px',
+            px: 2,
+            boxShadow: '0 3px 10px rgba(0,0,0,0.12)',
+            '&:hover': {
+              boxShadow: '0 5px 14px rgba(0,0,0,0.18)',
+              transform: 'translateY(-1px)',
+            },
+            transition: 'all 0.2s ease-in-out',
+          }}
+        >
+          YOKLAMAYI YENİLE
+        </Button>
+        <Button 
+          variant="contained" 
+          color="secondary"
+          startIcon={<CalendarToday />}
+          onClick={handleTelafiDers}
+          size="small"
+          sx={{
+            minWidth: 100,
+            height: 36,
+            fontSize: '0.75rem',
+            fontWeight: 'bold',
+            borderRadius: '20px',
+            px: 2,
+            boxShadow: '0 3px 10px rgba(0,0,0,0.12)',
+            '&:hover': {
+              boxShadow: '0 5px 14px rgba(0,0,0,0.18)',
+              transform: 'translateY(-1px)',
+            },
+            transition: 'all 0.2s ease-in-out',
+          }}
+        >
+          TELAFİ DERS
+        </Button>
+      </Box>
     </Container>
   );
 };
