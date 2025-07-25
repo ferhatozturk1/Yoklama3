@@ -157,3 +157,9 @@ secrets.json
 *.pem
 *.key
 *.crt
+
+# ===============================
+# 🤖 KIRO AI ASSISTANT
+# ===============================
+# Kiro configuration and cache files
+.kiro/
