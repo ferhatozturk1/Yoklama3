@@ -265,26 +265,75 @@ const DersDetay = ({ ders, onBack }) => {
         </IconButton>
       </Box>
 
-      {/* Ders Bilgi Chipları */}
-      <Box sx={{ display: 'flex', gap: 1, mb: 4, flexWrap: 'wrap' }}>
-        <Chip 
-          icon={<School />} 
-          label={`${ders.code} - ${ders.section}`} 
-          color="primary" 
-          sx={{ bgcolor: '#2196f3', color: 'white' }}
-        />
-        <Chip 
-          icon={<LocationOn />} 
-          label={`${ders.building} ${ders.room}`} 
-          color="secondary" 
-          sx={{ bgcolor: '#9c27b0', color: 'white' }}
-        />
-        <Chip 
-          icon={<Groups />} 
-          label={`${ders.studentCount} Öğrenci`} 
-          color="info" 
-          sx={{ bgcolor: '#00bcd4', color: 'white' }}
-        />
+      {/* Ders Bilgi Chipları ve Hızlı Erişim Butonları */}
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4, flexWrap: 'wrap', gap: 2 }}>
+        {/* Sol taraf - Ders bilgi chipları */}
+        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+          <Chip 
+            icon={<School />} 
+            label={`${ders.code} - ${ders.section}`} 
+            color="primary" 
+            sx={{ bgcolor: '#2196f3', color: 'white' }}
+          />
+          <Chip 
+            icon={<LocationOn />} 
+            label={`${ders.building} ${ders.room}`} 
+            color="secondary" 
+            sx={{ bgcolor: '#9c27b0', color: 'white' }}
+          />
+          <Chip 
+            icon={<Groups />} 
+            label={`${ders.studentCount} Öğrenci`} 
+            color="info" 
+            sx={{ bgcolor: '#00bcd4', color: 'white' }}
+          />
+        </Box>
+
+        {/* Sağ taraf - Hızlı erişim butonları */}
+        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+          <Button 
+            variant="contained" 
+            startIcon={<Groups />}
+            onClick={handleStudentList}
+            sx={{ 
+              bgcolor: '#4caf50', 
+              '&:hover': { bgcolor: '#388e3c' },
+              minWidth: 120,
+              fontSize: '0.8rem'
+            }}
+            size="small"
+          >
+            ÖĞRENCİLER
+          </Button>
+          <Button 
+            variant="contained" 
+            startIcon={<CloudUpload />}
+            onClick={handleFileManagement}
+            sx={{ 
+              bgcolor: '#ff9800', 
+              '&:hover': { bgcolor: '#f57c00' },
+              minWidth: 120,
+              fontSize: '0.8rem'
+            }}
+            size="small"
+          >
+            DOSYALAR
+          </Button>
+          <Button 
+            variant="contained" 
+            startIcon={<Assessment />}
+            onClick={handleGenerateReport}
+            sx={{ 
+              bgcolor: '#9c27b0', 
+              '&:hover': { bgcolor: '#7b1fa2' },
+              minWidth: 120,
+              fontSize: '0.8rem'
+            }}
+            size="small"
+          >
+            RAPOR
+          </Button>
+        </Box>
       </Box>
 
       <Grid container spacing={4}>
@@ -461,33 +510,7 @@ const DersDetay = ({ ders, onBack }) => {
         </Grid>
       </Grid>
 
-      {/* Alt Butonlar */}
-      <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mt: 4 }}>
-        <Button 
-          variant="outlined" 
-          startIcon={<Groups />}
-          onClick={handleStudentList}
-          sx={{ minWidth: 150 }}
-        >
-          ÖĞRENCİ LİSTESİ
-        </Button>
-        <Button 
-          variant="outlined" 
-          startIcon={<CloudUpload />}
-          onClick={handleFileManagement}
-          sx={{ minWidth: 150 }}
-        >
-          DOSYA YÖNETİMİ
-        </Button>
-        <Button 
-          variant="outlined" 
-          startIcon={<Assessment />}
-          onClick={handleGenerateReport}
-          sx={{ minWidth: 150 }}
-        >
-          RAPOR OLUŞTUR
-        </Button>
-      </Box>
+
 
       {/* Öğrenci Listesi Dialog - Aynı detaylı dialog */}
       <Dialog 

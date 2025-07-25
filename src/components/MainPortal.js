@@ -4,6 +4,7 @@ import { Box, useTheme, useMediaQuery } from '@mui/material';
 import TopNavigation from './TopNavigation';
 import Sidebar from './Sidebar';
 import AnaSayfa from './AnaSayfa';
+import DersDetay from './DersDetay';
 import DersVeDönemIslemleri from './DersVeDönemIslemleri';
 import DersKayit from './DersKayit';
 import DersEkleBirak from './DersEkleBirak';
@@ -20,6 +21,7 @@ const MainPortal = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [selectedSemester, setSelectedSemester] = useState('2025-2026-guz');
   const [sidebarOpen, setSidebarOpen] = useState(!isMobile);
+  const [selectedCourse, setSelectedCourse] = useState(null);
   const [userProfile] = useState({
     name: 'MEHMET NURİ ÖĞÜT',
     email: 'mehmetnuri.ogut@cbu.edu.tr',
@@ -68,6 +70,19 @@ const MainPortal = () => {
     setSidebarOpen(!sidebarOpen);
   };
 
+  // Handle navigation from AnaSayfa to DersDetay
+  const handleNavigateToDetail = (page, courseData) => {
+    if (page === 'ders-detay') {
+      setSelectedCourse(courseData);
+      navigate('/portal/ders-detay');
+    }
+  };
+
+  const handleBackFromDetail = () => {
+    setSelectedCourse(null);
+    navigate('/portal/ana-sayfa');
+  };
+
   return (
     <Box sx={{ display: 'flex', height: '100vh' }}>
       {/* Sidebar */}
@@ -112,7 +127,8 @@ const MainPortal = () => {
         >
           <Routes>
             <Route path="/" element={<Navigate to="/portal/ana-sayfa" replace />} />
-            <Route path="/ana-sayfa" element={<AnaSayfa onSectionChange={handleSectionChange} selectedSemester={selectedSemester} />} />
+            <Route path="/ana-sayfa" element={<AnaSayfa onSectionChange={handleSectionChange} onNavigate={handleNavigateToDetail} selectedSemester={selectedSemester} />} />
+            <Route path="/ders-detay" element={<DersDetay ders={selectedCourse} onBack={handleBackFromDetail} />} />
 
             {/* Course Management Routes */}
             <Route 
