@@ -91,13 +91,9 @@ const Profilim = ({
       userProfile
         ? {
             firstName:
-              userProfile.firstName || userProfile.name?.split(" ")[0] || "",
+              userProfile.firstName || "MEHMET NURİ",
             lastName:
-              userProfile.lastName ||
-              (userProfile.name?.split(" ").length > 1
-                ? userProfile.name.split(" ").slice(1).join(" ")
-                : "") ||
-              "",
+              userProfile.lastName || "ÖĞÜT",
             email: userProfile.email || "",
             phone: userProfile.phone || "",
             university:
@@ -384,7 +380,7 @@ const Profilim = ({
               >
                 {userProfile.title || "Öğretim Görevlisi"}{" "}
                 {isEditing
-                  ? `${values.firstName || ""} ${values.lastName || ""}`
+                  ? `${values.firstName || "MEHMET NURİ"} ${values.lastName || "ÖĞÜT"}`
                   : userProfile.name || "MEHMET NURİ ÖĞÜT"}
               </Typography>
             </Box>

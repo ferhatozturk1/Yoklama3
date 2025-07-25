@@ -14,6 +14,7 @@ import {
   Person as PersonIcon,
   ManageAccounts as ManageAccountsIcon,
 } from "@mui/icons-material";
+import cbuLogo from "../theme/cbulogo.png";
 
 const Sidebar = ({
   open,
@@ -62,6 +63,30 @@ const Sidebar = ({
         flexDirection: "column",
       }}
     >
+      {/* Logo Section */}
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          py: 3,
+          px: 2,
+          borderBottom: "1px solid rgba(255,255,255,0.1)",
+        }}
+      >
+        <img
+          src={cbuLogo}
+          alt="CBU Logo"
+          style={{
+            maxWidth: "120px",
+            maxHeight: "80px",
+            width: "auto",
+            height: "auto",
+            objectFit: "contain",
+          }}
+        />
+      </Box>
+
       {/* Navigation List */}
       <List sx={{ flexGrow: 1, py: 0 }}>
         {/* Main Navigation Items */}
