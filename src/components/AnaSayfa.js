@@ -20,6 +20,16 @@ import {
   Badge,
   LinearProgress,
   Avatar,
+  Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Grid,
+  List,
+  ListItem,
+  ListItemText,
+  ListItemIcon,
 } from "@mui/material";
 import {
   Schedule as ScheduleIcon,
@@ -28,6 +38,10 @@ import {
   CalendarToday as CalendarIcon,
   Circle as CircleIcon,
   School as SchoolIcon,
+  QrCode as QrCodeIcon,
+  CheckCircle as CheckCircleIcon,
+  Person as PersonIcon,
+  Close as CloseIcon,
 } from "@mui/icons-material";
 
 // Tab panel component
@@ -54,6 +68,13 @@ const AnaSayfa = ({
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const [currentTime, setCurrentTime] = useState(new Date());
   const [expandedDay, setExpandedDay] = useState(false);
+  
+  // QR Code System States
+  const [yoklamaDialog, setYoklamaDialog] = useState(false);
+  const [currentQRCode, setCurrentQRCode] = useState("");
+  const [qrTimer, setQrTimer] = useState(5);
+  const [attendanceList, setAttendanceList] = useState([]);
+  const [activeLesson, setActiveLesson] = useState(null);
 
   // Update time every second
   useEffect(() => {
@@ -63,6 +84,79 @@ const AnaSayfa = ({
 
     return () => clearInterval(timer);
   }, []);
+
+  // QR Code generation and timer
+  useEffect(() => {
+    let qrInterval;
+    let timerInterval;
+    
+    if (yoklamaDialog && activeLesson) {
+      // Generate initial QR code
+      generateNewQRCode();
+      
+      // QR code regeneration every 5 seconds
+      qrInterval = setInterval(() => {
+        generateNewQRCode();
+        setQrTimer(5);
+      }, 5000);
+      
+      // Timer countdown
+      timerInterval = setInterval(() => {
+        setQrTimer(prev => prev > 0 ? prev - 1 : 5);
+      }, 1000);
+    }
+    
+    return () => {
+      if (qrInterval) clearInterval(qrInterval);
+      if (timerInterval) clearInterval(timerInterval);
+    };
+  }, [yoklamaDialog, activeLesson]);
+
+  // Generate new QR code
+  const generateNewQRCode = () => {
+    const timestamp = Date.now();
+    const lessonId = activeLesson?.lesson.split('\n')[0] || 'LESSON';
+    const qrData = `ATTENDANCE_${lessonId}_${timestamp}`;
+    setCurrentQRCode(qrData);
+  };
+
+  // Handle attendance taking
+  const handleYoklamaAl = (lesson) => {
+    setActiveLesson(lesson);
+    setAttendanceList([]);
+    setYoklamaDialog(true);
+  };
+
+  // Simulate student attendance (for demo)
+  const simulateStudentAttendance = () => {
+    const students = [
+      "Ahmet Yılmaz - 2021001",
+      "Ayşe Kaya - 2021002", 
+      "Mehmet Demir - 2021003",
+      "Fatma Şahin - 2021004",
+      "Ali Özkan - 2021005"
+    ];
+    
+    const randomStudent = students[Math.floor(Math.random() * students.length)];
+    const timestamp = new Date().toLocaleTimeString('tr-TR');
+    
+    if (!attendanceList.find(item => item.student === randomStudent)) {
+      setAttendanceList(prev => [...prev, {
+        student: randomStudent,
+        time: timestamp,
+        qrCode: currentQRCode
+      }]);
+    }
+  };
+
+  // Close attendance dialog
+  const handleCloseYoklama = () => {
+    setYoklamaDialog(false);
+    setActiveLesson(null);
+    setAttendanceList([]);
+    setCurrentQRCode("");
+    setQrTimer(5);
+  };
 
   const handleAccordionChange = (panel) => (event, isExpanded) => {
     setExpandedDay(isExpanded ? panel : false);
@@ -928,16 +1022,46 @@ const AnaSayfa = ({
                   Şu Anki Ders
                 </Typography>
               </Box>
-              <Chip
-                label="DEVAM EDİYOR"
-                size="small"
-                sx={{
-                  bgcolor: "#27AE60",
-                  color: "white",
-                  fontWeight: 500,
-                  fontSize: "0.75rem",
-                }}
-              />
+              <Box sx={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 1 }}>
+                <Chip
+                  label="DEVAM EDİYOR"
+                  size="small"
+                  sx={{
+                    bgcolor: "#27AE60",
+                    color: "white",
+                    fontWeight: 500,
+                    fontSize: "0.75rem",
+                    minWidth: "120px",
+                    height: "24px",
+                    "& .MuiChip-label": {
+                      px: 1,
+                    },
+                  }}
+                />
+                <Chip
+                  label="YOKLAMA AL"
+                  size="small"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleYoklamaAl(currentClass);
+                  }}
+                  sx={{
+                    bgcolor: "#4F46E5",
+                    color: "white",
+                    fontWeight: 500,
+                    fontSize: "0.75rem",
+                    minWidth: "120px",
+                    height: "24px",
+                    cursor: "pointer",
+                    "& .MuiChip-label": {
+                      px: 1,
+                    },
+                    "&:hover": {
+                      bgcolor: "#3730A3",
+                    },
+                  }}
+                />
+              </Box>
             </Box>
             <Typography
               variant="h5"
@@ -1114,6 +1238,247 @@ const AnaSayfa = ({
           {isMobile ? <MobileSchedule /> : <DesktopSchedule />}
         </Box>
       </Paper>
+
+      {/* QR Code Attendance Dialog */}
+      <Dialog 
+        open={yoklamaDialog} 
+        onClose={handleCloseYoklama}
+        maxWidth="md"
+        fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: "16px",
+            minHeight: "500px",
+          }
+        }}
+      >
+        <DialogTitle>
+          <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+              <QrCodeIcon sx={{ color: "#4F46E5", fontSize: 28 }} />
+              <Typography variant="h6" sx={{ fontWeight: 600, color: "#1e293b" }}>
+                Yoklama Alınıyor
+              </Typography>
+            </Box>
+            <Button
+              onClick={handleCloseYoklama}
+              sx={{ minWidth: "auto", p: 1, color: "#64748b" }}
+            >
+              <CloseIcon />
+            </Button>
+          </Box>
+          {activeLesson && (
+            <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+              {activeLesson.lesson.replace('\n', ' - ')} • {activeLesson.time}
+            </Typography>
+          )}
+        </DialogTitle>
+        
+        <DialogContent>
+          <Grid container spacing={3}>
+            {/* QR Code Section */}
+            <Grid item xs={12} md={6}>
+              <Paper
+                elevation={2}
+                sx={{
+                  p: 3,
+                  textAlign: "center",
+                  borderRadius: "12px",
+                  bgcolor: "#f8fafc",
+                  border: "2px solid #e2e8f0",
+                }}
+              >
+                <Typography variant="h6" sx={{ mb: 2, fontWeight: 600, color: "#1e293b" }}>
+                  QR Kodu Tarayın
+                </Typography>
+                
+                {/* QR Code Placeholder */}
+                <Box
+                  sx={{
+                    width: 200,
+                    height: 200,
+                    mx: "auto",
+                    mb: 2,
+                    bgcolor: "white",
+                    border: "2px solid #4F46E5",
+                    borderRadius: "8px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    position: "relative",
+                    overflow: "hidden",
+                  }}
+                >
+                  {/* QR Code Pattern Simulation */}
+                  <Box
+                    sx={{
+                      width: "100%",
+                      height: "100%",
+                      background: `
+                        radial-gradient(circle at 20% 20%, #000 2px, transparent 2px),
+                        radial-gradient(circle at 80% 20%, #000 2px, transparent 2px),
+                        radial-gradient(circle at 20% 80%, #000 2px, transparent 2px),
+                        radial-gradient(circle at 60% 40%, #000 1px, transparent 1px),
+                        radial-gradient(circle at 40% 60%, #000 1px, transparent 1px),
+                        radial-gradient(circle at 70% 70%, #000 1px, transparent 1px)
+                      `,
+                      backgroundSize: "20px 20px, 20px 20px, 20px 20px, 10px 10px, 10px 10px, 10px 10px",
+                      opacity: 0.8,
+                    }}
+                  />
+                  <QrCodeIcon 
+                    sx={{ 
+                      position: "absolute",
+                      fontSize: 60, 
+                      color: "#4F46E5",
+                      opacity: 0.3,
+                    }} 
+                  />
+                </Box>
+                
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                  QR Kod ID: {currentQRCode.slice(-8)}
+                </Typography>
+                
+                <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 1 }}>
+                  <Typography variant="body2" color="text.secondary">
+                    Yenileniyor:
+                  </Typography>
+                  <Chip
+                    label={`${qrTimer}s`}
+                    size="small"
+                    sx={{
+                      bgcolor: qrTimer <= 2 ? "#fee2e2" : "#f0f9ff",
+                      color: qrTimer <= 2 ? "#dc2626" : "#0369a1",
+                      fontWeight: 600,
+                    }}
+                  />
+                </Box>
+                
+                {/* Demo Button */}
+                <Button
+                  variant="outlined"
+                  size="small"
+                  onClick={simulateStudentAttendance}
+                  sx={{
+                    mt: 2,
+                    borderColor: "#4F46E5",
+                    color: "#4F46E5",
+                    "&:hover": {
+                      bgcolor: "#f0f9ff",
+                    },
+                  }}
+                >
+                  Demo: Öğrenci Katılımı
+                </Button>
+              </Paper>
+            </Grid>
+            
+            {/* Attendance List Section */}
+            <Grid item xs={12} md={6}>
+              <Paper
+                elevation={2}
+                sx={{
+                  p: 3,
+                  borderRadius: "12px",
+                  bgcolor: "#f8fafc",
+                  border: "2px solid #e2e8f0",
+                  height: "100%",
+                }}
+              >
+                <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 2 }}>
+                  <Typography variant="h6" sx={{ fontWeight: 600, color: "#1e293b" }}>
+                    Katılan Öğrenciler
+                  </Typography>
+                  <Chip
+                    label={attendanceList.length}
+                    size="small"
+                    sx={{
+                      bgcolor: "#dcfce7",
+                      color: "#166534",
+                      fontWeight: 600,
+                    }}
+                  />
+                </Box>
+                
+                {attendanceList.length > 0 ? (
+                  <List sx={{ maxHeight: 300, overflow: "auto" }}>
+                    {attendanceList.map((attendance, index) => (
+                      <ListItem
+                        key={index}
+                        sx={{
+                          bgcolor: "white",
+                          mb: 1,
+                          borderRadius: "8px",
+                          border: "1px solid #e2e8f0",
+                        }}
+                      >
+                        <ListItemIcon>
+                          <CheckCircleIcon sx={{ color: "#22c55e" }} />
+                        </ListItemIcon>
+                        <ListItemText
+                          primary={attendance.student}
+                          secondary={`Katılım: ${attendance.time}`}
+                          primaryTypographyProps={{
+                            fontWeight: 500,
+                            fontSize: "0.9rem",
+                          }}
+                          secondaryTypographyProps={{
+                            fontSize: "0.8rem",
+                          }}
+                        />
+                      </ListItem>
+                    ))}
+                  </List>
+                ) : (
+                  <Box
+                    sx={{
+                      textAlign: "center",
+                      py: 4,
+                      color: "text.secondary",
+                    }}
+                  >
+                    <PersonIcon sx={{ fontSize: 48, opacity: 0.3, mb: 1 }} />
+                    <Typography variant="body2">
+                      Henüz kimse katılmadı
+                    </Typography>
+                    <Typography variant="caption">
+                      Öğrenciler QR kodu tarayarak katılabilir
+                    </Typography>
+                  </Box>
+                )}
+              </Paper>
+            </Grid>
+          </Grid>
+        </DialogContent>
+        
+        <DialogActions sx={{ p: 3, bgcolor: "#f8fafc" }}>
+          <Button
+            onClick={handleCloseYoklama}
+            variant="outlined"
+            sx={{
+              borderColor: "#64748b",
+              color: "#64748b",
+              "&:hover": {
+                bgcolor: "#f1f5f9",
+              },
+            }}
+          >
+            Yoklamayı Bitir
+          </Button>
+          <Button
+            variant="contained"
+            sx={{
+              bgcolor: "#22c55e",
+              "&:hover": {
+                bgcolor: "#16a34a",
+              },
+            }}
+          >
+            Kaydet ({attendanceList.length} Öğrenci)
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   );
 };
