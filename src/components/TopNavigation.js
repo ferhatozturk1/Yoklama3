@@ -330,55 +330,106 @@ const TopNavigation = ({
             PaperProps={{
               elevation: 3,
               sx: {
-                width: 320,
-                maxHeight: 400,
+                width: isSmallScreen ? "calc(100vw - 32px)" : 320,
+                maxWidth: isSmallScreen ? 320 : "none",
+                maxHeight: isSmallScreen ? "70vh" : 400,
                 mt: 1,
+                borderRadius: isSmallScreen ? "12px" : "8px",
                 "& .MuiMenuItem-root": {
-                  py: 2,
-                  px: 2,
+                  py: isSmallScreen ? 1.5 : 2,
+                  px: isSmallScreen ? 1.5 : 2,
+                  minHeight: isSmallScreen ? "auto" : "64px",
                 },
               },
             }}
           >
-            <Box sx={{ p: 2, borderBottom: "1px solid #E9ECEF" }}>
+            <Box sx={{ 
+              p: isSmallScreen ? 1.5 : 2, 
+              borderBottom: "1px solid #E9ECEF",
+              background: "linear-gradient(135deg, #1a237e 0%, #283593 100%)"
+            }}>
               <Typography
                 variant="h6"
-                sx={{ fontWeight: 600, color: "#2C3E50" }}
+                sx={{ 
+                  fontWeight: 600, 
+                  color: "white",
+                  fontSize: isSmallScreen ? "1rem" : "1.25rem"
+                }}
               >
                 Bildirimler
               </Typography>
             </Box>
-            {notifications.map((notification) => (
+            {notifications.map((notification, index) => (
               <MenuItem
                 key={notification.id}
                 onClick={handleNotificationClose}
-                divider
+                divider={index < notifications.length - 1}
                 sx={{
+                  alignItems: "flex-start",
                   "&:hover": {
                     backgroundColor: "#F8F9FA",
                   },
+                  "&:last-child": {
+                    borderBottom: "none"
+                  }
                 }}
               >
-                <ListItemIcon>
-                  {getNotificationIcon(notification.type)}
+                <ListItemIcon sx={{ 
+                  minWidth: isSmallScreen ? 32 : 40,
+                  mt: 0.5
+                }}>
+                  {React.cloneElement(getNotificationIcon(notification.type), {
+                    sx: { 
+                      fontSize: isSmallScreen ? 18 : 20,
+                      color: notification.type === "warning" ? "#F39C12" : 
+                             notification.type === "success" ? "#27AE60" : "#3498DB"
+                    }
+                  })}
                 </ListItemIcon>
                 <ListItemText
                   primary={
                     <Typography
                       variant="body2"
-                      sx={{ fontWeight: 500, color: "#2C3E50", mb: 0.5 }}
+                      sx={{ 
+                        fontWeight: 500, 
+                        color: "#2C3E50", 
+                        mb: 0.5,
+                        fontSize: isSmallScreen ? "0.875rem" : "0.9375rem",
+                        lineHeight: 1.4,
+                        display: "-webkit-box",
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: "vertical",
+                        overflow: "hidden"
+                      }}
                     >
                       {notification.message}
                     </Typography>
                   }
                   secondary={
-                    <Typography variant="caption" sx={{ color: "#7F8C8D" }}>
+                    <Typography 
+                      variant="caption" 
+                      sx={{ 
+                        color: "#7F8C8D",
+                        fontSize: isSmallScreen ? "0.75rem" : "0.8125rem"
+                      }}
+                    >
                       {notification.time}
                     </Typography>
                   }
                 />
               </MenuItem>
             ))}
+            {notifications.length === 0 && (
+              <Box sx={{ 
+                p: isSmallScreen ? 2 : 3, 
+                textAlign: "center",
+                color: "#7F8C8D"
+              }}>
+                <Typography variant="body2">
+                  Henüz bildirim bulunmuyor
+                </Typography>
+              </Box>
+            )}
           </Menu>
 
           {/* Profile Avatar */}
