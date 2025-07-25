@@ -1,11 +1,11 @@
 import React from 'react';
-import { 
-  Typography, 
-  Box, 
-  Container, 
-  Grid, 
-  Card, 
-  CardContent, 
+import {
+  Typography,
+  Box,
+  Container,
+  Grid,
+  Card,
+  CardContent,
   Button,
   IconButton,
   Chip,
@@ -23,12 +23,10 @@ import {
   ListItemText,
   ListItemIcon
 } from '@mui/material';
-import { 
-  ArrowBack, 
-  Person, 
-  School, 
-  Email, 
-  Phone, 
+import {
+  ArrowBack,
+  Person,
+  School,
   LocationOn,
   Assessment,
   CheckCircle,
@@ -44,8 +42,6 @@ const ÖğrenciDetay = ({ student, course, onBack }) => {
     number: '2021001',
     class: 'GENG 1. sınıf',
     department: 'Bilgisayar Mühendisliği',
-    email: 'ahmet.taslik@ogrenci.edu.tr',
-    phone: '+90 555 123 4567',
     attendance: 23,
     total: 25,
     rate: 92,
@@ -80,7 +76,7 @@ const ÖğrenciDetay = ({ student, course, onBack }) => {
     <Container maxWidth="lg" sx={{ mt: 4, pb: 4 }}>
       {/* Başlık ve Geri Butonu */}
       <Box sx={{ display: 'flex', alignItems: 'center', mb: 4 }}>
-        <IconButton 
+        <IconButton
           onClick={onBack}
           sx={{ mr: 2, bgcolor: '#f5f5f5', '&:hover': { bgcolor: '#e0e0e0' } }}
         >
@@ -93,16 +89,16 @@ const ÖğrenciDetay = ({ student, course, onBack }) => {
 
       {/* Ders Bilgisi */}
       <Box sx={{ display: 'flex', gap: 1, mb: 4, flexWrap: 'wrap' }}>
-        <Chip 
-          icon={<School />} 
-          label={`${courseData.code} - ${courseData.name}`} 
-          color="primary" 
+        <Chip
+          icon={<School />}
+          label={`${courseData.code} - ${courseData.name}`}
+          color="primary"
           sx={{ bgcolor: '#2196f3', color: 'white' }}
         />
-        <Chip 
-          icon={<Person />} 
-          label={courseData.instructor} 
-          color="secondary" 
+        <Chip
+          icon={<Person />}
+          label={courseData.instructor}
+          color="secondary"
           sx={{ bgcolor: '#9c27b0', color: 'white' }}
         />
       </Box>
@@ -113,11 +109,11 @@ const ÖğrenciDetay = ({ student, course, onBack }) => {
           <Card elevation={2} sx={{ mb: 3 }}>
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-                <Avatar 
-                  sx={{ 
-                    width: 80, 
-                    height: 80, 
-                    bgcolor: '#1a237e', 
+                <Avatar
+                  sx={{
+                    width: 80,
+                    height: 80,
+                    bgcolor: '#1a237e',
                     fontSize: '2rem',
                     mr: 3
                   }}
@@ -136,27 +132,13 @@ const ÖğrenciDetay = ({ student, course, onBack }) => {
                   </Typography>
                 </Box>
               </Box>
-              
+
               <List dense>
                 <ListItem>
                   <ListItemIcon><School /></ListItemIcon>
-                  <ListItemText 
-                    primary="Bölüm" 
-                    secondary={studentData.department} 
-                  />
-                </ListItem>
-                <ListItem>
-                  <ListItemIcon><Email /></ListItemIcon>
-                  <ListItemText 
-                    primary="E-posta" 
-                    secondary={studentData.email} 
-                  />
-                </ListItem>
-                <ListItem>
-                  <ListItemIcon><Phone /></ListItemIcon>
-                  <ListItemText 
-                    primary="Telefon" 
-                    secondary={studentData.phone} 
+                  <ListItemText
+                    primary="Bölüm"
+                    secondary={studentData.department}
                   />
                 </ListItem>
               </List>
@@ -174,24 +156,24 @@ const ÖğrenciDetay = ({ student, course, onBack }) => {
                   Katılım İstatistikleri
                 </Typography>
               </Box>
-              
+
               <Box sx={{ mb: 3 }}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
                   <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
                     Genel Katılım Oranı
                   </Typography>
-                  <Chip 
+                  <Chip
                     label={`%${studentData.rate}`}
                     color={studentData.rate >= 80 ? 'success' : studentData.rate >= 60 ? 'warning' : 'error'}
                     sx={{ fontWeight: 'bold' }}
                   />
                 </Box>
-                
-                <LinearProgress 
-                  variant="determinate" 
+
+                <LinearProgress
+                  variant="determinate"
                   value={studentData.rate}
-                  sx={{ 
-                    height: 10, 
+                  sx={{
+                    height: 10,
                     borderRadius: 5,
                     bgcolor: '#e0e0e0',
                     '& .MuiLinearProgress-bar': {
@@ -199,7 +181,7 @@ const ÖğrenciDetay = ({ student, course, onBack }) => {
                     }
                   }}
                 />
-                
+
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 1 }}>
                   <Typography variant="body2" color="text.secondary">
                     Katıldı: {studentData.attendance}
@@ -245,7 +227,7 @@ const ÖğrenciDetay = ({ student, course, onBack }) => {
               Yoklama Geçmişi
             </Typography>
           </Box>
-          
+
           <TableContainer component={Paper} elevation={0}>
             <Table>
               <TableHead>
@@ -260,7 +242,7 @@ const ÖğrenciDetay = ({ student, course, onBack }) => {
                   <TableRow key={index} sx={{ '&:hover': { bgcolor: '#f8f9fa' } }}>
                     <TableCell>
                       <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
-                        Hafta {attendance.week}
+                        {attendance.week || (index + 1)}. hafta
                       </Typography>
                     </TableCell>
                     <TableCell>
@@ -269,7 +251,7 @@ const ÖğrenciDetay = ({ student, course, onBack }) => {
                       </Typography>
                     </TableCell>
                     <TableCell>
-                      <Chip 
+                      <Chip
                         label={attendance.status}
                         color={getAttendanceStatusColor(attendance.status)}
                         size="small"
@@ -286,9 +268,9 @@ const ÖğrenciDetay = ({ student, course, onBack }) => {
 
       {/* Geri Dön Butonu */}
       <Box sx={{ mt: 4 }}>
-        <Button 
-          variant="outlined" 
-          color="primary" 
+        <Button
+          variant="outlined"
+          color="primary"
           startIcon={<ArrowBack />}
           onClick={onBack}
           sx={{ minWidth: 150 }}

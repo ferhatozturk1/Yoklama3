@@ -70,8 +70,6 @@ const DersDetay = ({ ders, onBack }) => {
   const [openAddStudentDialog, setOpenAddStudentDialog] = useState(false);
   const [newStudent, setNewStudent] = useState({
     name: '',
-    number: '',
-    class: '',
     department: ''
   });
 
@@ -204,8 +202,6 @@ const DersDetay = ({ ders, onBack }) => {
     setOpenAddStudentDialog(false);
     setNewStudent({
       name: '',
-      number: '',
-      class: '',
       department: ''
     });
   };
@@ -221,8 +217,6 @@ const DersDetay = ({ ders, onBack }) => {
     const yeniOgrenci = {
       id: students.length + 1,
       name: newStudent.name,
-      number: newStudent.number,
-      class: newStudent.class || '10-A',
       department: newStudent.department || 'Matematik Bölümü',
       order: students.length + 1,
       attendance: 0,
@@ -593,11 +587,7 @@ const DersDetay = ({ ders, onBack }) => {
                   <TableRow sx={{ bgcolor: '#f5f5f5' }}>
                     <TableCell><strong>Sıra</strong></TableCell>
                     <TableCell><strong>Öğrenci Adı</strong></TableCell>
-                    <TableCell><strong>Numara</strong></TableCell>
-                    <TableCell><strong>Sınıf</strong></TableCell>
                     <TableCell><strong>Bölüm</strong></TableCell>
-                    <TableCell><strong>Son Yoklama</strong></TableCell>
-                    <TableCell><strong>Katılım Oranı</strong></TableCell>
                     <TableCell><strong>İşlemler</strong></TableCell>
                   </TableRow>
                 </TableHead>
@@ -627,40 +617,9 @@ const DersDetay = ({ ders, onBack }) => {
                         </Box>
                       </TableCell>
                       <TableCell>
-                        <Typography variant="body2">
-                          {student.number}
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="body2">
-                          {student.class}
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
                         <Typography variant="body2" sx={{ fontSize: '0.8rem' }}>
                           {student.department}
                         </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Chip 
-                          label={student.lastAttendanceStatus}
-                          color={student.lastAttendanceStatus === 'Katıldı' ? 'success' : 'error'}
-                          size="small"
-                          sx={{ fontWeight: 'bold' }}
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <Chip 
-                            label={`%${student.rate}`}
-                            color={student.rate >= 80 ? 'success' : student.rate >= 60 ? 'warning' : 'error'}
-                            size="small"
-                            sx={{ fontWeight: 'bold' }}
-                          />
-                          <Typography variant="caption" color="text.secondary">
-                            ({student.attendance}/{student.total})
-                          </Typography>
-                        </Box>
                       </TableCell>
                       <TableCell>
                         <Box sx={{ display: 'flex', gap: 0.5 }}>
