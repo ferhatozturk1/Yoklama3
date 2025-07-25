@@ -314,22 +314,13 @@ const DersVeDönemIslemleri = ({ onNavigate, selectedSemester, onSemesterChange 
               </Box>
 
               {/* Ok işareti */}
-              <Box sx={{
-                backgroundColor: 'rgba(26, 35, 126, 0.1)',
-                borderRadius: '12px',
-                p: 1,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
+              <Typography sx={{
+                color: 'primary.main',
+                fontWeight: 'bold',
+                fontSize: '1.2rem'
               }}>
-                <Typography sx={{
-                  color: 'primary.main',
-                  fontWeight: 'bold',
-                  fontSize: '1.2rem'
-                }}>
-                  →
-                </Typography>
-              </Box>
+                →
+              </Typography>
             </ListItemButton>
           </Paper>
         ))}
