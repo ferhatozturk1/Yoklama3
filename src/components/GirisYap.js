@@ -262,21 +262,36 @@ const GirisYap = () => {
                 {/* Form */}
                 <form onSubmit={handleSubmit}>
                   <Box sx={{ mb: 3 }}>
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        color: darkMode
+                          ? "rgba(255, 255, 255, 0.8)"
+                          : "rgba(30, 41, 59, 0.8)",
+                        fontFamily: '"Inter", "Roboto", sans-serif',
+                        fontWeight: 500,
+                        fontSize: "14px",
+                        mb: 1,
+                        ml: 0.5,
+                      }}
+                    >
+                      E-posta Adresi
+                    </Typography>
                     <TextField
-                      label="E-posta Adresi"
                       type="email"
                       fullWidth
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       required
+                      placeholder="ornek@cbu.edu.tr"
                       InputProps={{
                         startAdornment: (
-                          <InputAdornment position="start" sx={{ ml: 0.5 }}>
+                          <InputAdornment position="start">
                             <Email
                               sx={{
                                 color: "#4F46E5",
                                 fontSize: 20,
-                                opacity: 0.8,
+                                opacity: 0.7,
                               }}
                             />
                           </InputAdornment>
@@ -284,57 +299,51 @@ const GirisYap = () => {
                       }}
                       sx={{
                         "& .MuiOutlinedInput-root": {
-                          borderRadius: "16px",
-                          height: { xs: "50px", sm: "56px" },
+                          borderRadius: "12px",
+                          height: "56px",
                           background: darkMode
-                            ? "rgba(255, 255, 255, 0.08)"
-                            : "rgba(255, 255, 255, 0.9)",
-                          backdropFilter: "blur(20px)",
+                            ? "rgba(255, 255, 255, 0.05)"
+                            : "rgba(255, 255, 255, 0.95)",
+                          backdropFilter: "blur(10px)",
                           border: darkMode
                             ? "1px solid rgba(255, 255, 255, 0.1)"
-                            : "1px solid rgba(79, 70, 229, 0.1)",
-                          transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                            : "1px solid rgba(79, 70, 229, 0.15)",
+                          transition: "all 0.2s ease-in-out",
                           "& fieldset": {
                             border: "none",
                           },
                           "&:hover": {
                             background: darkMode
-                              ? "rgba(255, 255, 255, 0.12)"
+                              ? "rgba(255, 255, 255, 0.08)"
                               : "rgba(255, 255, 255, 1)",
                             border: darkMode
                               ? "1px solid rgba(255, 255, 255, 0.2)"
-                              : "1px solid rgba(79, 70, 229, 0.2)",
-                            transform: "translateY(-1px)",
-                            boxShadow: "0 8px 25px rgba(79, 70, 229, 0.1)",
+                              : "1px solid rgba(79, 70, 229, 0.25)",
+                            boxShadow: "0 4px 12px rgba(79, 70, 229, 0.08)",
                           },
                           "&.Mui-focused": {
                             background: darkMode
-                              ? "rgba(255, 255, 255, 0.15)"
+                              ? "rgba(255, 255, 255, 0.1)"
                               : "rgba(255, 255, 255, 1)",
                             border: "2px solid #4F46E5",
-                            transform: "translateY(-2px)",
-                            boxShadow: "0 12px 30px rgba(79, 70, 229, 0.2)",
-                          },
-                        },
-                        "& .MuiInputLabel-root": {
-                          color: darkMode
-                            ? "rgba(255, 255, 255, 0.8)"
-                            : "rgba(30, 41, 59, 0.8)",
-                          fontFamily: '"Inter", "Roboto", sans-serif',
-                          fontWeight: 500,
-                          "&.Mui-focused": {
-                            color: "#4F46E5",
-                            fontWeight: 600,
+                            boxShadow: "0 0 0 3px rgba(79, 70, 229, 0.1)",
                           },
                         },
                         "& .MuiOutlinedInput-input": {
                           color: darkMode ? "#ffffff" : "#1e293b",
                           fontFamily: '"Inter", "Roboto", sans-serif',
                           fontWeight: 500,
-                          fontSize: { xs: "14px", sm: "16px" },
-                          padding: { xs: "14px 12px 14px 6px", sm: "16px 14px 16px 8px" },
+                          fontSize: "16px",
+                          padding: "16px 16px 16px 8px",
+                          "&::placeholder": {
+                            color: darkMode
+                              ? "rgba(255, 255, 255, 0.5)"
+                              : "rgba(30, 41, 59, 0.5)",
+                            opacity: 1,
+                          },
                         },
                         "& .MuiInputAdornment-root": {
+                          marginLeft: "14px",
                           marginRight: "12px",
                         },
                       }}
@@ -342,36 +351,51 @@ const GirisYap = () => {
                   </Box>
 
                   <Box sx={{ mb: 4 }}>
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        color: darkMode
+                          ? "rgba(255, 255, 255, 0.8)"
+                          : "rgba(30, 41, 59, 0.8)",
+                        fontFamily: '"Inter", "Roboto", sans-serif',
+                        fontWeight: 500,
+                        fontSize: "14px",
+                        mb: 1,
+                        ml: 0.5,
+                      }}
+                    >
+                      Şifre
+                    </Typography>
                     <TextField
-                      label="Şifre"
                       type={showPassword ? "text" : "password"}
                       fullWidth
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       required
+                      placeholder="Şifrenizi girin"
                       InputProps={{
                         startAdornment: (
-                          <InputAdornment position="start" sx={{ ml: 0.5 }}>
+                          <InputAdornment position="start">
                             <Lock
                               sx={{
                                 color: "#4F46E5",
                                 fontSize: 20,
-                                opacity: 0.8,
+                                opacity: 0.7,
                               }}
                             />
                           </InputAdornment>
                         ),
                         endAdornment: (
-                          <InputAdornment position="end" sx={{ mr: 1 }}>
+                          <InputAdornment position="end">
                             <IconButton
                               onClick={() => setShowPassword(!showPassword)}
                               edge="end"
                               size="medium"
                               sx={{
                                 color: "#4F46E5",
-                                opacity: 0.7,
+                                opacity: 0.6,
                                 "&:hover": {
-                                  backgroundColor: "rgba(79, 70, 229, 0.1)",
+                                  backgroundColor: "rgba(79, 70, 229, 0.08)",
                                   opacity: 1,
                                 },
                               }}
@@ -387,60 +411,55 @@ const GirisYap = () => {
                       }}
                       sx={{
                         "& .MuiOutlinedInput-root": {
-                          borderRadius: "16px",
-                          height: { xs: "50px", sm: "56px" },
+                          borderRadius: "12px",
+                          height: "56px",
                           background: darkMode
-                            ? "rgba(255, 255, 255, 0.08)"
-                            : "rgba(255, 255, 255, 0.9)",
-                          backdropFilter: "blur(20px)",
+                            ? "rgba(255, 255, 255, 0.05)"
+                            : "rgba(255, 255, 255, 0.95)",
+                          backdropFilter: "blur(10px)",
                           border: darkMode
                             ? "1px solid rgba(255, 255, 255, 0.1)"
-                            : "1px solid rgba(79, 70, 229, 0.1)",
-                          transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                            : "1px solid rgba(79, 70, 229, 0.15)",
+                          transition: "all 0.2s ease-in-out",
                           "& fieldset": {
                             border: "none",
                           },
                           "&:hover": {
                             background: darkMode
-                              ? "rgba(255, 255, 255, 0.12)"
+                              ? "rgba(255, 255, 255, 0.08)"
                               : "rgba(255, 255, 255, 1)",
                             border: darkMode
                               ? "1px solid rgba(255, 255, 255, 0.2)"
-                              : "1px solid rgba(79, 70, 229, 0.2)",
-                            transform: "translateY(-1px)",
-                            boxShadow: "0 8px 25px rgba(79, 70, 229, 0.1)",
+                              : "1px solid rgba(79, 70, 229, 0.25)",
+                            boxShadow: "0 4px 12px rgba(79, 70, 229, 0.08)",
                           },
                           "&.Mui-focused": {
                             background: darkMode
-                              ? "rgba(255, 255, 255, 0.15)"
+                              ? "rgba(255, 255, 255, 0.1)"
                               : "rgba(255, 255, 255, 1)",
                             border: "2px solid #4F46E5",
-                            transform: "translateY(-2px)",
-                            boxShadow: "0 12px 30px rgba(79, 70, 229, 0.2)",
-                          },
-                        },
-                        "& .MuiInputLabel-root": {
-                          color: darkMode
-                            ? "rgba(255, 255, 255, 0.8)"
-                            : "rgba(30, 41, 59, 0.8)",
-                          fontFamily: '"Inter", "Roboto", sans-serif',
-                          fontWeight: 500,
-                          "&.Mui-focused": {
-                            color: "#4F46E5",
-                            fontWeight: 600,
+                            boxShadow: "0 0 0 3px rgba(79, 70, 229, 0.1)",
                           },
                         },
                         "& .MuiOutlinedInput-input": {
                           color: darkMode ? "#ffffff" : "#1e293b",
                           fontFamily: '"Inter", "Roboto", sans-serif',
                           fontWeight: 500,
-                          fontSize: { xs: "14px", sm: "16px" },
-                          padding: { xs: "14px 6px 14px 6px", sm: "16px 8px 16px 8px" },
+                          fontSize: "16px",
+                          padding: "16px 8px 16px 8px",
+                          "&::placeholder": {
+                            color: darkMode
+                              ? "rgba(255, 255, 255, 0.5)"
+                              : "rgba(30, 41, 59, 0.5)",
+                            opacity: 1,
+                          },
                         },
                         "& .MuiInputAdornment-positionStart": {
+                          marginLeft: "14px",
                           marginRight: "12px",
                         },
                         "& .MuiInputAdornment-positionEnd": {
+                          marginRight: "14px",
                           marginLeft: "8px",
                         },
                       }}
@@ -476,12 +495,12 @@ const GirisYap = () => {
                     startIcon={
                       isLoading ? null : <Login sx={{ fontSize: 20 }} />
                     }
-                      sx={{
-                        height: { xs: "50px", sm: "56px" },
-                        fontWeight: 600,
-                        fontFamily: '"Inter", "Roboto", sans-serif',
-                        fontSize: { xs: "14px", sm: "16px" },
-                        borderRadius: "16px",
+                    sx={{
+                      height: { xs: "50px", sm: "56px" },
+                      fontWeight: 600,
+                      fontFamily: '"Inter", "Roboto", sans-serif',
+                      fontSize: { xs: "14px", sm: "16px" },
+                      borderRadius: "16px",
                       background:
                         "linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%)",
                       boxShadow: "0 12px 35px rgba(79, 70, 229, 0.3)",
