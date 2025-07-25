@@ -78,7 +78,7 @@ const ÖğrenciDetay = ({ student, course, onBack }) => {
       <Box sx={{ display: 'flex', alignItems: 'center', mb: 4 }}>
         <IconButton
           onClick={onBack}
-          sx={{ mr: 2, bgcolor: '#f5f5f5', '&:hover': { bgcolor: '#e0e0e0' } }}
+          sx={{ mr: 2, bgcolor: '#f5f5f5', '&:hover': { bgcolor: '#e0e0e0' }, borderRadius: 3 }}
         >
           <ArrowBack />
         </IconButton>
@@ -93,20 +93,20 @@ const ÖğrenciDetay = ({ student, course, onBack }) => {
           icon={<School />}
           label={`${courseData.code} - ${courseData.name}`}
           color="primary"
-          sx={{ bgcolor: '#2196f3', color: 'white' }}
+          sx={{ bgcolor: '#2196f3', color: 'white', borderRadius: 3 }}
         />
         <Chip
           icon={<Person />}
           label={courseData.instructor}
           color="secondary"
-          sx={{ bgcolor: '#9c27b0', color: 'white' }}
+          sx={{ bgcolor: '#9c27b0', color: 'white', borderRadius: 3 }}
         />
       </Box>
 
       <Grid container spacing={4}>
         {/* Sol Taraf - Öğrenci Bilgileri */}
         <Grid item xs={12} md={6}>
-          <Card elevation={2} sx={{ mb: 3 }}>
+          <Card elevation={2} sx={{ mb: 3, borderRadius: 4 }}>
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
                 <Avatar
@@ -148,7 +148,7 @@ const ÖğrenciDetay = ({ student, course, onBack }) => {
 
         {/* Sağ Taraf - Katılım İstatistikleri */}
         <Grid item xs={12} md={6}>
-          <Card elevation={2} sx={{ mb: 3 }}>
+          <Card elevation={2} sx={{ mb: 3, borderRadius: 4 }}>
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                 <Assessment sx={{ mr: 1, color: '#2196f3' }} />
@@ -174,10 +174,11 @@ const ÖğrenciDetay = ({ student, course, onBack }) => {
                   value={studentData.rate}
                   sx={{
                     height: 10,
-                    borderRadius: 5,
+                    borderRadius: 8,
                     bgcolor: '#e0e0e0',
                     '& .MuiLinearProgress-bar': {
-                      bgcolor: studentData.rate >= 80 ? '#4caf50' : studentData.rate >= 60 ? '#ff9800' : '#f44336'
+                      bgcolor: studentData.rate >= 80 ? '#4caf50' : studentData.rate >= 60 ? '#ff9800' : '#f44336',
+                      borderRadius: 8
                     }
                   }}
                 />
@@ -194,7 +195,7 @@ const ÖğrenciDetay = ({ student, course, onBack }) => {
 
               {/* Katılım Durumu Özeti */}
               <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
-                <Box sx={{ textAlign: 'center', flex: 1, p: 2, bgcolor: '#e8f5e8', borderRadius: 2 }}>
+                <Box sx={{ textAlign: 'center', flex: 1, p: 2, bgcolor: '#e8f5e8', borderRadius: 3 }}>
                   <CheckCircle sx={{ color: '#4caf50', mb: 1 }} />
                   <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#4caf50' }}>
                     {studentData.attendanceHistory.filter(a => a.status === 'Katıldı').length}
@@ -203,7 +204,7 @@ const ÖğrenciDetay = ({ student, course, onBack }) => {
                     Katıldı
                   </Typography>
                 </Box>
-                <Box sx={{ textAlign: 'center', flex: 1, p: 2, bgcolor: '#ffebee', borderRadius: 2 }}>
+                <Box sx={{ textAlign: 'center', flex: 1, p: 2, bgcolor: '#ffebee', borderRadius: 3 }}>
                   <Cancel sx={{ color: '#f44336', mb: 1 }} />
                   <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#f44336' }}>
                     {studentData.attendanceHistory.filter(a => a.status === 'Katılmadı').length}
@@ -219,7 +220,7 @@ const ÖğrenciDetay = ({ student, course, onBack }) => {
       </Grid>
 
       {/* Yoklama Geçmişi */}
-      <Card elevation={2} sx={{ mt: 3 }}>
+      <Card elevation={2} sx={{ mt: 3, borderRadius: 4 }}>
         <CardContent>
           <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
             <CalendarToday sx={{ mr: 1, color: '#2196f3' }} />

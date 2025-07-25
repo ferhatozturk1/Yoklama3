@@ -7,6 +7,7 @@ import {
   ListItemIcon,
   ListItemText,
   Drawer,
+  Typography,
 } from "@mui/material";
 import {
   Home as HomeIcon,
@@ -67,6 +68,7 @@ const Sidebar = ({
       <Box
         sx={{
           display: "flex",
+          flexDirection: "column",
           justifyContent: "center",
           alignItems: "center",
           py: 3,
@@ -83,8 +85,35 @@ const Sidebar = ({
             width: "auto",
             height: "auto",
             objectFit: "contain",
+            marginBottom: "12px",
           }}
         />
+        <Box
+          sx={{
+            background: "linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.08) 100%)",
+            backdropFilter: "blur(10px)",
+            borderRadius: "25px",
+            padding: "8px 20px",
+            border: "1px solid rgba(255,255,255,0.2)",
+            boxShadow: "0 4px 15px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.2)",
+          }}
+        >
+          <Typography
+            variant="h6"
+            sx={{
+              fontSize: "16px",
+              fontWeight: 600,
+              color: "white",
+              letterSpacing: "1.5px",
+              textAlign: "center",
+              fontFamily: '"Inter", "Roboto", sans-serif',
+              textShadow: "0 1px 2px rgba(0,0,0,0.3)",
+              margin: 0,
+            }}
+          >
+            M.C.B.Ü
+          </Typography>
+        </Box>
       </Box>
 
       {/* Navigation List */}

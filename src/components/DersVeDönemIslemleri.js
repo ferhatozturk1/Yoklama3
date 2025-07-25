@@ -77,48 +77,128 @@ const DersVeDönemIslemleri = ({ onNavigate, selectedSemester, onSemesterChange 
           p: 4,
           mb: 4,
           background: "linear-gradient(135deg, #1a237e 0%, #0d47a1 100%)",
-          borderRadius: 6,
+          borderRadius: "32px",
           color: "white",
+          position: 'relative',
+          overflow: 'hidden'
         }}
       >
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <SchoolIcon sx={{ fontSize: 40 }} />
-          <Box>
+        <Box sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          position: 'relative',
+          zIndex: 1
+        }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Box sx={{
+              backgroundColor: 'rgba(255, 255, 255, 0.2)',
+              borderRadius: '16px',
+              p: 1.5,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              <SchoolIcon sx={{ fontSize: 32, color: 'white' }} />
+            </Box>
+            <Box>
+              <Typography
+                variant="h4"
+                sx={{
+                  fontWeight: 700,
+                  fontSize: { xs: "1.5rem", sm: "1.75rem", md: "2rem" },
+                  lineHeight: 1.2,
+                  letterSpacing: "-0.02em",
+                  mb: 0.5
+                }}
+              >
+                Ders ve Dönem İşlemleri
+              </Typography>
+              <Typography
+                variant="body1"
+                sx={{
+                  opacity: 0.85,
+                  fontSize: { xs: "0.875rem", sm: "1rem" },
+                  lineHeight: 1.4,
+                  fontWeight: 400,
+                }}
+              >
+                Ders tanımlama, kayıt ve güncelleme işlemlerini gerçekleştirin
+              </Typography>
+            </Box>
+          </Box>
+
+          {/* Sağ tarafta tarih/saat bilgisi */}
+          <Box sx={{
+            textAlign: 'right',
+            display: { xs: 'none', sm: 'block' }
+          }}>
             <Typography
-              variant="h4"
+              variant="h6"
               sx={{
                 fontWeight: 600,
-                fontSize: { xs: "1.5rem", sm: "1.75rem", md: "2rem" },
-                lineHeight: 1.3,
-                letterSpacing: "-0.01em",
-                mb: 1
+                fontSize: "1.1rem",
+                mb: 0.5
               }}
             >
-              Ders ve Dönem İşlemleri
+              {new Date().toLocaleTimeString('tr-TR', {
+                hour: '2-digit',
+                minute: '2-digit'
+              })}
             </Typography>
             <Typography
-              variant="body1"
+              variant="body2"
               sx={{
-                opacity: 0.9,
-                fontSize: { xs: "0.875rem", sm: "1rem" },
-                lineHeight: 1.6,
-                fontWeight: 400,
+                opacity: 0.8,
+                fontSize: "0.875rem"
               }}
             >
-              Ders tanımlama, kayıt ve güncelleme işlemlerini gerçekleştirin
+              {new Date().toLocaleDateString('tr-TR', {
+                day: '2-digit',
+                month: 'long',
+                weekday: 'long'
+              })}
             </Typography>
           </Box>
         </Box>
+
+
       </Paper>
 
       {/* Term Selection */}
-      <Paper elevation={3} sx={{ p: 3, mb: 4, borderRadius: 6 }}>
-        <Typography
-          variant="h6"
-          sx={{ mb: 2, color: "primary.main", fontWeight: 600 }}
-        >
-          Aktif Dönem Seçimi
-        </Typography>
+      <Paper
+        elevation={2}
+        sx={{
+          p: 4,
+          mb: 4,
+          borderRadius: "24px",
+          background: "linear-gradient(135deg, #f8f9ff 0%, #ffffff 100%)",
+          border: "1px solid rgba(26, 35, 126, 0.08)"
+        }}
+      >
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
+          <Box sx={{
+            backgroundColor: 'rgba(26, 35, 126, 0.1)',
+            borderRadius: '12px',
+            p: 1,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}>
+            <SchoolIcon sx={{ fontSize: 24, color: 'primary.main' }} />
+          </Box>
+          <Typography
+            variant="h6"
+            sx={{
+              color: "primary.main",
+              fontWeight: 700,
+              fontSize: "1.25rem"
+            }}
+          >
+            Aktif Dönem Seçimi
+          </Typography>
+        </Box>
+
         <Grid container spacing={2}>
           <Grid item xs={12} sm={6} md={4}>
             <FormControl fullWidth>
@@ -127,6 +207,12 @@ const DersVeDönemIslemleri = ({ onNavigate, selectedSemester, onSemesterChange 
                 value={selectedTerm}
                 label="Dönem"
                 onChange={handleTermChange}
+                sx={{
+                  borderRadius: "16px",
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: "16px"
+                  }
+                }}
               >
                 {termOptions.map((term) => (
                   <MenuItem key={term} value={term}>
@@ -137,71 +223,117 @@ const DersVeDönemIslemleri = ({ onNavigate, selectedSemester, onSemesterChange 
             </FormControl>
           </Grid>
         </Grid>
-        <Typography
-          variant="body2"
-          sx={{ mt: 2, color: "text.secondary" }}
-        >
-          Seçili dönem: <strong>{selectedTerm}</strong> - Tüm ders işlemleri bu dönem için gerçekleştirilecektir.
-        </Typography>
+
+        <Box sx={{
+          mt: 3,
+          p: 2,
+          backgroundColor: 'rgba(26, 35, 126, 0.05)',
+          borderRadius: "16px",
+          border: "1px solid rgba(26, 35, 126, 0.1)"
+        }}>
+          <Typography
+            variant="body2"
+            sx={{ color: "text.secondary", fontWeight: 500 }}
+          >
+            Seçili dönem: <strong style={{ color: '#1a237e' }}>{selectedTerm}</strong> - Tüm ders işlemleri bu dönem için gerçekleştirilecektir.
+          </Typography>
+        </Box>
       </Paper>
 
       {/* Menu Items */}
-      <Paper elevation={3} sx={{ borderRadius: 6, overflow: 'hidden' }}>
-        <List sx={{ p: 0 }}>
-          {menuItems.map((item, index) => (
-            <React.Fragment key={item.id}>
-              <ListItem disablePadding>
-                <ListItemButton
-                  onClick={item.action}
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+        {menuItems.map((item, index) => (
+          <Paper
+            key={item.id}
+            elevation={2}
+            sx={{
+              borderRadius: "24px",
+              overflow: 'hidden',
+              background: "linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%)",
+              border: "1px solid rgba(26, 35, 126, 0.08)",
+              transition: 'all 0.3s ease-in-out',
+              '&:hover': {
+                transform: 'translateY(-2px)',
+                boxShadow: '0 8px 25px rgba(26, 35, 126, 0.15)',
+                borderColor: 'rgba(26, 35, 126, 0.2)'
+              }
+            }}
+          >
+            <ListItemButton
+              onClick={item.action}
+              sx={{
+                py: 3,
+                px: 4,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 3,
+                '&:hover': {
+                  backgroundColor: 'transparent'
+                }
+              }}
+            >
+              <Box sx={{
+                backgroundColor: item.id === 'ders-kayit' ? 'rgba(33, 150, 243, 0.1)' :
+                  item.id === 'ders-ekle-birak' ? 'rgba(156, 39, 176, 0.1)' :
+                    'rgba(76, 175, 80, 0.1)',
+                borderRadius: '16px',
+                p: 2,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                minWidth: 56,
+                height: 56
+              }}>
+                {React.cloneElement(item.icon, {
+                  sx: { fontSize: 28 }
+                })}
+              </Box>
+
+              <Box sx={{ flex: 1 }}>
+                <Typography
+                  variant="h6"
                   sx={{
-                    py: 3,
-                    px: 4,
-                    borderRadius: 4,
-                    mx: 1,
-                    my: 0.5,
-                    transition: 'all 0.2s ease-in-out',
-                    '&:hover': {
-                      backgroundColor: 'rgba(26, 35, 126, 0.08)',
-                      transform: 'translateY(-1px)',
-                      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-                    },
+                    fontWeight: 700,
+                    color: 'primary.main',
+                    mb: 0.5,
+                    fontSize: "1.25rem"
                   }}
                 >
-                  <ListItemIcon sx={{ minWidth: 56 }}>
-                    {item.icon}
-                  </ListItemIcon>
-                  <ListItemText
-                    primary={
-                      <Typography
-                        variant="h6"
-                        sx={{
-                          fontWeight: 600,
-                          color: 'primary.main',
-                          mb: 0.5
-                        }}
-                      >
-                        {item.title}
-                      </Typography>
-                    }
-                    secondary={
-                      <Typography
-                        variant="body2"
-                        sx={{
-                          color: 'text.secondary',
-                          lineHeight: 1.5
-                        }}
-                      >
-                        {item.description}
-                      </Typography>
-                    }
-                  />
-                </ListItemButton>
-              </ListItem>
-              {index < menuItems.length - 1 && <Divider />}
-            </React.Fragment>
-          ))}
-        </List>
-      </Paper>
+                  {item.title}
+                </Typography>
+                <Typography
+                  variant="body2"
+                  sx={{
+                    color: 'text.secondary',
+                    lineHeight: 1.5,
+                    fontSize: "0.95rem"
+                  }}
+                >
+                  {item.description}
+                </Typography>
+              </Box>
+
+              {/* Ok işareti */}
+              <Box sx={{
+                backgroundColor: 'rgba(26, 35, 126, 0.1)',
+                borderRadius: '12px',
+                p: 1,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}>
+                <Typography sx={{
+                  color: 'primary.main',
+                  fontWeight: 'bold',
+                  fontSize: '1.2rem'
+                }}>
+                  →
+                </Typography>
+              </Box>
+            </ListItemButton>
+          </Paper>
+        ))}
+      </Box>
     </Container>
   );
 };
