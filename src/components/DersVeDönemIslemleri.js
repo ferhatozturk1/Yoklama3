@@ -491,7 +491,32 @@ const DersVeDönemIslemleri = ({
                   })}
                 </Box>
 
-
+                <Box>
+                  <Typography
+                    variant="h6"
+                    sx={{
+                      fontWeight: 700,
+                      color: item.disabled ? "text.disabled" : "primary.main",
+                      mb: 0.5,
+                      fontSize: "1rem",
+                    }}
+                  >
+                    {item.title}
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      color: item.disabled ? "text.disabled" : "text.secondary",
+                      lineHeight: 1.3,
+                      fontSize: "0.8rem",
+                    }}
+                  >
+                    {item.description}
+                  </Typography>
+                </Box>
+              </ListItemButton>
+            </Paper>
+          </Grid>
         ))}
       </Grid>
     </Container>
