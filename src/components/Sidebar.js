@@ -4,8 +4,6 @@ import {
   List,
   ListItem,
   ListItemButton,
-  ListItemIcon,
-  ListItemText,
   Drawer,
   Typography,
 } from "@mui/material";
@@ -17,13 +15,7 @@ import {
 } from "@mui/icons-material";
 import cbuLogo from "../theme/cbulogo.png";
 
-const Sidebar = ({
-  open,
-  onToggle,
-  isMobile,
-  onNavigate,
-}) => {
-
+const Sidebar = ({ open, onToggle, isMobile, onNavigate }) => {
   // Navigation items
   const navigationItems = [
     {
@@ -71,7 +63,7 @@ const Sidebar = ({
           flexDirection: "column",
           justifyContent: "center",
           alignItems: "center",
-          py: 3,
+          py: 2,
           px: 2,
           borderBottom: "1px solid rgba(255,255,255,0.1)",
         }}
@@ -80,71 +72,123 @@ const Sidebar = ({
           src={cbuLogo}
           alt="CBU Logo"
           style={{
-            maxWidth: "120px",
-            maxHeight: "80px",
+            maxWidth: "100px",
+            maxHeight: "60px",
             width: "auto",
             height: "auto",
             objectFit: "contain",
-            marginBottom: "12px",
+            marginBottom: "8px",
           }}
         />
         <Box
           sx={{
-            background: "linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.08) 100%)",
+            background:
+              "linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.08) 100%)",
             backdropFilter: "blur(10px)",
-            borderRadius: "25px",
-            padding: "8px 20px",
+            borderRadius: "20px",
+            padding: "6px 16px",
             border: "1px solid rgba(255,255,255,0.2)",
-            boxShadow: "0 4px 15px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.2)",
+            boxShadow:
+              "0 4px 15px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.2)",
           }}
         >
           <Typography
             variant="h6"
             sx={{
-              fontSize: "16px",
+              fontSize: "14px",
               fontWeight: 600,
               color: "white",
-              letterSpacing: "1.5px",
+              letterSpacing: "1px",
               textAlign: "center",
               fontFamily: '"Inter", "Roboto", sans-serif',
               textShadow: "0 1px 2px rgba(0,0,0,0.3)",
               margin: 0,
+              lineHeight: 1.3,
             }}
           >
-            M.C.B.Ü
+            Manisa Celal Bayar Üniversitesi
           </Typography>
         </Box>
       </Box>
 
       {/* Navigation List */}
-      <List sx={{ flexGrow: 1, py: 0 }}>
+      <List sx={{ flexGrow: 1, py: 1, px: 0 }}>
         {/* Main Navigation Items */}
-        {navigationItems.map((item) => (
-          <ListItem key={item.key} disablePadding>
-            <ListItemButton
-              onClick={() => onNavigate && onNavigate(item.path)}
-              sx={{
-                py: 1.5,
-                "&:hover": { backgroundColor: "rgba(255,255,255,0.1)" },
-              }}
-            >
-              <ListItemIcon sx={{ minWidth: 40 }}>
-                {React.cloneElement(item.icon, {
-                  sx: { color: "white", fontSize: 20 },
-                })}
-              </ListItemIcon>
-              <ListItemText
-                primary={item.label}
-                primaryTypographyProps={{
-                  fontSize: "0.875rem",
-                  fontWeight: 500,
-                  color: "white",
+        {navigationItems.map((item) => {
+          // Uzun metinler için özel yükseklik hesaplama
+          const isLongText = item.label.length > 15;
+          const minHeight = isLongText ? 44 : 36;
+          
+          return (
+            <ListItem key={item.key} disablePadding sx={{ mb: 0.5 }}>
+              <ListItemButton
+                onClick={() => onNavigate && onNavigate(item.path)}
+                sx={{
+                  minHeight: minHeight,
+                  px: 2.5,
+                  py: 1,
+                  display: "flex",
+                  alignItems: isLongText ? "flex-start" : "center",
+                  justifyContent: "flex-start",
+                  "&:hover": { 
+                    backgroundColor: "rgba(255,255,255,0.1)",
+                    transform: "translateX(3px)",
+                    transition: "all 0.2s ease-in-out",
+                  },
+                  transition: "all 0.2s ease-in-out",
                 }}
-              />
-            </ListItemButton>
-          </ListItem>
-        ))}
-
+              >
+                {/* İkon Container */}
+                <Box
+                  sx={{
+                    width: 20,
+                    height: 20,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    mr: 1.5,
+                    flexShrink: 0,
+                    mt: isLongText ? 0.25 : 0,
+                  }}
+                >
+                  {React.cloneElement(item.icon, {
+                    sx: { 
+                      color: "white", 
+                      fontSize: 20,
+                      display: "block",
+                    },
+                  })}
+                </Box>
+                
+                {/* Metin Container */}
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: isLongText ? "flex-start" : "center",
+                    minHeight: isLongText ? 24 : 20,
+                    flex: 1,
+                    pt: isLongText ? 0.25 : 0,
+                  }}
+                >
+                  <Typography
+                    sx={{
+                      fontSize: "0.85rem",
+                      fontWeight: 500,
+                      color: "white",
+                      lineHeight: isLongText ? 1.2 : 1,
+                      letterSpacing: "0.3px",
+                      fontFamily: '"Inter", "Roboto", sans-serif',
+                      whiteSpace: "normal",
+                      wordBreak: "break-word",
+                    }}
+                  >
+                    {item.label}
+                  </Typography>
+                </Box>
+              </ListItemButton>
+            </ListItem>
+          );
+        })}
       </List>
     </Box>
   );

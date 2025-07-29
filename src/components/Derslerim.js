@@ -33,7 +33,7 @@ const Derslerim = () => {
   // View state - 'list' veya 'detail'
   const [currentView, setCurrentView] = useState("list");
   const [selectedDers, setSelectedDers] = useState(null);
-  
+
   // Schedule management state
   const [scheduleModalOpen, setScheduleModalOpen] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState(null);
@@ -44,16 +44,16 @@ const Derslerim = () => {
     endTime: '',
     room: ''
   });
-  
+
   // Days of the week
   const daysOfWeek = ["Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma"];
-  
+
   // Time options
   const timeOptions = [
-    "08:40", "09:30", "09:50", "10:40", "11:00", "11:50", 
+    "08:40", "09:30", "09:50", "10:40", "11:00", "11:50",
     "13:40", "14:30", "14:40", "15:30", "15:40", "16:30", "16:40", "17:30"
   ];
-  
+
   // Static courses (existing ones)
   const staticCourses = [
     {
@@ -130,7 +130,7 @@ const Derslerim = () => {
   useEffect(() => {
     const loadCourses = () => {
       const activeCourses = JSON.parse(localStorage.getItem('activeCourses') || '[]');
-      
+
       // Convert active courses to the format expected by Derslerim
       const convertedCourses = activeCourses.map(course => ({
         id: course.id || Date.now() + Math.random(),
@@ -196,7 +196,7 @@ const Derslerim = () => {
   const getDaysText = (schedule) => {
     return Object.keys(schedule).join(", ");
   };
-  
+
   // Open schedule modal
   const handleOpenScheduleModal = () => {
     // Get registered courses from localStorage
@@ -207,7 +207,7 @@ const Derslerim = () => {
     }
     setScheduleModalOpen(true);
   };
-  
+
   // Close schedule modal
   const handleCloseScheduleModal = () => {
     setScheduleModalOpen(false);
@@ -215,42 +215,42 @@ const Derslerim = () => {
     setScheduleEntries([]);
     setCurrentScheduleEntry({ day: '', startTime: '', endTime: '', room: '' });
   };
-  
+
   // Handle course selection for scheduling
   const handleCourseSelect = (courseId) => {
     const teacherCourses = JSON.parse(localStorage.getItem('teacherCourses') || '[]');
     const course = teacherCourses.find(c => c.id === courseId);
     setSelectedCourse(course);
   };
-  
+
   // Add schedule entry
   const handleAddScheduleEntry = () => {
     if (!currentScheduleEntry.day || !currentScheduleEntry.startTime || !currentScheduleEntry.endTime) {
       alert('Lütfen gün, başlangıç ve bitiş saatini seçin.');
       return;
     }
-    
+
     const newEntry = {
       id: Date.now(),
       ...currentScheduleEntry
     };
-    
+
     setScheduleEntries([...scheduleEntries, newEntry]);
     setCurrentScheduleEntry({ day: '', startTime: '', endTime: '', room: '' });
   };
-  
+
   // Remove schedule entry
   const handleRemoveScheduleEntry = (entryId) => {
     setScheduleEntries(scheduleEntries.filter(entry => entry.id !== entryId));
   };
-  
+
   // Save schedule
   const handleSaveSchedule = () => {
     if (!selectedCourse || scheduleEntries.length === 0) {
       alert('Lütfen ders seçin ve en az bir program girişi ekleyin.');
       return;
     }
-    
+
     // Create course with schedule for active courses
     const courseWithSchedule = {
       id: Date.now(),
@@ -265,15 +265,15 @@ const Derslerim = () => {
       classLevel: selectedCourse.classLevel || 1,
       addedAt: new Date().toISOString()
     };
-    
+
     // Save to active courses
     const existingActiveCourses = JSON.parse(localStorage.getItem('activeCourses') || '[]');
     const updatedActiveCourses = [...existingActiveCourses, courseWithSchedule];
     localStorage.setItem('activeCourses', JSON.stringify(updatedActiveCourses));
-    
+
     // Trigger custom event for other components to update
     window.dispatchEvent(new Event('teacherCoursesUpdated'));
-    
+
     alert('Program başarıyla eklendi!');
     handleCloseScheduleModal();
   };
@@ -287,15 +287,15 @@ const Derslerim = () => {
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, pb: 4 }}>
-    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
         <Typography
           variant="h4"
           sx={{ fontWeight: "bold", color: "#1a237e" }}
         >
           📚 Derslerim
         </Typography>
-        <Button 
-          variant="contained" 
+        <Button
+          variant="contained"
           startIcon={<ScheduleIcon />}
           onClick={handleOpenScheduleModal}
         >
@@ -306,59 +306,134 @@ const Derslerim = () => {
         {dersler.map((ders) => (
           <Grid item xs={12} sm={6} md={4} key={ders.id}>
             <Card
-              elevation={3}
+              elevation={0}
               sx={{
                 height: "100%",
                 cursor: "pointer",
-                transition: "all 0.3s ease",
-                "&:hover": {
-                  transform: "translateY(-4px)",
-                  boxShadow: "0 8px 25px rgba(0,0,0,0.15)",
+                transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
+                borderRadius: "24px",
+                background: "linear-gradient(145deg, #ffffff 0%, #f8f9ff 100%)",
+                border: "1px solid rgba(26, 35, 126, 0.08)",
+                boxShadow: "0 4px 20px rgba(26, 35, 126, 0.08)",
+                position: "relative",
+                overflow: "hidden",
+                "&::before": {
+                  content: '""',
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  height: "4px",
+                  background: "linear-gradient(90deg, #1a237e 0%, #3949ab 50%, #5e35b1 100%)",
+                  borderRadius: "24px 24px 0 0",
                 },
-                borderRadius: 4,
+                "&:hover": {
+                  transform: "translateY(-8px) scale(1.02)",
+                  boxShadow: "0 20px 40px rgba(26, 35, 126, 0.15)",
+                  border: "1px solid rgba(26, 35, 126, 0.15)",
+                  "& .card-content": {
+                    background: "linear-gradient(145deg, #ffffff 0%, #f0f4ff 100%)",
+                  }
+                },
+                "&:active": {
+                  transform: "translateY(-4px) scale(1.01)",
+                  transition: "all 0.1s ease",
+                }
               }}
               onClick={() => handleDersClick(ders)}
             >
-              <CardContent sx={{ p: 3, textAlign: "center" }}>
+              <CardContent
+                className="card-content"
+                sx={{
+                  p: { xs: 2.5, sm: 3 },
+                  textAlign: "center",
+                  background: "transparent",
+                  transition: "all 0.4s ease",
+                  borderRadius: "24px",
+                  position: "relative",
+                  zIndex: 1
+                }}
+              >
                 {/* Ders Kodu */}
                 <Typography
                   variant="h4"
-                  sx={{ fontWeight: "bold", color: "#1a237e", mb: 1 }}
+                  sx={{
+                    fontWeight: 700,
+                    background: "linear-gradient(135deg, #1a237e 0%, #3949ab 100%)",
+                    backgroundClip: "text",
+                    WebkitBackgroundClip: "text",
+                    WebkitTextFillColor: "transparent",
+                    mb: 1,
+                    fontSize: { xs: "1.75rem", sm: "2rem" },
+                    letterSpacing: "-0.02em"
+                  }}
                 >
                   {ders.code}
                 </Typography>
 
                 {/* Section */}
-                <Typography variant="h6" sx={{ color: "#666", mb: 1 }}>
+                <Typography
+                  variant="h6"
+                  sx={{
+                    color: "rgba(26, 35, 126, 0.7)",
+                    mb: 0.5,
+                    fontWeight: 600,
+                    fontSize: { xs: "1rem", sm: "1.125rem" }
+                  }}
+                >
                   Section - {ders.section}
                 </Typography>
-                <Typography variant="body1" sx={{ color: "#666", mb: 3 }}>
+                <Typography
+                  variant="body1"
+                  sx={{
+                    color: "rgba(26, 35, 126, 0.6)",
+                    mb: 3,
+                    fontSize: { xs: "0.875rem", sm: "1rem" },
+                    fontWeight: 500
+                  }}
+                >
                   {ders.sectionFull}
                 </Typography>
 
                 {/* Katılım Oranı */}
                 <Box sx={{ mb: 3 }}>
-                  <Typography variant="body2" sx={{ mb: 1, color: "#666" }}>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      mb: 2,
+                      color: "rgba(26, 35, 126, 0.7)",
+                      fontWeight: 500,
+                      fontSize: { xs: "0.8125rem", sm: "0.875rem" }
+                    }}
+                  >
                     {ders.attendanceRate > 0 ? 'Genel Katılım Oranı' : 'Henüz yoklama alınmadı'}
                   </Typography>
                   <Box
                     sx={{
-                      width: 80,
-                      height: 80,
+                      width: { xs: 70, sm: 80 },
+                      height: { xs: 70, sm: 80 },
                       borderRadius: "50%",
-                      border: `4px solid ${ders.attendanceRate >= 80 ? '#4caf50' : ders.attendanceRate >= 60 ? '#ff9800' : '#f44336'}`,
+                      border: `3px solid ${ders.attendanceRate >= 80 ? '#4caf50' : ders.attendanceRate >= 60 ? '#ff9800' : ders.attendanceRate > 0 ? '#f44336' : '#e0e0e0'}`,
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
                       mx: "auto",
-                      bgcolor: ders.attendanceRate > 0 ? "#f8f9fa" : "#f5f5f5",
+                      background: ders.attendanceRate > 0
+                        ? `radial-gradient(circle, ${ders.attendanceRate >= 80 ? 'rgba(76, 175, 80, 0.1)' : ders.attendanceRate >= 60 ? 'rgba(255, 152, 0, 0.1)' : 'rgba(244, 67, 54, 0.1)'} 0%, rgba(255, 255, 255, 0.9) 100%)`
+                        : "radial-gradient(circle, rgba(224, 224, 224, 0.1) 0%, rgba(255, 255, 255, 0.9) 100%)",
+                      boxShadow: ders.attendanceRate > 0
+                        ? `0 4px 12px ${ders.attendanceRate >= 80 ? 'rgba(76, 175, 80, 0.2)' : ders.attendanceRate >= 60 ? 'rgba(255, 152, 0, 0.2)' : 'rgba(244, 67, 54, 0.2)'}`
+                        : "0 4px 12px rgba(224, 224, 224, 0.2)",
+                      transition: "all 0.3s ease",
                     }}
                   >
                     <Typography
                       variant="h4"
-                      sx={{ 
-                        fontWeight: "bold", 
-                        color: ders.attendanceRate >= 80 ? '#4caf50' : ders.attendanceRate >= 60 ? '#ff9800' : ders.attendanceRate > 0 ? '#f44336' : '#999'
+                      sx={{
+                        fontWeight: 700,
+                        color: ders.attendanceRate >= 80 ? '#4caf50' : ders.attendanceRate >= 60 ? '#ff9800' : ders.attendanceRate > 0 ? '#f44336' : '#bdbdbd',
+                        fontSize: { xs: "1.5rem", sm: "1.75rem" },
+                        textShadow: "0 1px 2px rgba(0,0,0,0.1)"
                       }}
                     >
                       %{ders.attendanceRate}
@@ -367,24 +442,85 @@ const Derslerim = () => {
                 </Box>
 
                 {/* Ders Bilgileri - Detaylı Format */}
-                <Box sx={{ textAlign: "left", mb: 3 }}>
-                  <Typography variant="body2" sx={{ mb: 1 }}>
-                    <strong>Ders:</strong> {ders.name}
+                <Box
+                  sx={{
+                    textAlign: "left",
+                    mb: 3,
+                    background: "rgba(26, 35, 126, 0.02)",
+                    borderRadius: "16px",
+                    p: 2,
+                    border: "1px solid rgba(26, 35, 126, 0.05)"
+                  }}
+                >
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      mb: 1.5,
+                      color: "rgba(26, 35, 126, 0.8)",
+                      fontSize: { xs: "0.75rem", sm: "0.8125rem" },
+                      lineHeight: 1.5
+                    }}
+                  >
+                    <Box component="span" sx={{ fontWeight: 600, color: "rgba(26, 35, 126, 0.9)" }}>Ders:</Box> {ders.name}
                   </Typography>
-                  <Typography variant="body2" sx={{ mb: 1 }}>
-                    <strong>Günler:</strong> {getDaysText(ders.schedule)}
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      mb: 1.5,
+                      color: "rgba(26, 35, 126, 0.8)",
+                      fontSize: { xs: "0.8125rem", sm: "0.875rem" },
+                      lineHeight: 1.5
+                    }}
+                  >
+                    <Box component="span" sx={{ fontWeight: 600, color: "rgba(26, 35, 126, 0.9)" }}>Günler:</Box> {getDaysText(ders.schedule)}
                   </Typography>
-                  <Typography variant="body2" sx={{ mb: 1 }}>
-                    <strong>Derslik:</strong> {ders.building} - {ders.room}
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      mb: 1.5,
+                      color: "rgba(26, 35, 126, 0.8)",
+                      fontSize: { xs: "0.8125rem", sm: "0.875rem" },
+                      lineHeight: 1.5
+                    }}
+                  >
+                    <Box component="span" sx={{ fontWeight: 600, color: "rgba(26, 35, 126, 0.9)" }}>Derslik:</Box> {ders.building} - {ders.room}
                   </Typography>
-                  <Typography variant="body2" sx={{ mb: 1 }}>
-                    <strong>Öğrenci Sayısı:</strong> {ders.studentCount}
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      mb: 1.5,
+                      color: "rgba(26, 35, 126, 0.8)",
+                      fontSize: { xs: "0.8125rem", sm: "0.875rem" },
+                      lineHeight: 1.5
+                    }}
+                  >
+                    <Box component="span" sx={{ fontWeight: 600, color: "rgba(26, 35, 126, 0.9)" }}>Öğrenci Sayısı:</Box> {ders.studentCount}
                   </Typography>
-                  <Typography variant="body2" sx={{ mb: 1 }}>
-                    <strong>Yoklama Oranı:</strong> %{ders.attendanceRate}
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      mb: ders.info ? 1.5 : 0,
+                      color: "rgba(26, 35, 126, 0.8)",
+                      fontSize: { xs: "0.8125rem", sm: "0.875rem" },
+                      lineHeight: 1.5
+                    }}
+                  >
+                    <Box component="span" sx={{ fontWeight: 600, color: "rgba(26, 35, 126, 0.9)" }}>Yoklama Oranı:</Box> %{ders.attendanceRate}
                   </Typography>
                   {ders.info && (
-                    <Typography variant="body2" sx={{ mb: 1, fontStyle: 'italic', color: '#666' }}>
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        fontStyle: 'italic',
+                        color: 'rgba(26, 35, 126, 0.6)',
+                        fontSize: { xs: "0.75rem", sm: "0.8125rem" },
+                        lineHeight: 1.4,
+                        background: "rgba(26, 35, 126, 0.03)",
+                        borderRadius: "8px",
+                        p: 1,
+                        border: "1px solid rgba(26, 35, 126, 0.05)"
+                      }}
+                    >
                       {ders.info}
                     </Typography>
                   )}
@@ -392,26 +528,38 @@ const Derslerim = () => {
 
                 {/* Dersi Düzenle Butonu */}
                 <Button
-              variant="outlined"
-              startIcon={<Edit />}
-              fullWidth
-              sx={{
-                borderColor: "#1a237e",
-                color: "#1a237e",
-                "&:hover": {
-                  borderColor: "#1a237e",
-                  bgcolor: "rgba(26, 35, 126, 0.04)",
-                },
-              }}
-            >
-              Derse Git
-            </Button>
+                  variant="contained"
+                  startIcon={<Edit />}
+                  fullWidth
+                  sx={{
+                    background: "linear-gradient(135deg, #1a237e 0%, #3949ab 100%)",
+                    borderRadius: "16px",
+                    py: { xs: 1.25, sm: 1.5 },
+                    fontSize: { xs: "0.875rem", sm: "1rem" },
+                    fontWeight: 600,
+                    textTransform: "none",
+                    boxShadow: "0 4px 12px rgba(26, 35, 126, 0.3)",
+                    border: "1px solid rgba(255, 255, 255, 0.1)",
+                    transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                    "&:hover": {
+                      background: "linear-gradient(135deg, #0d47a1 0%, #283593 100%)",
+                      transform: "translateY(-2px)",
+                      boxShadow: "0 8px 20px rgba(26, 35, 126, 0.4)",
+                    },
+                    "&:active": {
+                      transform: "translateY(0px)",
+                      boxShadow: "0 4px 12px rgba(26, 35, 126, 0.3)",
+                    }
+                  }}
+                >
+                  Derse Git
+                </Button>
               </CardContent>
             </Card>
           </Grid>
         ))}
       </Grid>
-      
+
       {/* Schedule Management Modal */}
       <Dialog
         open={scheduleModalOpen}
@@ -437,13 +585,13 @@ const Derslerim = () => {
                 ))}
               </Select>
             </FormControl>
-            
+
             {selectedCourse && (
               <>
                 <Typography variant="h6" sx={{ mb: 2, color: 'primary.main' }}>
                   Program Girişleri Ekle
                 </Typography>
-                
+
                 {/* Add Schedule Entry Form */}
                 <Paper sx={{ p: 2, mb: 3, bgcolor: 'grey.50' }}>
                   <Grid container spacing={2}>
@@ -453,7 +601,7 @@ const Derslerim = () => {
                         <Select
                           value={currentScheduleEntry.day}
                           label="Gün"
-                          onChange={(e) => setCurrentScheduleEntry({...currentScheduleEntry, day: e.target.value})}
+                          onChange={(e) => setCurrentScheduleEntry({ ...currentScheduleEntry, day: e.target.value })}
                         >
                           {daysOfWeek.map((day) => (
                             <MenuItem key={day} value={day}>{day}</MenuItem>
@@ -467,7 +615,7 @@ const Derslerim = () => {
                         <Select
                           value={currentScheduleEntry.startTime}
                           label="Başlangıç"
-                          onChange={(e) => setCurrentScheduleEntry({...currentScheduleEntry, startTime: e.target.value})}
+                          onChange={(e) => setCurrentScheduleEntry({ ...currentScheduleEntry, startTime: e.target.value })}
                         >
                           {timeOptions.map((time) => (
                             <MenuItem key={time} value={time}>{time}</MenuItem>
@@ -481,7 +629,7 @@ const Derslerim = () => {
                         <Select
                           value={currentScheduleEntry.endTime}
                           label="Bitiş"
-                          onChange={(e) => setCurrentScheduleEntry({...currentScheduleEntry, endTime: e.target.value})}
+                          onChange={(e) => setCurrentScheduleEntry({ ...currentScheduleEntry, endTime: e.target.value })}
                         >
                           {timeOptions.map((time) => (
                             <MenuItem key={time} value={time}>{time}</MenuItem>
@@ -494,7 +642,7 @@ const Derslerim = () => {
                         fullWidth
                         label="Derslik (Opsiyonel)"
                         value={currentScheduleEntry.room}
-                        onChange={(e) => setCurrentScheduleEntry({...currentScheduleEntry, room: e.target.value})}
+                        onChange={(e) => setCurrentScheduleEntry({ ...currentScheduleEntry, room: e.target.value })}
                       />
                     </Grid>
                   </Grid>
@@ -508,7 +656,7 @@ const Derslerim = () => {
                     </Button>
                   </Box>
                 </Paper>
-                
+
                 {/* Schedule Entries List */}
                 {scheduleEntries.length > 0 && (
                   <>
@@ -539,8 +687,8 @@ const Derslerim = () => {
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseScheduleModal}>İptal</Button>
-          <Button 
-            onClick={handleSaveSchedule} 
+          <Button
+            onClick={handleSaveSchedule}
             variant="contained"
             disabled={!selectedCourse || scheduleEntries.length === 0}
           >

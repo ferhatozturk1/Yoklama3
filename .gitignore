@@ -163,3 +163,4 @@ secrets.json
 # ===============================
 # Kiro configuration and cache files
 .kiro/
+package-lock.json

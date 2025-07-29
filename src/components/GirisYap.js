@@ -62,7 +62,7 @@ const GirisYap = () => {
 
     // Demo: Sadece akademik personel girişi
     if (email === "mehmetnuri.ogut@cbu.edu.tr" && password === "1234") {
-      navigate("/portal");
+      navigate("/panel");
     } else {
       setError("Geçersiz e-posta veya şifre!");
     }
@@ -634,7 +634,7 @@ const GirisYap = () => {
                   >
                     Hesabınız yok mu?{" "}
                     <Link
-                      to="/ogretmen-kayit"
+                      to="/kayit"
                       style={{
                         color: "#4F46E5",
                         textDecoration: "none",
