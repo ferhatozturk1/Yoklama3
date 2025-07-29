@@ -48,12 +48,12 @@ const DersVeDönemIslemleri = ({
 
     const holidays = {
       "1-1": "Yılbaşı",
-      "4-23": "23 Nisan - Ulusal Egemenlik ve Çocuk Bayramı",
-      "5-1": "1 Mayıs - Emek ve Dayanışma Günü",
-      "5-19": "19 Mayıs - Atatürk'ü Anma, Gençlik ve Spor Bayramı",
-      "8-30": "30 Ağustos - Zafer Bayramı",
-      "10-29": "29 Ekim - Cumhuriyet Bayramı",
-      "11-10": "10 Kasım - Atatürk'ü Anma Günü",
+      "4-23": "23 Nisan Ulusal Egemenlik ve Çocuk Bayramı",
+      "5-1": "1 Mayıs Emek ve Dayanışma Günü",
+      "5-19": "19 Mayıs Atatürk'ü Anma, Gençlik ve Spor Bayramı",
+      "8-30": "30 Ağustos Zafer Bayramı",
+      "10-29": "29 Ekim Cumhuriyet Bayramı",
+      "11-10": "10 Kasım Atatürk'ü Anma Günü",
     };
 
     const key = `${month}-${day}`;
