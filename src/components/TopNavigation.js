@@ -170,11 +170,20 @@ const TopNavigation = ({
             sx={{
               display: "flex",
               alignItems: "center",
-              gap: 0.5,
+              gap: 1,
               flexGrow: 1,
+              height: "64px", // Toolbar yüksekliği ile aynı
             }}
           >
-            <School sx={{ fontSize: 28, color: "white" }} />
+            <School 
+              sx={{ 
+                fontSize: 28, 
+                color: "white",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center"
+              }} 
+            />
             <Typography
               variant="h6"
               component="div"
@@ -183,12 +192,10 @@ const TopNavigation = ({
                 fontWeight: 600,
                 fontSize: "1.25rem",
                 color: "white",
-                lineHeight: 1.2,
-                ml: 0.1, // Logo ile yazı arasındaki boşluğu minimum yap
+                lineHeight: "28px", // İkon boyutu ile aynı
                 display: "flex",
                 alignItems: "center",
-                height: "28px", // Logo ile aynı yükseklik
-                mt  : 1,
+
                 "&:hover": {
                   opacity: 0.9,
                 },
@@ -210,9 +217,10 @@ const TopNavigation = ({
               transform: "translate(-50%, -50%)",
               display: "flex",
               alignItems: "center",
-              gap: 0.4,
+              gap: 0.75,
               maxWidth: "calc(100vw - 140px)", // Reserve space for side buttons
               zIndex: 1,
+              height: "56px", // Mobil toolbar yüksekliği
             }}
           >
             <School
@@ -220,6 +228,9 @@ const TopNavigation = ({
                 fontSize: 18,
                 color: "white",
                 flexShrink: 0,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center"
               }}
             />
             <Typography
@@ -230,10 +241,13 @@ const TopNavigation = ({
                 fontWeight: 500,
                 fontSize: "0.9rem",
                 color: "white",
-                lineHeight: 1.1,
+                lineHeight: "18px", // İkon boyutu ile aynı
                 whiteSpace: "nowrap",
                 overflow: "hidden",
                 textOverflow: "ellipsis",
+                display: "flex",
+                alignItems: "center",
+                height: "18px", // İkon boyutu ile aynı
                 "&:hover": {
                   opacity: 0.9,
                 },
@@ -255,6 +269,7 @@ const TopNavigation = ({
             zIndex: 2,
           }}
         >
+
 
 
           {/* Profile Avatar */}

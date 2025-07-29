@@ -60,46 +60,117 @@ const DersGuncelle = ({ onBack, onEditCourse, selectedSemester = '2025-2026-guz'
   };
 
   return (
-    <Container maxWidth="lg" sx={{ mt: 2, pb: 4 }}>
+    <Container maxWidth="lg" sx={{ 
+      mt: { xs: 1, sm: 1.5, md: 2 }, 
+      pb: { xs: 2, sm: 3, md: 4 },
+      px: { xs: 1, sm: 2, md: 3 }
+    }}>
       {/* Header */}
       <Paper
         elevation={3}
         sx={{
-          p: 4,
-          mb: 4,
+          p: { xs: 2, sm: 3, md: 4 },
+          mb: { xs: 2, sm: 3, md: 4 },
           background: "linear-gradient(135deg, #1a237e 0%, #0d47a1 100%)",
-          borderRadius: "32px",
+          borderRadius: { xs: "16px", sm: "24px", md: "32px" },
           color: "white",
           position: 'relative',
           overflow: 'hidden'
         }}
       >
+        {/* Mobile Layout */}
+        <Box sx={{ 
+          display: { xs: 'block', md: 'none' },
+          position: 'relative',
+          zIndex: 1
+        }}>
+          {/* Top Row - Back button and Title */}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+            <IconButton onClick={onBack} sx={{ color: "white", p: 1 }}>
+              <ArrowBackIcon sx={{ fontSize: 24 }} />
+            </IconButton>
+            <Box sx={{ flex: 1 }}>
+              <Typography
+                variant="h5"
+                sx={{
+                  fontWeight: 700,
+                  fontSize: "1.25rem",
+                  lineHeight: 1.2,
+                  letterSpacing: "-0.02em",
+                  mb: 0.5
+                }}
+              >
+                Ders Güncelle
+              </Typography>
+              <Typography
+                variant="body2"
+                sx={{
+                  opacity: 0.85,
+                  fontSize: "0.75rem",
+                  lineHeight: 1.4,
+                  fontWeight: 400,
+                }}
+              >
+                Kayıtlı ders bilgilerini güncelleyin
+              </Typography>
+            </Box>
+          </Box>
+          
+          {/* Bottom Row - Term Selector */}
+          <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+            <FormControl size="small" sx={{ minWidth: '100%', maxWidth: 280 }}>
+              <InputLabel sx={{ color: 'white', fontSize: '0.875rem' }}>Dönem</InputLabel>
+              <Select
+                value={selectedTerm}
+                label="Dönem"
+                onChange={(e) => setSelectedTerm(e.target.value)}
+                sx={{
+                  color: 'white',
+                  borderRadius: '12px',
+                  fontSize: '0.875rem',
+                  '& .MuiOutlinedInput-notchedOutline': {
+                    borderColor: 'rgba(255,255,255,0.5)',
+                    borderRadius: '12px'
+                  },
+                  '&:hover .MuiOutlinedInput-notchedOutline': {
+                    borderColor: 'rgba(255,255,255,0.7)',
+                  },
+                  '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                    borderColor: 'white',
+                  },
+                  '& .MuiSelect-icon': {
+                    color: 'white',
+                  },
+                }}
+              >
+                {termOptions.map((term) => (
+                  <MenuItem key={term} value={term} sx={{ fontSize: '0.875rem' }}>
+                    {term}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Box>
+        </Box>
+
+        {/* Desktop Layout */}
         <Box sx={{
-          display: 'flex',
+          display: { xs: 'none', md: 'flex' },
           alignItems: 'center',
           justifyContent: 'space-between',
           position: 'relative',
           zIndex: 1
         }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <Box sx={{
-              backgroundColor: 'rgba(255, 255, 255, 0.2)',
-              borderRadius: '16px',
-              p: 1.5,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}>
-              <IconButton onClick={onBack} sx={{ color: "white", p: 0 }}>
-                <ArrowBackIcon sx={{ fontSize: 28 }} />
-              </IconButton>
-            </Box>
+            <IconButton onClick={onBack} sx={{ color: "white", p: 1.5 }}>
+              <ArrowBackIcon sx={{ fontSize: 28 }} />
+            </IconButton>
             <Box>
               <Typography
                 variant="h4"
                 sx={{
                   fontWeight: 700,
-                  fontSize: { xs: "1.5rem", sm: "1.75rem", md: "2rem" },
+                  fontSize: { sm: "1.75rem", md: "2rem" },
                   lineHeight: 1.2,
                   letterSpacing: "-0.02em",
                   mb: 0.5
@@ -111,7 +182,7 @@ const DersGuncelle = ({ onBack, onEditCourse, selectedSemester = '2025-2026-guz'
                 variant="body1"
                 sx={{
                   opacity: 0.85,
-                  fontSize: { xs: "0.875rem", sm: "1rem" },
+                  fontSize: "1rem",
                   lineHeight: 1.4,
                   fontWeight: 400,
                 }}
@@ -158,11 +229,19 @@ const DersGuncelle = ({ onBack, onEditCourse, selectedSemester = '2025-2026-guz'
         </Box>
       </Paper>
 
-      <Grid container spacing={4}>
+      <Grid container spacing={{ xs: 2, sm: 3, md: 4 }}>
         {/* Teacher's Registered Courses */}
         <Grid item xs={12} md={6}>
-          <Paper elevation={3} sx={{ p: 4, borderRadius: 6 }}>
-            <Typography variant="h6" sx={{ mb: 3, color: 'primary.main', fontWeight: 600 }}>
+          <Paper elevation={3} sx={{ p: { xs: 2, sm: 3, md: 4 }, borderRadius: { xs: 3, sm: 4, md: 6 } }}>
+            <Typography 
+              variant="h6" 
+              sx={{ 
+                mb: { xs: 2, sm: 2.5, md: 3 }, 
+                color: 'primary.main', 
+                fontWeight: 600,
+                fontSize: { xs: '1rem', sm: '1.125rem', md: '1.25rem' }
+              }}
+            >
               Kayıtlı Dersler ({filteredTeacherCourses.length})
             </Typography>
 
@@ -171,16 +250,47 @@ const DersGuncelle = ({ onBack, onEditCourse, selectedSemester = '2025-2026-guz'
                 {selectedTerm} dönemi için kayıtlı ders bulunmamaktadır.
               </Alert>
             ) : (
-              <Box sx={{ maxHeight: 600, overflow: 'auto' }}>
+              <Box sx={{ maxHeight: { xs: 400, sm: 500, md: 600 }, overflow: 'auto' }}>
                 {filteredTeacherCourses.map((course) => (
-                  <Card key={course.id} sx={{ mb: 2, border: '1px solid #e0e0e0' }}>
-                    <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
-                        <Box>
-                          <Typography variant="subtitle2" sx={{ fontWeight: 600, color: 'primary.main', mb: 0.5 }}>
+                  <Card key={course.id} sx={{ 
+                    mb: { xs: 1.5, sm: 2 }, 
+                    border: '1px solid #e0e0e0',
+                    borderRadius: { xs: 2, sm: 3 }
+                  }}>
+                    <CardContent sx={{ 
+                      p: { xs: 1.5, sm: 2 }, 
+                      '&:last-child': { pb: { xs: 1.5, sm: 2 } } 
+                    }}>
+                      <Box sx={{ 
+                        display: 'flex', 
+                        justifyContent: 'space-between', 
+                        alignItems: 'flex-start', 
+                        mb: { xs: 1.5, sm: 2 },
+                        gap: 1
+                      }}>
+                        <Box sx={{ flex: 1, minWidth: 0 }}>
+                          <Typography 
+                            variant="subtitle2" 
+                            sx={{ 
+                              fontWeight: 600, 
+                              color: 'primary.main', 
+                              mb: 0.5,
+                              fontSize: { xs: '0.875rem', sm: '0.9375rem' },
+                              lineHeight: 1.3,
+                              wordBreak: 'break-word'
+                            }}
+                          >
                             {course.courseName}
                           </Typography>
-                          <Typography variant="caption" color="text.secondary">
+                          <Typography 
+                            variant="caption" 
+                            color="text.secondary"
+                            sx={{ 
+                              fontSize: { xs: '0.75rem', sm: '0.8125rem' },
+                              display: 'block',
+                              lineHeight: 1.2
+                            }}
+                          >
                             {course.courseCode} • {course.branch}
                           </Typography>
                         </Box>
@@ -188,21 +298,50 @@ const DersGuncelle = ({ onBack, onEditCourse, selectedSemester = '2025-2026-guz'
                           size="small" 
                           onClick={() => handleEditTeacherCourse(course)}
                           color="primary"
+                          sx={{ 
+                            flexShrink: 0,
+                            p: { xs: 0.5, sm: 1 }
+                          }}
                         >
                           <EditIcon fontSize="small" />
                         </IconButton>
                       </Box>
 
-                      <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap', mb: 2 }}>
-                        <Chip label={course.courseLanguage} size="small" variant="outlined" />
+                      <Box sx={{ 
+                        display: 'flex', 
+                        gap: { xs: 0.5, sm: 0.75 }, 
+                        flexWrap: 'wrap', 
+                        mb: { xs: 1.5, sm: 2 }
+                      }}>
+                        <Chip 
+                          label={course.courseLanguage} 
+                          size="small" 
+                          variant="outlined"
+                          sx={{ 
+                            fontSize: { xs: '0.6875rem', sm: '0.75rem' },
+                            height: { xs: 24, sm: 28 }
+                          }}
+                        />
                         <Chip 
                           label={course.mandatoryElective === 'Z' ? 'Zorunlu' : 'Seçmeli'} 
                           size="small" 
                           color={course.mandatoryElective === 'Z' ? 'primary' : 'secondary'}
+                          sx={{ 
+                            fontSize: { xs: '0.6875rem', sm: '0.75rem' },
+                            height: { xs: 24, sm: 28 }
+                          }}
                         />
                       </Box>
 
-                      <Typography variant="caption" color="text.secondary">
+                      <Typography 
+                        variant="caption" 
+                        color="text.secondary"
+                        sx={{ 
+                          fontSize: { xs: '0.6875rem', sm: '0.75rem' },
+                          lineHeight: 1.2,
+                          display: 'block'
+                        }}
+                      >
                         {course.theoryPractice} • {course.credits} Kredi • {course.ects} ECTS
                       </Typography>
                     </CardContent>
@@ -215,8 +354,16 @@ const DersGuncelle = ({ onBack, onEditCourse, selectedSemester = '2025-2026-guz'
 
         {/* Active Courses */}
         <Grid item xs={12} md={6}>
-          <Paper elevation={3} sx={{ p: 4, borderRadius: 6 }}>
-            <Typography variant="h6" sx={{ mb: 3, color: 'secondary.main', fontWeight: 600 }}>
+          <Paper elevation={3} sx={{ p: { xs: 2, sm: 3, md: 4 }, borderRadius: { xs: 3, sm: 4, md: 6 } }}>
+            <Typography 
+              variant="h6" 
+              sx={{ 
+                mb: { xs: 2, sm: 2.5, md: 3 }, 
+                color: 'secondary.main', 
+                fontWeight: 600,
+                fontSize: { xs: '1rem', sm: '1.125rem', md: '1.25rem' }
+              }}
+            >
               Aktif Dersler ({filteredActiveCourses.length})
             </Typography>
 
@@ -225,32 +372,110 @@ const DersGuncelle = ({ onBack, onEditCourse, selectedSemester = '2025-2026-guz'
                 {selectedTerm} dönemi için aktif ders bulunmamaktadır.
               </Alert>
             ) : (
-              <Box sx={{ maxHeight: 600, overflow: 'auto' }}>
+              <Box sx={{ maxHeight: { xs: 400, sm: 500, md: 600 }, overflow: 'auto' }}>
                 {filteredActiveCourses.map((course) => (
-                  <Card key={course.id} sx={{ mb: 2, border: '1px solid #e0e0e0', bgcolor: '#f8f9fa' }}>
-                    <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
-                        <Box>
-                          <Typography variant="subtitle2" sx={{ fontWeight: 600, color: 'secondary.main', mb: 0.5 }}>
+                  <Card key={course.id} sx={{ 
+                    mb: { xs: 1.5, sm: 2 }, 
+                    border: '1px solid #e0e0e0', 
+                    bgcolor: '#f8f9fa',
+                    borderRadius: { xs: 2, sm: 3 }
+                  }}>
+                    <CardContent sx={{ 
+                      p: { xs: 1.5, sm: 2 }, 
+                      '&:last-child': { pb: { xs: 1.5, sm: 2 } } 
+                    }}>
+                      <Box sx={{ 
+                        display: 'flex', 
+                        justifyContent: 'space-between', 
+                        alignItems: 'flex-start', 
+                        mb: { xs: 1.5, sm: 2 },
+                        gap: 1
+                      }}>
+                        <Box sx={{ flex: 1, minWidth: 0 }}>
+                          <Typography 
+                            variant="subtitle2" 
+                            sx={{ 
+                              fontWeight: 600, 
+                              color: 'secondary.main', 
+                              mb: 0.5,
+                              fontSize: { xs: '0.875rem', sm: '0.9375rem' },
+                              lineHeight: 1.3,
+                              wordBreak: 'break-word'
+                            }}
+                          >
                             {course.courseName}
                           </Typography>
-                          <Typography variant="caption" color="text.secondary">
+                          <Typography 
+                            variant="caption" 
+                            color="text.secondary"
+                            sx={{ 
+                              fontSize: { xs: '0.75rem', sm: '0.8125rem' },
+                              display: 'block',
+                              lineHeight: 1.2
+                            }}
+                          >
                             {course.courseCode} • Şube: {course.section}
                           </Typography>
                         </Box>
-                        <Chip label="Aktif" size="small" color="success" />
+                        <Chip 
+                          label="Aktif" 
+                          size="small" 
+                          color="success"
+                          sx={{ 
+                            fontSize: { xs: '0.6875rem', sm: '0.75rem' },
+                            height: { xs: 24, sm: 28 },
+                            flexShrink: 0
+                          }}
+                        />
                       </Box>
 
-                      <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap', mb: 2 }}>
-                        <Chip label={course.branch} size="small" variant="outlined" />
-                        <Chip label={`${course.classLevel}. Sınıf`} size="small" />
+                      <Box sx={{ 
+                        display: 'flex', 
+                        gap: { xs: 0.5, sm: 0.75 }, 
+                        flexWrap: 'wrap', 
+                        mb: { xs: 1.5, sm: 2 }
+                      }}>
+                        <Chip 
+                          label={course.branch} 
+                          size="small" 
+                          variant="outlined"
+                          sx={{ 
+                            fontSize: { xs: '0.6875rem', sm: '0.75rem' },
+                            height: { xs: 24, sm: 28 }
+                          }}
+                        />
+                        <Chip 
+                          label={`${course.classLevel}. Sınıf`} 
+                          size="small"
+                          sx={{ 
+                            fontSize: { xs: '0.6875rem', sm: '0.75rem' },
+                            height: { xs: 24, sm: 28 }
+                          }}
+                        />
                       </Box>
 
-                      <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
+                      <Typography 
+                        variant="caption" 
+                        color="text.secondary" 
+                        sx={{ 
+                          display: 'block', 
+                          mb: 1,
+                          fontSize: { xs: '0.6875rem', sm: '0.75rem' },
+                          lineHeight: 1.2
+                        }}
+                      >
                         Program: {course.days?.join(', ')} • {course.times}
                       </Typography>
 
-                      <Typography variant="caption" color="text.secondary">
+                      <Typography 
+                        variant="caption" 
+                        color="text.secondary"
+                        sx={{ 
+                          fontSize: { xs: '0.6875rem', sm: '0.75rem' },
+                          lineHeight: 1.2,
+                          display: 'block'
+                        }}
+                      >
                         {course.theoryPractice} • {course.credits} Kredi • {course.ects} ECTS
                       </Typography>
                     </CardContent>
@@ -263,14 +488,44 @@ const DersGuncelle = ({ onBack, onEditCourse, selectedSemester = '2025-2026-guz'
       </Grid>
 
       {/* Info Box */}
-      <Paper elevation={1} sx={{ p: 3, mt: 4, bgcolor: '#f5f5f5', borderRadius: 6 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <UpdateIcon color="info" />
-          <Box>
-            <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 0.5 }}>
+      <Paper elevation={1} sx={{ 
+        p: { xs: 2, sm: 2.5, md: 3 }, 
+        mt: { xs: 2, sm: 3, md: 4 }, 
+        bgcolor: '#f5f5f5', 
+        borderRadius: { xs: 3, sm: 4, md: 6 }
+      }}>
+        <Box sx={{ 
+          display: 'flex', 
+          alignItems: { xs: 'flex-start', sm: 'center' }, 
+          gap: { xs: 1.5, sm: 2 },
+          flexDirection: { xs: 'column', sm: 'row' }
+        }}>
+          <UpdateIcon 
+            color="info" 
+            sx={{ 
+              fontSize: { xs: 20, sm: 24 },
+              alignSelf: { xs: 'flex-start', sm: 'center' }
+            }}
+          />
+          <Box sx={{ flex: 1 }}>
+            <Typography 
+              variant="subtitle2" 
+              sx={{ 
+                fontWeight: 600, 
+                mb: 0.5,
+                fontSize: { xs: '0.875rem', sm: '0.9375rem' }
+              }}
+            >
               Güncelleme Bilgisi
             </Typography>
-            <Typography variant="body2" color="text.secondary">
+            <Typography 
+              variant="body2" 
+              color="text.secondary"
+              sx={{ 
+                fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                lineHeight: 1.4
+              }}
+            >
               • Kayıtlı dersleri güncellemek için düzenle butonuna tıklayın<br/>
               • Aktif dersler otomatik olarak kayıtlı ders bilgilerini kullanır<br/>
               • Ders bilgilerini güncelledikten sonra aktif derslerde de değişiklikler görünür
