@@ -135,7 +135,7 @@ const OgretmenKayit = () => {
     setSuccess("Kayıt başarılı! Giriş sayfasına yönlendiriliyorsunuz...");
     setIsLoading(false);
     setTimeout(() => {
-      navigate("/");
+      navigate("/panel");
     }, 2000);
   };
 
