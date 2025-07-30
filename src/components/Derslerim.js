@@ -235,10 +235,10 @@ const Derslerim = () => {
         name: course.courseName || course.courseTitle,
         code: course.courseCode,
         section: course.section,
-        sectionFull: `YP-${course.section}`,
+        sectionFull: YP-${course.section},
         building: "A Blok", // Default building
         room: "A101", // Default room
-        class: `${course.classLevel || 1}-A`,
+        class: ${course.classLevel || 1}-A,
         instructor: course.faculty || "Dr. Ayşe Kaya",
         schedule: {
           // Convert days array to schedule object
@@ -357,7 +357,7 @@ const Derslerim = () => {
       section: 'A1', // Default section
       term: selectedCourse.term,
       days: scheduleEntries.map(entry => entry.day),
-      times: scheduleEntries.map(entry => `${entry.startTime}-${entry.endTime}`).join(', '),
+      times: scheduleEntries.map(entry => ${entry.startTime}-${entry.endTime}).join(', '),
       scheduleEntries: scheduleEntries, // Store detailed schedule
       faculty: selectedCourse.faculty,
       classLevel: selectedCourse.classLevel || 1,
@@ -694,8 +694,8 @@ const Derslerim = () => {
                           }
                         >
                           <ListItemText
-                            primary={`${entry.day} - ${entry.startTime} ile ${entry.endTime} arası`}
-                            secondary={entry.room ? `Derslik: ${entry.room}` : 'Derslik belirtilmedi'}
+                            primary={${entry.day} - ${entry.startTime} ile ${entry.endTime} arası}
+                            secondary={entry.room ? Derslik: ${entry.room} : 'Derslik belirtilmedi'}
                           />
                         </ListItem>
                       ))}
@@ -722,4 +722,4 @@ const Derslerim = () => {
   );
 };
 
-export default Derslerim;
+export default Derslerim;

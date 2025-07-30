@@ -43,13 +43,6 @@
     ]
   },
   "devDependencies": {
-    "@types/react": "^19.1.8",
-    "cross-env": "^7.0.3"
-  },
-  "optionalDependencies": {
-    "fsevents": "*"
-  },
-  "resolutions": {
-    "fsevents": "*"
+
   }
 }
