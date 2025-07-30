@@ -104,13 +104,7 @@ export const validateProfileForm = (profile) => {
     }
   }
   
-  // Validate phone format (if provided)
-  if (profile.phone) {
-    const phoneError = validatePhone(profile.phone);
-    if (phoneError) {
-      errors.phone = phoneError;
-    }
-  }
+  // Phone validation disabled - no validation for phone field
   
   // Validate field lengths
   const fieldLengths = [
@@ -161,9 +155,7 @@ export const useFormValidation = (initialValues = {}) => {
         error = validateEmail(value);
         break;
       case 'phone':
-        if (value) { // Phone is optional
-          error = validatePhone(value);
-        }
+        // Phone validation disabled - no validation for phone field
         break;
       default:
         break;

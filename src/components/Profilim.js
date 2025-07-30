@@ -6,6 +6,7 @@ import React, {
   lazy,
   Suspense,
 } from "react";
+import profilePhoto from "../assets/mno.jpg";
 import {
   Typography,
   Box,
@@ -45,7 +46,23 @@ const Profilim = ({
   const [uploadedPhoto, setUploadedPhoto] = useState(null);
   const [photoPreview, setPhotoPreview] = useState(null);
   const [saveMessage, setSaveMessage] = useState("");
-  const [userProfile, setUserProfile] = useState(initialUserProfile);
+  const [userProfile, setUserProfile] = useState(
+    initialUserProfile || {
+      name: "MEHMET NURİ ÖĞÜT",
+      firstName: "MEHMET NURİ",
+      lastName: "ÖĞÜT",
+      title: "Öğr. Gör.",
+      school: "MANİSA TEKNİK BİLİMLER MESLEK YÜKSEKOKULU",
+      university: "MANİSA TEKNİK BİLİMLER MESLEK YÜKSEKOKULU",
+      faculty: "MAKİNE VE METAL TEKNOLOJİLERİ",
+      department: "ENDÜSTRİYEL KALIPÇILIK",
+      email: "mehmetnuri.ogut@cbu.edu.tr",
+      phone: "+90 236 201 1163",
+      webUrl: "https://avesis.mcbu.edu.tr/mehmetnuri.ogut",
+      profilePhoto: profilePhoto,
+      otherDetails: "",
+    }
+  );
   const [apiError, setApiError] = useState("");
   const [showApiError, setShowApiError] = useState(false);
 
@@ -90,10 +107,8 @@ const Profilim = ({
     () =>
       userProfile
         ? {
-            firstName:
-              userProfile.firstName || "MEHMET NURİ",
-            lastName:
-              userProfile.lastName || "ÖĞÜT",
+            firstName: userProfile.firstName || "MEHMET NURİ",
+            lastName: userProfile.lastName || "ÖĞÜT",
             email: userProfile.email || "",
             phone: userProfile.phone || "",
             university:
@@ -104,7 +119,7 @@ const Profilim = ({
             department: userProfile.department || "",
             webUrl: userProfile.webUrl || "",
             otherDetails: userProfile.otherDetails || "",
-            profilePhoto: userProfile.profilePhoto || "",
+            profilePhoto: userProfile.profilePhoto || profilePhoto,
           }
         : {},
     [userProfile]
@@ -262,11 +277,11 @@ const Profilim = ({
   }, [isEditing]);
 
   return (
-    <Container maxWidth="lg" sx={{ mt: 4, pb: 4, position: "relative" }}>
+    <Container maxWidth="lg" sx={{ mt: 2, pb: 2, position: "relative" }}>
       {/* Page Title */}
       <Typography
         variant="h4"
-        sx={{ fontWeight: "bold", color: "#1a237e", mb: 4 }}
+        sx={{ fontWeight: "bold", color: "#1a237e", mb: 2 }}
         tabIndex="0"
         role="heading"
         aria-level="1"
@@ -305,23 +320,28 @@ const Profilim = ({
         </Box>
       )}
 
-      {/* Main two-column layout - responsive for different screen sizes */}
-      <Grid container spacing={{ xs: 2, sm: 3, md: 4 }}>
-        {/* Left Profile Section (narrower) */}
-        <Grid item xs={12} md={4}>
-          <Paper
-            elevation={3}
-            sx={{
-              p: { xs: 2, sm: 3 },
-              textAlign: "center",
-              height: "100%",
-              display: "flex",
-              flexDirection: "column",
-              background: "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)",
-              borderRadius: 2,
-            }}
-          >
-            {/* Profile Photo Section */}
+      {/* Compact Single Column Layout */}
+      <Paper
+        elevation={3}
+        sx={{
+          p: { xs: 1.5, sm: 2 },
+          borderRadius: 2,
+          position: "relative",
+        }}
+      >
+        {/* Profile Header Section */}
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: { xs: "column", sm: "row" },
+            alignItems: { xs: "center", sm: "flex-start" },
+            gap: 2,
+            mb: 2,
+            mt: 1,
+          }}
+        >
+          {/* Profile Photo */}
+          <Box sx={{ textAlign: "center", flexShrink: 0 }}>
             {isEditing ? (
               <Suspense
                 fallback={
@@ -330,10 +350,11 @@ const Profilim = ({
                       display: "flex",
                       justifyContent: "center",
                       alignItems: "center",
-                      height: 200,
+                      height: 80,
+                      width: 80,
                     }}
                   >
-                    <CircularProgress size={40} />
+                    <CircularProgress size={30} />
                   </Box>
                 }
               >
@@ -346,14 +367,12 @@ const Profilim = ({
               </Suspense>
             ) : (
               <Avatar
-                src={photoPreview || userProfile.profilePhoto}
+                src={photoPreview || userProfile.profilePhoto || profilePhoto}
                 alt={"Profil fotoğrafı: " + (userProfile.name || "Kullanıcı")}
                 sx={{
-                  width: 120,
-                  height: 120,
-                  mx: "auto",
-                  mb: 2,
-                  fontSize: "3rem",
+                  width: 80,
+                  height: 80,
+                  fontSize: "2rem",
                   bgcolor: "#1a237e",
                 }}
                 role="img"
@@ -366,409 +385,66 @@ const Profilim = ({
                   : "A"}
               </Avatar>
             )}
+          </Box>
 
-            {/* User title and name */}
-            <Box sx={{ mb: 2 }}>
-              <Typography
-                variant="h6"
-                component="div"
-                sx={{
-                  fontWeight: "bold",
-                  color: "#1a237e",
-                  mb: 0.5,
-                }}
-              >
-                {userProfile.title || "Öğretim Görevlisi"}{" "}
-                {isEditing
-                  ? `${values.firstName || "MEHMET NURİ"} ${values.lastName || "ÖĞÜT"}`
-                  : userProfile.name || "MEHMET NURİ ÖĞÜT"}
-              </Typography>
-            </Box>
-
-            {/* University affiliation */}
-            <Typography
-              variant="body2"
-              sx={{
-                mb: 3,
-                color: "#1a237e",
-                fontWeight: "medium",
-                textAlign: "center",
-                lineHeight: 1.4,
-              }}
-            >
-              {isEditing
-                ? values.university
-                : userProfile.school ||
-                  userProfile.university ||
-                  "MANİSA TEKNİK BİLİMLER MESLEK YÜKSEKOKULU"}
-            </Typography>
-
-            {/* Faculty and Department */}
-            <Typography
-              variant="body2"
-              color="text.secondary"
-              sx={{
-                mb: 3,
-                fontStyle: "italic",
-                textAlign: "center",
-                lineHeight: 1.3,
-              }}
-            >
-              {isEditing
-                ? values.faculty
-                : userProfile.faculty || "MAKİNE VE METAL TEKNOLOJİLERİ"}
-              {(isEditing ? values.department : userProfile.department) && (
-                <>
-                  <br />
-                  {isEditing
-                    ? values.department
-                    : userProfile.department || "ENDÜSTRİYEL KALIPÇILIK"}
-                </>
-              )}
-            </Typography>
-
-            {/* Left side form fields */}
-            <Box sx={{ mt: 2, width: "100%" }}>
-              {/* Contact Information Section */}
-              <Typography
-                variant="subtitle2"
-                sx={{
-                  mb: 2,
-                  color: "#1a237e",
-                  fontWeight: "bold",
-                  borderBottom: "2px solid #1a237e",
-                  pb: 0.5,
-                }}
-              >
-                İletişim Bilgileri
-              </Typography>
-
-              {/* Email field */}
-              <TextField
-                label="E-posta"
-                value={values.email || ""}
-                onChange={(e) => handleChange("email", e.target.value)}
-                onBlur={() => handleBlur("email")}
-                fullWidth
-                variant="outlined"
-                margin="normal"
-                error={touched.email && !!errors.email}
-                helperText={touched.email && errors.email}
-                InputProps={{
-                  readOnly: !isEditing,
-                  sx: { borderRadius: 1 },
-                }}
-                sx={{ mb: 2 }}
-              />
-
-              {/* Phone Number field */}
-              <TextField
-                label="Ofis Telefonu"
-                value={values.phone || ""}
-                onChange={(e) => handleChange("phone", e.target.value)}
-                onBlur={() => handleBlur("phone")}
-                fullWidth
-                variant="outlined"
-                margin="normal"
-                error={touched.phone && !!errors.phone}
-                helperText={touched.phone && errors.phone}
-                InputProps={{
-                  readOnly: !isEditing,
-                  sx: { borderRadius: 1 },
-                }}
-                sx={{ mb: 2 }}
-              />
-
-              {/* Web URL field */}
-              <TextField
-                label="Web Profili"
-                value={values.webUrl || ""}
-                onChange={(e) => handleChange("webUrl", e.target.value)}
-                onBlur={() => handleBlur("webUrl")}
-                fullWidth
-                variant="outlined"
-                margin="normal"
-                error={touched.webUrl && !!errors.webUrl}
-                helperText={touched.webUrl && errors.webUrl}
-                InputProps={{
-                  readOnly: !isEditing,
-                  sx: { borderRadius: 1 },
-                }}
-                sx={{ mb: 2 }}
-              />
-
-              {/* Other Details field */}
-              <TextField
-                label="Ek Bilgiler"
-                value={values.otherDetails || ""}
-                onChange={(e) => handleChange("otherDetails", e.target.value)}
-                onBlur={() => handleBlur("otherDetails")}
-                fullWidth
-                variant="outlined"
-                margin="normal"
-                multiline
-                rows={4}
-                InputProps={{
-                  readOnly: !isEditing,
-                  sx: { borderRadius: 1 },
-                }}
-                sx={{ mb: 2 }}
-              />
-            </Box>
-          </Paper>
-        </Grid>
-
-        {/* Right Profile Section (wider) */}
-        <Grid item xs={12} md={8}>
-          <Paper
-            elevation={3}
+          {/* Profile Info */}
+          <Box
             sx={{
-              p: 3,
-              position: "relative",
-              height: "100%",
+              flex: 1,
               display: "flex",
-              flexDirection: "column",
-              borderRadius: 2,
+              alignItems: "center",
+              justifyContent: { xs: "center", sm: "flex-start" },
+              minHeight: 80, // Avatar yüksekliği ile aynı
             }}
           >
-            {/* "Only visible on this screen" note */}
             <Typography
-              variant="caption"
+              variant="h6"
+              component="div"
               sx={{
-                position: "absolute",
-                top: 10,
-                right: 16,
-                color: "text.secondary",
-                fontSize: "0.7rem",
-                fontStyle: "italic",
+                fontWeight: "bold",
+                color: "#1a237e",
+                textAlign: { xs: "center", sm: "left" },
               }}
             >
-              Sadece bu ekranda görünür
+              {userProfile.title || "Ögr. Gör."}{" "}
+              {isEditing
+                ? `${values.firstName || "MEHMET NURİ"} ${
+                    values.lastName || "ÖĞÜT"
+                  }`
+                : userProfile.name || "MEHMET NURİ ÖĞÜT"}
             </Typography>
+          </Box>
 
-            {/* Personal Information Fields */}
-            <Box sx={{ mt: 3 }}>
-              {/* Personal Information Section */}
-              <Typography
-                variant="h6"
+          {/* Edit/Save/Cancel Buttons */}
+          <Box
+            sx={{
+              display: "flex",
+              gap: 2,
+              flexShrink: 0,
+            }}
+          >
+            {!isEditing ? (
+              <Button
+                variant="contained"
+                onClick={handleEditClick}
+                disabled={isSaving}
                 sx={{
-                  mb: 3,
-                  color: "#1a237e",
-                  fontWeight: "bold",
-                  borderBottom: "2px solid #1a237e",
-                  pb: 1,
+                  bgcolor: "#1a237e",
+                  "&:hover": {
+                    bgcolor: "#0d1642",
+                  },
                 }}
+                ref={editButtonRef}
+                aria-label="Profili Düzenle"
               >
-                Kişisel Bilgiler
-              </Typography>
-
-              {/* First Name field */}
-              <TextField
-                label="Ad"
-                value={values.firstName || ""}
-                onChange={(e) => handleChange("firstName", e.target.value)}
-                onBlur={() => handleBlur("firstName")}
-                fullWidth
-                variant="outlined"
-                margin="normal"
-                error={touched.firstName && !!errors.firstName}
-                helperText={touched.firstName && errors.firstName}
-                InputProps={{
-                  readOnly: !isEditing,
-                  sx: { borderRadius: 1 },
-                }}
-                sx={{ mb: 2 }}
-                inputRef={isEditing ? firstFieldRef : null}
-                inputProps={{
-                  "aria-required": "true",
-                  "aria-invalid":
-                    touched.firstName && !!errors.firstName ? "true" : "false",
-                }}
-                aria-describedby={
-                  touched.firstName && errors.firstName
-                    ? `firstName-error`
-                    : undefined
-                }
-              />
-
-              {/* Last Name field */}
-              <TextField
-                label="Soyad"
-                value={values.lastName || ""}
-                onChange={(e) => handleChange("lastName", e.target.value)}
-                onBlur={() => handleBlur("lastName")}
-                fullWidth
-                variant="outlined"
-                margin="normal"
-                error={touched.lastName && !!errors.lastName}
-                helperText={touched.lastName && errors.lastName}
-                InputProps={{
-                  readOnly: !isEditing,
-                  sx: { borderRadius: 1 },
-                }}
-                sx={{ mb: 2 }}
-                inputProps={{
-                  "aria-required": "true",
-                  "aria-invalid":
-                    touched.lastName && !!errors.lastName ? "true" : "false",
-                }}
-                aria-describedby={
-                  touched.lastName && errors.lastName
-                    ? `lastName-error`
-                    : undefined
-                }
-              />
-
-              {/* Email field */}
-              <TextField
-                label="E-posta"
-                value={values.email || ""}
-                onChange={(e) => handleChange("email", e.target.value)}
-                onBlur={() => handleBlur("email")}
-                fullWidth
-                variant="outlined"
-                margin="normal"
-                error={touched.email && !!errors.email}
-                helperText={touched.email && errors.email}
-                InputProps={{
-                  readOnly: !isEditing,
-                  sx: { borderRadius: 1 },
-                }}
-                sx={{ mb: 2 }}
-                inputProps={{
-                  "aria-required": "true",
-                  "aria-invalid":
-                    touched.email && !!errors.email ? "true" : "false",
-                  type: "email",
-                }}
-                aria-describedby={
-                  touched.email && errors.email ? `email-error` : undefined
-                }
-              />
-
-              {/* Office Phone field */}
-              <TextField
-                label="Ofis Telefonu"
-                value={values.phone || ""}
-                onChange={(e) => handleChange("phone", e.target.value)}
-                onBlur={() => handleBlur("phone")}
-                fullWidth
-                variant="outlined"
-                margin="normal"
-                error={touched.phone && !!errors.phone}
-                helperText={touched.phone && errors.phone}
-                InputProps={{
-                  readOnly: !isEditing,
-                  sx: { borderRadius: 1 },
-                }}
-                sx={{ mb: 2 }}
-              />
-
-              {/* Institutional Information Section */}
-              <Typography
-                variant="h6"
-                sx={{
-                  mb: 3,
-                  mt: 4,
-                  color: "#1a237e",
-                  fontWeight: "bold",
-                  borderBottom: "2px solid #1a237e",
-                  pb: 1,
-                }}
-              >
-                Kurumsal Bilgiler
-              </Typography>
-
-              {/* University field */}
-              <TextField
-                label="Kurum"
-                value={values.university || ""}
-                onChange={(e) => handleChange("university", e.target.value)}
-                onBlur={() => handleBlur("university")}
-                fullWidth
-                variant="outlined"
-                margin="normal"
-                error={touched.university && !!errors.university}
-                helperText={touched.university && errors.university}
-                InputProps={{
-                  readOnly: !isEditing,
-                  sx: { borderRadius: 1 },
-                }}
-                sx={{ mb: 2 }}
-              />
-
-              {/* Faculty field */}
-              <TextField
-                label="Fakülte/Yüksekokul"
-                value={values.faculty || ""}
-                onChange={(e) => handleChange("faculty", e.target.value)}
-                onBlur={() => handleBlur("faculty")}
-                fullWidth
-                variant="outlined"
-                margin="normal"
-                error={touched.faculty && !!errors.faculty}
-                helperText={touched.faculty && errors.faculty}
-                InputProps={{
-                  readOnly: !isEditing,
-                  sx: { borderRadius: 1 },
-                }}
-                sx={{ mb: 2 }}
-              />
-
-              {/* Department field */}
-              <TextField
-                label="Bölüm"
-                value={values.department || ""}
-                onChange={(e) => handleChange("department", e.target.value)}
-                onBlur={() => handleBlur("department")}
-                fullWidth
-                variant="outlined"
-                margin="normal"
-                error={touched.department && !!errors.department}
-                helperText={touched.department && errors.department}
-                InputProps={{
-                  readOnly: !isEditing,
-                  sx: { borderRadius: 1 },
-                }}
-                sx={{ mb: 2 }}
-              />
-
-              {/* Web Profile field */}
-              <TextField
-                label="Web Profili"
-                value={values.webUrl || ""}
-                onChange={(e) => handleChange("webUrl", e.target.value)}
-                onBlur={() => handleBlur("webUrl")}
-                fullWidth
-                variant="outlined"
-                margin="normal"
-                error={touched.webUrl && !!errors.webUrl}
-                helperText={touched.webUrl && errors.webUrl}
-                InputProps={{
-                  readOnly: !isEditing,
-                  sx: { borderRadius: 1 },
-                }}
-                sx={{ mb: 2 }}
-                inputProps={{
-                  type: "url",
-                }}
-              />
-            </Box>
-
-            {/* Edit/Save/Cancel Buttons */}
-            <Box
-              sx={{
-                mt: 3,
-                display: "flex",
-                justifyContent: "flex-start",
-                gap: 2,
-              }}
-            >
-              {!isEditing ? (
+                Şifre Değiştir
+              </Button>
+            ) : (
+              <>
                 <Button
                   variant="contained"
-                  startIcon={<Edit />}
-                  onClick={handleEditClick}
+                  startIcon={<Save />}
+                  onClick={handleSaveClick}
                   disabled={isSaving}
                   sx={{
                     bgcolor: "#1a237e",
@@ -776,41 +452,169 @@ const Profilim = ({
                       bgcolor: "#0d1642",
                     },
                   }}
-                  ref={editButtonRef}
-                  aria-label="Profili Düzenle"
                 >
-                  Profili Düzenle
+                  {isSaving ? "Kaydediliyor..." : "Kaydet"}
                 </Button>
-              ) : (
-                <>
-                  <Button
-                    variant="contained"
-                    startIcon={<Save />}
-                    onClick={handleSaveClick}
-                    disabled={isSaving}
-                    sx={{
-                      bgcolor: "#1a237e",
-                      "&:hover": {
-                        bgcolor: "#0d1642",
-                      },
-                    }}
-                  >
-                    {isSaving ? "Kaydediliyor..." : "Profili Kaydet"}
-                  </Button>
-                  <Button
-                    variant="outlined"
-                    startIcon={<Cancel />}
-                    onClick={handleCancelClick}
-                    disabled={isSaving}
-                  >
-                    İptal
-                  </Button>
-                </>
-              )}
-            </Box>
-          </Paper>
+                <Button
+                  variant="outlined"
+                  startIcon={<Cancel />}
+                  onClick={handleCancelClick}
+                  disabled={isSaving}
+                >
+                  İptal
+                </Button>
+              </>
+            )}
+          </Box>
+        </Box>
+
+        {/* Form Fields in Compact Grid */}
+        <Grid container spacing={1.5}>
+          {/* Personal Information */}
+          <Grid item xs={12} sm={6}>
+            <TextField
+              label="Ad"
+              value={values.firstName || ""}
+              onChange={(e) => handleChange("firstName", e.target.value)}
+              onBlur={() => handleBlur("firstName")}
+              fullWidth
+              variant="outlined"
+              size="small"
+              error={touched.firstName && !!errors.firstName}
+              helperText={touched.firstName && errors.firstName}
+              InputProps={{
+                readOnly: !isEditing,
+              }}
+              inputRef={isEditing ? firstFieldRef : null}
+            />
+          </Grid>
+
+          <Grid item xs={12} sm={6}>
+            <TextField
+              label="Soyad"
+              value={values.lastName || ""}
+              onChange={(e) => handleChange("lastName", e.target.value)}
+              onBlur={() => handleBlur("lastName")}
+              fullWidth
+              variant="outlined"
+              size="small"
+              error={touched.lastName && !!errors.lastName}
+              helperText={touched.lastName && errors.lastName}
+              InputProps={{
+                readOnly: !isEditing,
+              }}
+            />
+          </Grid>
+
+          <Grid item xs={12} sm={6}>
+            <TextField
+              label="E-posta"
+              value={values.email || ""}
+              onChange={(e) => handleChange("email", e.target.value)}
+              onBlur={() => handleBlur("email")}
+              fullWidth
+              variant="outlined"
+              size="small"
+              error={touched.email && !!errors.email}
+              helperText={touched.email && errors.email}
+              InputProps={{
+                readOnly: !isEditing,
+              }}
+              inputProps={{
+                type: "email",
+              }}
+            />
+          </Grid>
+
+          <Grid item xs={12} sm={6}>
+            <TextField
+              label="Cep Telefonu"
+              value={values.phone || ""}
+              onChange={(e) => handleChange("phone", e.target.value)}
+              onBlur={() => handleBlur("phone")}
+              fullWidth
+              variant="outlined"
+              size="small"
+              error={touched.phone && !!errors.phone}
+              helperText={touched.phone && errors.phone}
+              InputProps={{
+                readOnly: !isEditing,
+              }}
+            />
+          </Grid>
+
+          <Grid item xs={12}>
+            <TextField
+              label="Kurum"
+              value={values.university || ""}
+              onChange={(e) => handleChange("university", e.target.value)}
+              onBlur={() => handleBlur("university")}
+              fullWidth
+              variant="outlined"
+              size="small"
+              error={touched.university && !!errors.university}
+              helperText={touched.university && errors.university}
+              InputProps={{
+                readOnly: !isEditing,
+              }}
+            />
+          </Grid>
+
+          <Grid item xs={12} sm={6}>
+            <TextField
+              label="Fakülte/Yüksekokul"
+              value={values.faculty || ""}
+              onChange={(e) => handleChange("faculty", e.target.value)}
+              onBlur={() => handleBlur("faculty")}
+              fullWidth
+              variant="outlined"
+              size="small"
+              error={touched.faculty && !!errors.faculty}
+              helperText={touched.faculty && errors.faculty}
+              InputProps={{
+                readOnly: !isEditing,
+              }}
+            />
+          </Grid>
+
+          <Grid item xs={12} sm={6}>
+            <TextField
+              label="Bölüm"
+              value={values.department || ""}
+              onChange={(e) => handleChange("department", e.target.value)}
+              onBlur={() => handleBlur("department")}
+              fullWidth
+              variant="outlined"
+              size="small"
+              error={touched.department && !!errors.department}
+              helperText={touched.department && errors.department}
+              InputProps={{
+                readOnly: !isEditing,
+              }}
+            />
+          </Grid>
+
+          <Grid item xs={12}>
+            <TextField
+              label="Web Profili"
+              value={values.webUrl || ""}
+              onChange={(e) => handleChange("webUrl", e.target.value)}
+              onBlur={() => handleBlur("webUrl")}
+              fullWidth
+              variant="outlined"
+              size="small"
+              error={touched.webUrl && !!errors.webUrl}
+              helperText={touched.webUrl && errors.webUrl}
+              InputProps={{
+                readOnly: !isEditing,
+              }}
+              inputProps={{
+                type: "url",
+              }}
+            />
+          </Grid>
         </Grid>
-      </Grid>
+      </Paper>
     </Container>
   );
 };
