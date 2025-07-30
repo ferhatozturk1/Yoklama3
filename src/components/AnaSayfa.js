@@ -64,7 +64,7 @@ function TabPanel({ children, value, index, ...other }) {
 const AnaSayfa = ({
   onSectionChange,
   onNavigate,
-  selectedSemester = "2025-2026-guz",
+  selectedSemester = "2025-2026-Güz",
 }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
@@ -206,7 +206,7 @@ const AnaSayfa = ({
     const schedule = {};
 
     // Check if courseScheduleData exists
-    if (!courseScheduleData || !courseScheduleData["2025-2026-guz"]) {
+    if (!courseScheduleData || !courseScheduleData["2025-2026-Güz"]) {
       console.error("courseScheduleData is not available");
       // Return empty schedule as fallback
       const timeSlots = [
@@ -234,7 +234,7 @@ const AnaSayfa = ({
 
     const currentSchedule =
       courseScheduleData[selectedSemester] ||
-      courseScheduleData["2025-2026-guz"];
+      courseScheduleData["2025-2026-Güz"];
 
     // Initialize empty schedule
     const timeSlots = [

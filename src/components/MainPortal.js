@@ -26,7 +26,7 @@ const MainPortal = () => {
   const navigate = useNavigate();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
-  const [selectedSemester, setSelectedSemester] = useState("2025-2026-guz");
+  const [selectedSemester, setSelectedSemester] = useState("2025-2026-Güz");
   const [sidebarOpen, setSidebarOpen] = useState(!isMobile);
   const [selectedCourse, setSelectedCourse] = useState(null);
   const [userProfile] = useState({

@@ -26,12 +26,11 @@ import {
 import {
   Save as SaveIcon,
   Clear as ClearIcon,
-  ArrowBack as ArrowBackIcon,
   Delete as DeleteIcon,
   Edit as EditIcon,
 } from "@mui/icons-material";
 
-const DersKayit = ({ onBack, selectedSemester = "2025-2026-guz" }) => {
+const DersKayit = ({ onBack, selectedSemester = "2025-2026-Güz" }) => {
   const location = useLocation();
   const [courseData, setCourseData] = useState({
     term: selectedSemester,
@@ -74,25 +73,7 @@ const DersKayit = ({ onBack, selectedSemester = "2025-2026-guz" }) => {
     localStorage.setItem("teacherCourses", JSON.stringify(savedCourses));
   }, [savedCourses]);
 
-  const termOptions = [
-    "2023-2024 Güz",
-    "2023-2024 Bahar",
-    "2024-2025 Güz",
-    "2024-2025 Bahar",
-    "2025-2026 Güz",
-    "2025-2026 Bahar",
-  ];
 
-  const branchOptions = [
-    "Matematik",
-    "Bilgisayar Mühendisliği",
-    "Elektrik Mühendisliği",
-    "Makine Mühendisliği",
-    "İngilizce",
-    "Fizik",
-    "Kimya",
-    "Biyoloji",
-  ];
 
   const languageOptions = ["Türkçe", "İngilizce", "Almanca", "Fransızca"];
 
@@ -190,123 +171,36 @@ const DersKayit = ({ onBack, selectedSemester = "2025-2026-guz" }) => {
   };
 
   return (
-    <Container maxWidth="lg" sx={{ mt: 2, pb: 4 }}>
-      {/* Header */}
-      <Paper
-        elevation={3}
-        sx={{
-          p: 4,
-          mb: 4,
-          background: "linear-gradient(135deg, #1a237e 0%, #0d47a1 100%)",
-          borderRadius: "32px",
-          color: "white",
-          position: 'relative',
-          overflow: 'hidden'
-        }}
-      >
-        <Box sx={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          position: 'relative',
-          zIndex: 1
-        }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <Box sx={{
-              backgroundColor: 'rgba(255, 255, 255, 0.2)',
-              borderRadius: '16px',
-              p: 1.5,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}>
-              <IconButton onClick={onBack} sx={{ color: "white", p: 0 }}>
-                <ArrowBackIcon sx={{ fontSize: 28 }} />
-              </IconButton>
-            </Box>
-            <Box>
-              <Typography
-                variant="h4"
-                sx={{
-                  fontWeight: 700,
-                  fontSize: { xs: "1.5rem", sm: "1.75rem", md: "2rem" },
-                  lineHeight: 1.2,
-                  letterSpacing: "-0.02em",
-                  mb: 0.5
-                }}
-              >
-                {editingCourse ? "Ders Güncelle" : "Ders Kayıt"}
-              </Typography>
-              <Typography
-                variant="body1"
-                sx={{
-                  opacity: 0.85,
-                  fontSize: { xs: "0.875rem", sm: "1rem" },
-                  lineHeight: 1.4,
-                  fontWeight: 400,
-                }}
-              >
-                {editingCourse
-                  ? "Mevcut ders bilgilerini güncelleyin"
-                  : "Yeni ders tanımlayın ve kaydedin"}
-              </Typography>
-            </Box>
-          </Box>
-          
-          {/* Sağ tarafta tarih/saat bilgisi */}
-          <Box sx={{ 
-            textAlign: 'right',
-            display: { xs: 'none', sm: 'block' }
-          }}>
-            <Typography
-              variant="h6"
-              sx={{
-                fontWeight: 600,
-                fontSize: "1.1rem",
-                mb: 0.5
-              }}
-            >
-              {new Date().toLocaleTimeString('tr-TR', { 
-                hour: '2-digit', 
-                minute: '2-digit' 
-              })}
-            </Typography>
-            <Typography
-              variant="body2"
-              sx={{
-                opacity: 0.8,
-                fontSize: "0.875rem"
-              }}
-            >
-              {new Date().toLocaleDateString('tr-TR', { 
-                day: '2-digit',
-                month: 'long',
-                weekday: 'long'
-              })}
-            </Typography>
-          </Box>
-        </Box>
-        
-
-      </Paper>
-
-      <Grid container spacing={4}>
+    <Container maxWidth="lg" sx={{ mt: 1, pb: 2 }}>
+      <Grid container spacing={2}>
         {/* Form Section */}
         <Grid item xs={12} md={8}>
-          <Paper elevation={3} sx={{ p: 4, borderRadius: 6 }}>
-            <Typography
-              variant="h6"
-              sx={{ mb: 3, color: "primary.main", fontWeight: 600 }}
+          <Paper elevation={2} sx={{ p: 2, borderRadius: 3 }}>
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                mb: 2,
+              }}
             >
-              Ders Bilgileri
-            </Typography>
+              <Typography
+                variant="h6"
+                sx={{ color: "primary.main", fontWeight: 600, fontSize: '1rem' }}
+              >
+                {editingCourse ? "Ders Güncelle" : "Ders Bilgileri"}
+              </Typography>
+              <Button variant="outlined" onClick={onBack} size="small">
+                Geri Dön
+              </Button>
+            </Box>
 
-            <Grid container spacing={3}>
-
+            <Grid container spacing={2}>
               <Grid item xs={12} sm={6}>
                 <TextField
                   fullWidth
                   label="Branş"
+                  size="small"
                   value={courseData.branch}
                   onChange={(e) => handleInputChange("branch", e.target.value)}
                   placeholder="örn: Matematik"
@@ -317,6 +211,7 @@ const DersKayit = ({ onBack, selectedSemester = "2025-2026-guz" }) => {
                 <TextField
                   fullWidth
                   label="Ders Kodu"
+                  size="small"
                   value={courseData.courseCode}
                   onChange={(e) =>
                     handleInputChange("courseCode", e.target.value)
@@ -325,10 +220,11 @@ const DersKayit = ({ onBack, selectedSemester = "2025-2026-guz" }) => {
                 />
               </Grid>
 
-              <Grid item xs={12} sm={6}>
+              <Grid item xs={12}>
                 <TextField
                   fullWidth
                   label="Ders Adı"
+                  size="small"
                   value={courseData.courseName}
                   onChange={(e) =>
                     handleInputChange("courseName", e.target.value)
@@ -337,8 +233,8 @@ const DersKayit = ({ onBack, selectedSemester = "2025-2026-guz" }) => {
                 />
               </Grid>
 
-              <Grid item xs={12} sm={6}>
-                <FormControl fullWidth>
+              <Grid item xs={12} sm={4}>
+                <FormControl fullWidth size="small">
                   <InputLabel>Ders Dili</InputLabel>
                   <Select
                     value={courseData.courseLanguage}
@@ -356,10 +252,11 @@ const DersKayit = ({ onBack, selectedSemester = "2025-2026-guz" }) => {
                 </FormControl>
               </Grid>
 
-              <Grid item xs={12} sm={6}>
+              <Grid item xs={12} sm={4}>
                 <TextField
                   fullWidth
                   label="T+P (Teori + Pratik)"
+                  size="small"
                   value={courseData.theoryPractice}
                   onChange={(e) =>
                     handleInputChange("theoryPractice", e.target.value)
@@ -369,28 +266,29 @@ const DersKayit = ({ onBack, selectedSemester = "2025-2026-guz" }) => {
               </Grid>
 
               <Grid item xs={12} sm={4}>
-                <TextField
-                  fullWidth
-                  label="Kredi"
-                  type="number"
-                  value={courseData.credits}
-                  onChange={(e) => handleInputChange("credits", e.target.value)}
-                />
+                <Box sx={{ display: 'flex', gap: 1 }}>
+                  <TextField
+                    label="Kredi"
+                    size="small"
+                    type="number"
+                    value={courseData.credits}
+                    onChange={(e) => handleInputChange("credits", e.target.value)}
+                    sx={{ width: '50%' }}
+                  />
+                  <TextField
+                    label="ECTS"
+                    size="small"
+                    type="number"
+                    value={courseData.ects}
+                    onChange={(e) => handleInputChange("ects", e.target.value)}
+                    sx={{ width: '50%' }}
+                  />
+                </Box>
               </Grid>
 
-              <Grid item xs={12} sm={4}>
-                <TextField
-                  fullWidth
-                  label="ECTS"
-                  type="number"
-                  value={courseData.ects}
-                  onChange={(e) => handleInputChange("ects", e.target.value)}
-                />
-              </Grid>
-
-              <Grid item xs={12} sm={4}>
+              <Grid item xs={12}>
                 <FormControl component="fieldset">
-                  <FormLabel component="legend">Z/S Durumu</FormLabel>
+                  <FormLabel component="legend" sx={{ fontSize: '0.875rem', mb: 0.5 }}>Z/S Durumu</FormLabel>
                   <RadioGroup
                     row
                     value={courseData.mandatoryElective}
@@ -400,25 +298,18 @@ const DersKayit = ({ onBack, selectedSemester = "2025-2026-guz" }) => {
                   >
                     <FormControlLabel
                       value="Z"
-                      control={<Radio />}
+                      control={<Radio size="small" />}
                       label="Zorunlu"
+                      sx={{ '& .MuiFormControlLabel-label': { fontSize: '0.875rem' } }}
                     />
                     <FormControlLabel
                       value="S"
-                      control={<Radio />}
+                      control={<Radio size="small" />}
                       label="Seçmeli"
+                      sx={{ '& .MuiFormControlLabel-label': { fontSize: '0.875rem' } }}
                     />
                   </RadioGroup>
                 </FormControl>
-              </Grid>
-
-              <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  label="Öğretim Üyesi"
-                  value={courseData.faculty}
-                  onChange={(e) => handleInputChange("faculty", e.target.value)}
-                />
               </Grid>
             </Grid>
 
@@ -426,8 +317,8 @@ const DersKayit = ({ onBack, selectedSemester = "2025-2026-guz" }) => {
             <Box
               sx={{
                 display: "flex",
-                gap: 2,
-                mt: 4,
+                gap: 1,
+                mt: 2,
                 justifyContent: "flex-end",
               }}
             >
@@ -435,6 +326,7 @@ const DersKayit = ({ onBack, selectedSemester = "2025-2026-guz" }) => {
                 variant="outlined"
                 startIcon={<ClearIcon />}
                 onClick={handleClear}
+                size="small"
               >
                 Temizle
               </Button>
@@ -442,6 +334,7 @@ const DersKayit = ({ onBack, selectedSemester = "2025-2026-guz" }) => {
                 variant="contained"
                 startIcon={<SaveIcon />}
                 onClick={handleSave}
+                size="small"
               >
                 {editingCourse ? "Güncelle" : "Kaydet"}
               </Button>
@@ -451,10 +344,10 @@ const DersKayit = ({ onBack, selectedSemester = "2025-2026-guz" }) => {
 
         {/* Saved Courses List */}
         <Grid item xs={12} md={4}>
-          <Paper elevation={3} sx={{ p: 3, borderRadius: 6 }}>
+          <Paper elevation={2} sx={{ p: 2, borderRadius: 3 }}>
             <Typography
               variant="h6"
-              sx={{ mb: 2, color: "primary.main", fontWeight: 600 }}
+              sx={{ mb: 1.5, color: "primary.main", fontWeight: 600, fontSize: '1rem' }}
             >
               Kayıtlı Dersler ({savedCourses.length})
             </Typography>
@@ -463,29 +356,29 @@ const DersKayit = ({ onBack, selectedSemester = "2025-2026-guz" }) => {
               <Typography
                 variant="body2"
                 color="text.secondary"
-                sx={{ textAlign: "center", py: 4 }}
+                sx={{ textAlign: "center", py: 2, fontSize: '0.875rem' }}
               >
                 Henüz kayıtlı ders bulunmamaktadır
               </Typography>
             ) : (
-              <Box sx={{ maxHeight: 600, overflow: "auto" }}>
+              <Box sx={{ maxHeight: 400, overflow: "auto" }}>
                 {savedCourses.map((course) => (
                   <Card
                     key={course.id}
-                    sx={{ mb: 2, border: "1px solid #e0e0e0" }}
+                    sx={{ mb: 1, border: "1px solid #e0e0e0", borderRadius: 2 }}
                   >
-                    <CardContent sx={{ p: 2, "&:last-child": { pb: 2 } }}>
+                    <CardContent sx={{ p: 1.5, "&:last-child": { pb: 1.5 } }}>
                       <Box
                         sx={{
                           display: "flex",
                           justifyContent: "space-between",
                           alignItems: "flex-start",
-                          mb: 1,
+                          mb: 0.5,
                         }}
                       >
                         <Typography
                           variant="subtitle2"
-                          sx={{ fontWeight: 600, color: "primary.main" }}
+                          sx={{ fontWeight: 600, color: "primary.main", fontSize: '0.875rem', lineHeight: 1.2 }}
                         >
                           {course.courseName}
                         </Typography>
@@ -493,15 +386,17 @@ const DersKayit = ({ onBack, selectedSemester = "2025-2026-guz" }) => {
                           <IconButton
                             size="small"
                             onClick={() => handleEdit(course)}
+                            sx={{ p: 0.5 }}
                           >
-                            <EditIcon fontSize="small" />
+                            <EditIcon sx={{ fontSize: 16 }} />
                           </IconButton>
                           <IconButton
                             size="small"
                             onClick={() => handleDelete(course.id)}
                             color="error"
+                            sx={{ p: 0.5 }}
                           >
-                            <DeleteIcon fontSize="small" />
+                            <DeleteIcon sx={{ fontSize: 16 }} />
                           </IconButton>
                         </Box>
                       </Box>
@@ -509,9 +404,9 @@ const DersKayit = ({ onBack, selectedSemester = "2025-2026-guz" }) => {
                       <Typography
                         variant="caption"
                         color="text.secondary"
-                        sx={{ display: "block", mb: 1 }}
+                        sx={{ display: "block", mb: 0.5, fontSize: '0.75rem' }}
                       >
-                        {course.courseCode} • {course.term}
+                        {course.courseCode} • {course.branch}
                       </Typography>
 
                       <Box
@@ -519,14 +414,9 @@ const DersKayit = ({ onBack, selectedSemester = "2025-2026-guz" }) => {
                           display: "flex",
                           gap: 0.5,
                           flexWrap: "wrap",
-                          mb: 1,
+                          mb: 0.5,
                         }}
                       >
-                        <Chip
-                          label={course.branch}
-                          size="small"
-                          variant="outlined"
-                        />
                         <Chip
                           label={
                             course.mandatoryElective === "Z"
@@ -539,12 +429,12 @@ const DersKayit = ({ onBack, selectedSemester = "2025-2026-guz" }) => {
                               ? "primary"
                               : "secondary"
                           }
+                          sx={{ height: 20, fontSize: '0.6875rem' }}
                         />
                       </Box>
 
-                      <Typography variant="caption" color="text.secondary">
-                        {course.theoryPractice} • {course.credits} Kredi •{" "}
-                        {course.ects} ECTS
+                      <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.6875rem' }}>
+                        {course.theoryPractice} • {course.credits} Kredi • {course.ects} ECTS
                       </Typography>
                     </CardContent>
                   </Card>

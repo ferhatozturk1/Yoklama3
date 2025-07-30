@@ -63,7 +63,7 @@ const courseSchedule = {
 
 // courseScheduleData for compatibility with existing components
 export const courseScheduleData = {
-  "2025-2026-guz": {
+  "2025-2026-Güz": {
     pazartesi: {
       "09:00": { code: "", name: "", room: "", type: "" },
       "09:55": { code: "", name: "Proje Danışmanlığı", room: "Ofis", type: "danismanlik" },
@@ -129,7 +129,7 @@ export const courseScheduleData = {
 
 // Course list for Derslerim component
 export const courseList = {
-  "2025-2026-guz": [
+  "2025-2026-Güz": [
     {
       id: "iys1101",
       code: "İYS1101",

@@ -26,7 +26,7 @@ import {
   Schedule as ScheduleIcon
 } from '@mui/icons-material';
 
-const DersEkleBirak = ({ onBack, selectedSemester = '2025-2026-guz' }) => {
+const DersEkleBirak = ({ onBack, selectedSemester = '2025-2026-Güz' }) => {
   const [teacherCourses, setTeacherCourses] = useState([]);
   const [activeCourses, setActiveCourses] = useState([]);
   const [selectedCourse, setSelectedCourse] = useState(null);

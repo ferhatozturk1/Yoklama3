@@ -426,7 +426,6 @@ const Profilim = ({
             {!isEditing ? (
               <Button
                 variant="contained"
-                onClick={handleEditClick}
                 disabled={isSaving}
                 sx={{
                   bgcolor: "#1a237e",
@@ -435,7 +434,7 @@ const Profilim = ({
                   },
                 }}
                 ref={editButtonRef}
-                aria-label="Profili Düzenle"
+                aria-label="Şifre Değiştir"
               >
                 Şifre Değiştir
               </Button>
