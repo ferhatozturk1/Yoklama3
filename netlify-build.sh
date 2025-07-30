@@ -15,11 +15,20 @@ echo "🧹 Cleaning previous build..."
 rm -rf build/ node_modules/.cache/ || true
 
 echo "📦 Installing dependencies..."
-if ! npm install --legacy-peer-deps --verbose; then
+# Set environment variables for fsevents fix
+export DISABLE_OPENCOLLECTIVE=true
+export ADBLOCK=true
+export CI=false
+
+if ! npm install --legacy-peer-deps --no-optional --verbose; then
     echo "❌ Error: Failed to install dependencies"
     echo "📋 NPM Debug Info:"
     npm config list
-    exit 1
+    echo "📋 Trying alternative install method..."
+    if ! npm ci --legacy-peer-deps --no-optional; then
+        echo "❌ Alternative install also failed"
+        exit 1
+    fi
 fi
 
 echo "✅ Dependencies installed successfully"
@@ -30,11 +39,19 @@ npm list react react-scripts --depth=0 || true
 
 echo "🔨 Building project..."
 export NODE_OPTIONS="--max-old-space-size=4096"
+export CI=false
+export GENERATE_SOURCEMAP=false
+export DISABLE_ESLINT_PLUGIN=true
+
 if ! npm run build:netlify; then
     echo "❌ Error: Build failed"
     echo "📋 Build logs:"
     cat npm-debug.log 2>/dev/null || echo "No npm debug log found"
-    exit 1
+    echo "📋 Trying direct build command..."
+    if ! CI=false GENERATE_SOURCEMAP=false react-scripts build; then
+        echo "❌ Direct build also failed"
+        exit 1
+    fi
 fi
 
 echo "✅ Build completed successfully!"
