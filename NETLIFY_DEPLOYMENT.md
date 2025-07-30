@@ -1,5 +1,17 @@
 # 🚀 Netlify Deployment Guide
 
+## 🚨 ÖNEMLI: Branch Adı Sorunu
+
+**Sorun**: Branch adında Türkçe karakter (`küçük_ekran`) var, Netlify bunu desteklemiyor.
+
+**Çözüm**: Branch adını değiştir:
+```bash
+git checkout -b main
+git push origin main
+```
+
+Sonra Netlify'de **main** branch'ini seç.
+
 ## 📋 Netlify fsevents Sorunu Çözümü
 
 Bu proje `fsevents` paket sorunu nedeniyle Netlify'de build hatası veriyordu. Aşağıdaki çözümler uygulandı:
@@ -57,9 +69,24 @@ loglevel=error
 
 ### 📝 Deployment Adımları:
 
+#### 1. Branch Adını Düzelt:
+```bash
+# Yeni branch oluştur (Türkçe karakter olmadan)
+git checkout -b main
+
+# Tüm değişiklikleri yeni branch'e push et
+git push origin main
+
+# Eski branch'i sil (opsiyonel)
+git push origin --delete küçük_ekran
+```
+
+#### 2. Netlify Ayarları:
 1. Repository'yi Netlify'e bağla
-2. Build settings'i yukarıdaki gibi ayarla
-3. Deploy et
+2. **Branch to deploy**: `main` seç
+3. **Build command**: `npm run build:safe`
+4. **Publish directory**: `build`
+5. Deploy et
 
 ### 🐛 Sorun Giderme:
 

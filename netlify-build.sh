@@ -8,7 +8,12 @@ echo "📋 Environment Information:"
 echo "Node version: $(node --version)"
 echo "NPM version: $(npm --version)"
 echo "Current directory: $(pwd)"
+echo "Git branch: $(git branch --show-current 2>/dev/null || echo 'Branch info not available')"
 echo "Available memory: $(free -h 2>/dev/null || echo 'Memory info not available')"
+
+# Fix potential encoding issues
+export LANG=en_US.UTF-8
+export LC_ALL=en_US.UTF-8
 
 # Clean any previous build
 echo "🧹 Cleaning previous build..."
