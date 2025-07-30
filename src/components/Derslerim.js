@@ -23,9 +23,18 @@ import {
   ListItem,
   ListItemText,
   IconButton,
-  Paper
+  Paper,
+  Divider
 } from "@mui/material";
-import { Edit, Add as AddIcon, Delete as DeleteIcon, Schedule as ScheduleIcon } from "@mui/icons-material";
+import { 
+  Edit, 
+  Add as AddIcon, 
+  Delete as DeleteIcon, 
+  Schedule as ScheduleIcon,
+  LocationOn,
+  Groups,
+  CalendarToday
+} from "@mui/icons-material";
 
 import DersDetay from "./DersDetay";
 
@@ -54,74 +63,163 @@ const Derslerim = () => {
     "13:40", "14:30", "14:40", "15:30", "15:40", "16:30", "16:40", "17:30"
   ];
 
-  // Static courses (existing ones)
+  // Real courses from current university schedule (2025-2026)
   const staticCourses = [
     {
       id: 1,
       name: "Matematik",
-      code: "MAT113/3",
+      code: "MRK 1116",
       section: "A1",
-      sectionFull: "YP-A1",
-      building: "A Blok",
-      room: "A101",
-      class: "10-A",
-      instructor: "Dr. Ayşe Kaya",
+      sectionFull: "MRK-A1",
+      building: "Manisa Teknik Bilimler MYO",
+      room: "Amfi-6",
       schedule: {
-        pazartesi: [{ startTime: "08:40", endTime: "09:30", room: "A101" }],
-        çarşamba: [{ startTime: "14:00", endTime: "14:50", room: "A101" }],
-        cuma: [{ startTime: "10:00", endTime: "10:50", room: "A101" }],
+        çarşamba: [{ startTime: "08:40", endTime: "11:30", room: "Amfi-6" }],
       },
       totalWeeks: 15,
       currentWeek: 8,
-      studentCount: 32,
-      attendanceStatus: "not_taken",
-      lastAttendance: null,
-      attendanceRate: 0,
+      studentCount: 45,
+      attendanceStatus: "completed",
+      lastAttendance: "2025-07-30",
+      attendanceRate: 88,
       files: [],
     },
     {
       id: 2,
-      name: "İngilizce",
-      code: "ENG101/8",
-      section: "D101",
-      sectionFull: "YP-D101",
-      building: "D Blok",
-      room: "D101",
-      class: "10-B",
-      instructor: "Dr. Ayşe Kaya",
+      name: "Matematik",
+      code: "IYS 1101",
+      section: "B1",
+      sectionFull: "IYS-B1",
+      building: "Manisa Teknik Bilimler MYO",
+      room: "Amfi-...",
       schedule: {
-        salı: [{ startTime: "09:50", endTime: "10:40", room: "D101" }],
-        perşembe: [{ startTime: "11:00", endTime: "11:50", room: "D101" }],
+        salı: [{ startTime: "08:40", endTime: "10:30", room: "Amfi" }],
       },
       totalWeeks: 15,
       currentWeek: 8,
-      studentCount: 28,
-      attendanceStatus: "not_taken",
-      lastAttendance: null,
-      attendanceRate: 0,
+      studentCount: 38,
+      attendanceStatus: "completed",
+      lastAttendance: "2025-07-29",
+      attendanceRate: 92,
       files: [],
     },
     {
       id: 3,
-      name: "Bilgisayar Mühendisliği",
-      code: "BMC3",
-      section: "1",
-      sectionFull: "Lab-1",
-      building: "B Blok",
-      room: "B205",
-      class: "11-A",
-      instructor: "Dr. Ayşe Kaya",
+      name: "Mesleki Matematik",
+      code: "EKT 1117",
+      section: "C1",
+      sectionFull: "EKT-C1",
+      building: "Manisa Teknik Bilimler MYO",
+      room: "Amfi-6",
       schedule: {
-        perşembe: [{ startTime: "11:00", endTime: "11:50", room: "B205" }],
+        çarşamba: [{ startTime: "11:45", endTime: "12:30", room: "Amfi-6" }],
       },
       totalWeeks: 15,
       currentWeek: 8,
-      studentCount: 24,
-      attendanceStatus: "not_taken",
-      lastAttendance: null,
-      attendanceRate: 0,
+      studentCount: 32,
+      attendanceStatus: "completed",
+      lastAttendance: "2025-07-30",
+      attendanceRate: 84,
       files: [],
     },
+    {
+      id: 4,
+      name: "Programlama",
+      code: "IYS 1103",
+      section: "Lab1",
+      sectionFull: "IYS-Lab1",
+      building: "Manisa Teknik Bilimler MYO",
+      room: "Derslik-7",
+      schedule: {
+        salı: [{ startTime: "16:15", endTime: "17:00", room: "Derslik-7" }],
+        cuma: [{ startTime: "13:40", endTime: "15:30", room: "Bilgisayar Lab-2" }],
+      },
+      totalWeeks: 15,
+      currentWeek: 8,
+      studentCount: 28,
+      attendanceStatus: "completed",
+      lastAttendance: "2025-07-26",
+      attendanceRate: 94,
+      files: [],
+    },
+    {
+      id: 5,
+      name: "Akademik Yapay Zekaya Giriş",
+      code: "SSD 3264",
+      section: "A1",
+      sectionFull: "SSD-A1",
+      building: "Mühendislik ve Doğa Bilimleri Fakültesi",
+      room: "Derslik",
+      schedule: {
+        perşembe: [{ startTime: "16:15", endTime: "17:00", room: "Derslik" }],
+        cuma: [{ startTime: "16:15", endTime: "17:00", room: "Derslik" }],
+      },
+      totalWeeks: 15,
+      currentWeek: 8,
+      studentCount: 22,
+      attendanceStatus: "completed",
+      lastAttendance: "2025-07-26",
+      attendanceRate: 91,
+      files: [],
+    },
+    {
+      id: 6,
+      name: "Bilişim ve Bilgisayar Ağları Temelleri",
+      code: "IYS 1107",
+      section: "B1",
+      sectionFull: "IYS-B1",
+      building: "Manisa Teknik Bilimler MYO",
+      room: "Derslik-8",
+      schedule: {
+        salı: [{ startTime: "11:45", endTime: "12:30", room: "Derslik-8" }],
+      },
+      totalWeeks: 15,
+      currentWeek: 8,
+      studentCount: 35,
+      attendanceStatus: "pending",
+      lastAttendance: "2025-07-29",
+      attendanceRate: 85,
+      files: [],
+    },
+    {
+      id: 7,
+      name: "Yapay Zeka ile Zenginleştirilmiş Proje Yönetimi",
+      code: "USD 1165",
+      section: "A1",
+      sectionFull: "USD-A1",
+      building: "Mühendislik ve Doğa Bilimleri Fakültesi",
+      room: "Amfi-...",
+      schedule: {
+        perşembe: [{ startTime: "13:40", endTime: "15:30", room: "Amfi" }],
+        perşembe: [{ startTime: "17:00", endTime: "17:45", room: "Amfi" }],
+      },
+      totalWeeks: 15,
+      currentWeek: 8,
+      studentCount: 18,
+      attendanceStatus: "completed",
+      lastAttendance: "2025-07-25",
+      attendanceRate: 89,
+      files: [],
+    },
+    {
+      id: 8,
+      name: "Veri Toplama ve Analizi",
+      code: "IYS 2103",
+      section: "B1",
+      sectionFull: "IYS-B1",
+      building: "Manisa Teknik Bilimler MYO",
+      room: "Derslik-6",
+      schedule: {
+        cuma: [{ startTime: "08:40", endTime: "10:30", room: "Derslik-6" }],
+      },
+      totalWeeks: 15,
+      currentWeek: 8,
+      studentCount: 26,
+      attendanceStatus: "completed",
+      lastAttendance: "2025-07-26",
+      attendanceRate: 87,
+      files: [],
+    }
   ];
 
   const [dersler, setDersler] = useState(staticCourses);
@@ -286,11 +384,21 @@ const Derslerim = () => {
   }
 
   return (
-    <Container maxWidth="lg" sx={{ mt: 4, pb: 4 }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+    <Container maxWidth="xl" sx={{ py: 1.5 }}>
+      {/* Compact Header */}
+      <Box sx={{ 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'center', 
+        mb: 2,
+        p: 1.5,
+        bgcolor: 'white',
+        borderRadius: 2,
+        boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
+      }}>
         <Typography
-          variant="h4"
-          sx={{ fontWeight: "bold", color: "#1a237e" }}
+          variant="h5"
+          sx={{ fontWeight: 600, color: "#1a237e", display: 'flex', alignItems: 'center', gap: 1 }}
         >
           📚 Derslerim
         </Typography>
@@ -298,11 +406,18 @@ const Derslerim = () => {
           variant="contained"
           startIcon={<ScheduleIcon />}
           onClick={handleOpenScheduleModal}
+          size="small"
+          sx={{ 
+            textTransform: 'none',
+            fontWeight: 500,
+            px: 2
+          }}
         >
           Program Ekle
         </Button>
       </Box>
-      <Grid container spacing={3}>
+      {/* Compact Course Grid */}
+      <Grid container spacing={1.5}>
         {dersler.map((ders) => (
           <Grid item xs={12} sm={6} md={4} key={ders.id}>
             <Card
@@ -310,11 +425,11 @@ const Derslerim = () => {
               sx={{
                 height: "100%",
                 cursor: "pointer",
-                transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
-                borderRadius: "24px",
-                background: "linear-gradient(145deg, #ffffff 0%, #f8f9ff 100%)",
-                border: "1px solid rgba(26, 35, 126, 0.08)",
-                boxShadow: "0 4px 20px rgba(26, 35, 126, 0.08)",
+                transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                borderRadius: 3,
+                background: "white",
+                border: "1px solid rgba(0,0,0,0.08)",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
                 position: "relative",
                 overflow: "hidden",
                 "&::before": {
@@ -323,117 +438,75 @@ const Derslerim = () => {
                   top: 0,
                   left: 0,
                   right: 0,
-                  height: "4px",
-                  background: "linear-gradient(90deg, #1a237e 0%, #3949ab 50%, #5e35b1 100%)",
-                  borderRadius: "24px 24px 0 0",
+                  height: "3px",
+                  background: `linear-gradient(90deg, ${
+                    ders.attendanceRate >= 80 ? '#4caf50' : 
+                    ders.attendanceRate >= 60 ? '#ff9800' : '#f44336'
+                  } 0%, ${
+                    ders.attendanceRate >= 80 ? '#66bb6a' : 
+                    ders.attendanceRate >= 60 ? '#ffb74d' : '#ef5350'
+                  } 100%)`,
                 },
                 "&:hover": {
-                  transform: "translateY(-8px) scale(1.02)",
-                  boxShadow: "0 20px 40px rgba(26, 35, 126, 0.15)",
-                  border: "1px solid rgba(26, 35, 126, 0.15)",
-                  "& .card-content": {
-                    background: "linear-gradient(145deg, #ffffff 0%, #f0f4ff 100%)",
-                  }
-                },
-                "&:active": {
-                  transform: "translateY(-4px) scale(1.01)",
-                  transition: "all 0.1s ease",
+                  transform: "translateY(-4px)",
+                  boxShadow: "0 8px 25px rgba(0,0,0,0.15)",
+                  border: "1px solid rgba(25, 118, 210, 0.2)",
                 }
               }}
               onClick={() => handleDersClick(ders)}
             >
-              <CardContent
-                className="card-content"
-                sx={{
-                  p: { xs: 2.5, sm: 3 },
-                  textAlign: "center",
-                  background: "transparent",
-                  transition: "all 0.4s ease",
-                  borderRadius: "24px",
-                  position: "relative",
-                  zIndex: 1
-                }}
-              >
-                {/* Ders Kodu */}
-                <Typography
-                  variant="h4"
-                  sx={{
-                    fontWeight: 700,
-                    background: "linear-gradient(135deg, #1a237e 0%, #3949ab 100%)",
-                    backgroundClip: "text",
-                    WebkitBackgroundClip: "text",
-                    WebkitTextFillColor: "transparent",
-                    mb: 1,
-                    fontSize: { xs: "1.75rem", sm: "2rem" },
-                    letterSpacing: "-0.02em"
-                  }}
-                >
-                  {ders.code}
-                </Typography>
-
-                {/* Section */}
-                <Typography
-                  variant="h6"
-                  sx={{
-                    color: "rgba(26, 35, 126, 0.7)",
-                    mb: 0.5,
-                    fontWeight: 600,
-                    fontSize: { xs: "1rem", sm: "1.125rem" }
-                  }}
-                >
-                  Section - {ders.section}
-                </Typography>
-                <Typography
-                  variant="body1"
-                  sx={{
-                    color: "rgba(26, 35, 126, 0.6)",
-                    mb: 3,
-                    fontSize: { xs: "0.875rem", sm: "1rem" },
-                    fontWeight: 500
-                  }}
-                >
-                  {ders.sectionFull}
-                </Typography>
-
-                {/* Katılım Oranı */}
-                <Box sx={{ mb: 3 }}>
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      mb: 2,
-                      color: "rgba(26, 35, 126, 0.7)",
-                      fontWeight: 500,
-                      fontSize: { xs: "0.8125rem", sm: "0.875rem" }
-                    }}
-                  >
-                    {ders.attendanceRate > 0 ? 'Genel Katılım Oranı' : 'Henüz yoklama alınmadı'}
-                  </Typography>
+              <CardContent sx={{ p: 1.2 }}>
+                {/* Course Header */}
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1.2 }}>
+                  <Box>
+                    <Typography
+                      variant="h6"
+                      sx={{
+                        fontWeight: 600,
+                        color: "#1a237e",
+                        mb: 0.5,
+                        fontSize: '1.1rem'
+                      }}
+                    >
+                      {ders.code}
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        color: "rgba(26, 35, 126, 0.7)",
+                        fontWeight: 500
+                      }}
+                    >
+                      {ders.section}
+                    </Typography>
+                  </Box>
+                  
+                  {/* Attendance Rate Circle - Compact */}
                   <Box
                     sx={{
-                      width: { xs: 70, sm: 80 },
-                      height: { xs: 70, sm: 80 },
+                      width: 45,
+                      height: 45,
                       borderRadius: "50%",
-                      border: `3px solid ${ders.attendanceRate >= 80 ? '#4caf50' : ders.attendanceRate >= 60 ? '#ff9800' : ders.attendanceRate > 0 ? '#f44336' : '#e0e0e0'}`,
+                      border: `2px solid ${
+                        ders.attendanceRate >= 80 ? '#4caf50' : 
+                        ders.attendanceRate >= 60 ? '#ff9800' : '#f44336'
+                      }`,
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
-                      mx: "auto",
-                      background: ders.attendanceRate > 0
-                        ? `radial-gradient(circle, ${ders.attendanceRate >= 80 ? 'rgba(76, 175, 80, 0.1)' : ders.attendanceRate >= 60 ? 'rgba(255, 152, 0, 0.1)' : 'rgba(244, 67, 54, 0.1)'} 0%, rgba(255, 255, 255, 0.9) 100%)`
-                        : "radial-gradient(circle, rgba(224, 224, 224, 0.1) 0%, rgba(255, 255, 255, 0.9) 100%)",
-                      boxShadow: ders.attendanceRate > 0
-                        ? `0 4px 12px ${ders.attendanceRate >= 80 ? 'rgba(76, 175, 80, 0.2)' : ders.attendanceRate >= 60 ? 'rgba(255, 152, 0, 0.2)' : 'rgba(244, 67, 54, 0.2)'}`
-                        : "0 4px 12px rgba(224, 224, 224, 0.2)",
-                      transition: "all 0.3s ease",
+                      background: `radial-gradient(circle, ${
+                        ders.attendanceRate >= 80 ? 'rgba(76, 175, 80, 0.1)' : 
+                        ders.attendanceRate >= 60 ? 'rgba(255, 152, 0, 0.1)' : 'rgba(244, 67, 54, 0.1)'
+                      } 0%, rgba(255, 255, 255, 0.9) 100%)`,
                     }}
                   >
                     <Typography
-                      variant="h4"
+                      variant="body2"
                       sx={{
                         fontWeight: 700,
-                        color: ders.attendanceRate >= 80 ? '#4caf50' : ders.attendanceRate >= 60 ? '#ff9800' : ders.attendanceRate > 0 ? '#f44336' : '#bdbdbd',
-                        fontSize: { xs: "1.5rem", sm: "1.75rem" },
-                        textShadow: "0 1px 2px rgba(0,0,0,0.1)"
+                        color: ders.attendanceRate >= 80 ? '#4caf50' : 
+                               ders.attendanceRate >= 60 ? '#ff9800' : '#f44336',
+                        fontSize: '0.875rem'
                       }}
                     >
                       %{ders.attendanceRate}
@@ -441,114 +514,62 @@ const Derslerim = () => {
                   </Box>
                 </Box>
 
-                {/* Ders Bilgileri - Detaylı Format */}
-                <Box
+                {/* Course Name */}
+                <Typography
+                  variant="h6"
                   sx={{
-                    textAlign: "left",
-                    mb: 3,
-                    background: "rgba(26, 35, 126, 0.02)",
-                    borderRadius: "16px",
-                    p: 2,
-                    border: "1px solid rgba(26, 35, 126, 0.05)"
+                    fontWeight: 600,
+                    color: "#1a237e",
+                    mb: 1.2,
+                    fontSize: '0.95rem'
                   }}
                 >
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      mb: 1.5,
-                      color: "rgba(26, 35, 126, 0.8)",
-                      fontSize: { xs: "0.75rem", sm: "0.8125rem" },
-                      lineHeight: 1.5
-                    }}
-                  >
-                    <Box component="span" sx={{ fontWeight: 600, color: "rgba(26, 35, 126, 0.9)" }}>Ders:</Box> {ders.name}
-                  </Typography>
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      mb: 1.5,
-                      color: "rgba(26, 35, 126, 0.8)",
-                      fontSize: { xs: "0.8125rem", sm: "0.875rem" },
-                      lineHeight: 1.5
-                    }}
-                  >
-                    <Box component="span" sx={{ fontWeight: 600, color: "rgba(26, 35, 126, 0.9)" }}>Günler:</Box> {getDaysText(ders.schedule)}
-                  </Typography>
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      mb: 1.5,
-                      color: "rgba(26, 35, 126, 0.8)",
-                      fontSize: { xs: "0.8125rem", sm: "0.875rem" },
-                      lineHeight: 1.5
-                    }}
-                  >
-                    <Box component="span" sx={{ fontWeight: 600, color: "rgba(26, 35, 126, 0.9)" }}>Derslik:</Box> {ders.building} - {ders.room}
-                  </Typography>
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      mb: 1.5,
-                      color: "rgba(26, 35, 126, 0.8)",
-                      fontSize: { xs: "0.8125rem", sm: "0.875rem" },
-                      lineHeight: 1.5
-                    }}
-                  >
-                    <Box component="span" sx={{ fontWeight: 600, color: "rgba(26, 35, 126, 0.9)" }}>Öğrenci Sayısı:</Box> {ders.studentCount}
-                  </Typography>
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      mb: ders.info ? 1.5 : 0,
-                      color: "rgba(26, 35, 126, 0.8)",
-                      fontSize: { xs: "0.8125rem", sm: "0.875rem" },
-                      lineHeight: 1.5
-                    }}
-                  >
-                    <Box component="span" sx={{ fontWeight: 600, color: "rgba(26, 35, 126, 0.9)" }}>Yoklama Oranı:</Box> %{ders.attendanceRate}
-                  </Typography>
-                  {ders.info && (
-                    <Typography
-                      variant="body2"
-                      sx={{
-                        fontStyle: 'italic',
-                        color: 'rgba(26, 35, 126, 0.6)',
-                        fontSize: { xs: "0.75rem", sm: "0.8125rem" },
-                        lineHeight: 1.4,
-                        background: "rgba(26, 35, 126, 0.03)",
-                        borderRadius: "8px",
-                        p: 1,
-                        border: "1px solid rgba(26, 35, 126, 0.05)"
-                      }}
-                    >
-                      {ders.info}
+                  {ders.name}
+                </Typography>
+
+                {/* Course Info - Horizontal Layout */}
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.6, mb: 1.2 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <LocationOn sx={{ fontSize: 16, color: '#666' }} />
+                    <Typography variant="caption" color="text.secondary">
+                      {ders.building} - {ders.room}
                     </Typography>
-                  )}
+                  </Box>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Groups sx={{ fontSize: 16, color: '#666' }} />
+                    <Typography variant="caption" color="text.secondary">
+                      {ders.studentCount} öğrenci
+                    </Typography>
+                  </Box>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <CalendarToday sx={{ fontSize: 16, color: '#666' }} />
+                    <Typography variant="caption" color="text.secondary">
+                      {getDaysText(ders.schedule)}
+                    </Typography>
+                  </Box>
+
                 </Box>
 
-                {/* Dersi Düzenle Butonu */}
+                <Divider sx={{ my: 0.8 }} />
+
+                {/* Action Button */}
                 <Button
                   variant="contained"
                   startIcon={<Edit />}
                   fullWidth
+                  size="small"
                   sx={{
                     background: "linear-gradient(135deg, #1a237e 0%, #3949ab 100%)",
-                    borderRadius: "16px",
-                    py: { xs: 1.25, sm: 1.5 },
-                    fontSize: { xs: "0.875rem", sm: "1rem" },
-                    fontWeight: 600,
+                    borderRadius: 2,
+                    py: 1,
+                    fontSize: '0.875rem',
+                    fontWeight: 500,
                     textTransform: "none",
-                    boxShadow: "0 4px 12px rgba(26, 35, 126, 0.3)",
-                    border: "1px solid rgba(255, 255, 255, 0.1)",
-                    transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                    boxShadow: "0 2px 8px rgba(26, 35, 126, 0.3)",
                     "&:hover": {
                       background: "linear-gradient(135deg, #0d47a1 0%, #283593 100%)",
-                      transform: "translateY(-2px)",
-                      boxShadow: "0 8px 20px rgba(26, 35, 126, 0.4)",
-                    },
-                    "&:active": {
-                      transform: "translateY(0px)",
-                      boxShadow: "0 4px 12px rgba(26, 35, 126, 0.3)",
+                      transform: "translateY(-1px)",
+                      boxShadow: "0 4px 12px rgba(26, 35, 126, 0.4)",
                     }
                   }}
                 >
