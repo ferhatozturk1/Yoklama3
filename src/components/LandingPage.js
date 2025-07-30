@@ -40,13 +40,13 @@ function LandingPage() {
   };
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen" style={{ background: "white" }}>
       <ScrollAnimations />
       
       {/* Navbar */}
       <nav
         className="fixed top-0 left-0 right-0 z-50"
-        style={{ background: "rgba(0,0,0,0.2)", backdropFilter: "blur(10px)" }}
+        style={{ background: "#3b82f6", boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)" }}
       >
         <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "0 20px" }}>
           <div
@@ -374,27 +374,27 @@ function LandingPage() {
               style={{
                 fontSize: "4rem",
                 fontWeight: "900",
-                color: "white",
+                color: "#1f2937",
                 marginBottom: "24px",
                 lineHeight: "1.1",
                 margin: "0 0 24px 0",
               }}
             >
               QR Kodlu Yoklama
-              <span style={{ display: "block", color: "#fde047" }}>Sistemi</span>
+              <span style={{ display: "block", color: "#3b82f6" }}>Sistemi</span>
             </h1>
             <p
               className="scroll-animate-stagger delay-200"
               style={{
                 fontSize: "1.25rem",
-                color: "rgba(255,255,255,0.9)",
+                color: "#6b7280",
                 maxWidth: "800px",
                 margin: "0 auto 48px auto",
                 lineHeight: "1.6",
               }}
             >
               Eğitim kurumları için{" "}
-              <span style={{ fontWeight: "600", color: "#fde047" }}>modern ve güvenli</span>{" "}
+              <span style={{ fontWeight: "600", color: "#3b82f6" }}>modern ve güvenli</span>{" "}
               yoklama çözümü. QR kod teknolojisi ile öğrenci devam takibini kolaylaştırın.
             </p>
           </div>
@@ -445,47 +445,47 @@ function LandingPage() {
             <div
               className="scroll-animate-stagger delay-500 hover-lift"
               style={{
-                background: "rgba(255,255,255,0.1)",
+                background: "#f8fafc",
                 borderRadius: "16px",
                 padding: "24px",
-                backdropFilter: "blur(10px)",
-                border: "1px solid rgba(255,255,255,0.2)",
+                border: "1px solid #e2e8f0",
+                boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
               }}
             >
-              <div style={{ fontSize: "2.5rem", fontWeight: "bold", color: "#fde047", marginBottom: "8px" }}>
+              <div style={{ fontSize: "2.5rem", fontWeight: "bold", color: "#3b82f6", marginBottom: "8px" }}>
                 5000+
               </div>
-              <div style={{ color: "rgba(255,255,255,0.8)" }}>Aktif Öğretmen</div>
+              <div style={{ color: "#6b7280" }}>Aktif Öğretmen</div>
             </div>
             <div
               className="scroll-animate-stagger delay-600 hover-lift"
               style={{
-                background: "rgba(255,255,255,0.1)",
+                background: "#f8fafc",
                 borderRadius: "16px",
                 padding: "24px",
-                backdropFilter: "blur(10px)",
-                border: "1px solid rgba(255,255,255,0.2)",
+                border: "1px solid #e2e8f0",
+                boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
               }}
             >
-              <div style={{ fontSize: "2.5rem", fontWeight: "bold", color: "#fde047", marginBottom: "8px" }}>
+              <div style={{ fontSize: "2.5rem", fontWeight: "bold", color: "#3b82f6", marginBottom: "8px" }}>
                 50K+
               </div>
-              <div style={{ color: "rgba(255,255,255,0.8)" }}>Kayıtlı Öğrenci</div>
+              <div style={{ color: "#6b7280" }}>Kayıtlı Öğrenci</div>
             </div>
             <div
               className="scroll-animate-stagger delay-700 hover-lift"
               style={{
-                background: "rgba(255,255,255,0.1)",
+                background: "#f8fafc",
                 borderRadius: "16px",
                 padding: "24px",
-                backdropFilter: "blur(10px)",
-                border: "1px solid rgba(255,255,255,0.2)",
+                border: "1px solid #e2e8f0",
+                boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
               }}
             >
-              <div style={{ fontSize: "2.5rem", fontWeight: "bold", color: "#fde047", marginBottom: "8px" }}>
+              <div style={{ fontSize: "2.5rem", fontWeight: "bold", color: "#3b82f6", marginBottom: "8px" }}>
                 99.9%
               </div>
-              <div style={{ color: "rgba(255,255,255,0.8)" }}>Güvenilirlik</div>
+              <div style={{ color: "#6b7280" }}>Güvenilirlik</div>
             </div>
           </div>
         </div>
@@ -499,7 +499,7 @@ function LandingPage() {
               style={{
                 fontSize: "3rem",
                 fontWeight: "bold",
-                color: "white",
+                color: "#1f2937",
                 marginBottom: "24px",
                 margin: "0 0 24px 0",
               }}
@@ -510,7 +510,7 @@ function LandingPage() {
               className="scroll-animate delay-200"
               style={{
                 fontSize: "1.25rem",
-                color: "rgba(255,255,255,0.8)",
+                color: "#6b7280",
                 maxWidth: "900px",
                 margin: "0 auto 40px auto",
                 lineHeight: "1.8",
@@ -532,11 +532,11 @@ function LandingPage() {
             <div
               className="scroll-animate-left"
               style={{
-                background: "rgba(255,255,255,0.1)",
+                background: "#f8fafc",
                 padding: "40px",
                 borderRadius: "20px",
-                backdropFilter: "blur(10px)",
-                border: "1px solid rgba(255,255,255,0.2)",
+                border: "1px solid #e2e8f0",
+                boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
               }}
             >
               <div
@@ -553,10 +553,10 @@ function LandingPage() {
               >
                 <FaQrcode style={{ fontSize: "28px", color: "white" }} />
               </div>
-              <h3 style={{ fontSize: "1.5rem", fontWeight: "bold", color: "white", marginBottom: "16px", margin: "0 0 16px 0" }}>
+              <h3 style={{ fontSize: "1.5rem", fontWeight: "bold", color: "#1f2937", marginBottom: "16px", margin: "0 0 16px 0" }}>
                 Misyonumuz
               </h3>
-              <p style={{ color: "rgba(255,255,255,0.8)", lineHeight: "1.7", margin: 0, fontSize: "16px" }}>
+              <p style={{ color: "#6b7280", lineHeight: "1.7", margin: 0, fontSize: "16px" }}>
                 Eğitim kurumlarının günlük operasyonlarını kolaylaştırmak, öğretmenlerin zamanını daha verimli kullanmalarını sağlamak ve 
                 teknoloji ile eğitim süreçlerini modernize etmek. QR kod teknolojisi ile yoklama alma sürecini hızlandırarak, 
                 eğitime daha fazla zaman ayırılmasını hedefliyoruz.
@@ -566,11 +566,11 @@ function LandingPage() {
             <div
               className="scroll-animate-right"
               style={{
-                background: "rgba(255,255,255,0.1)",
+                background: "#f8fafc",
                 padding: "40px",
                 borderRadius: "20px",
-                backdropFilter: "blur(10px)",
-                border: "1px solid rgba(255,255,255,0.2)",
+                border: "1px solid #e2e8f0",
+                boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
               }}
             >
               <div
@@ -587,10 +587,10 @@ function LandingPage() {
               >
                 <FaUsers style={{ fontSize: "28px", color: "white" }} />
               </div>
-              <h3 style={{ fontSize: "1.5rem", fontWeight: "bold", color: "white", marginBottom: "16px", margin: "0 0 16px 0" }}>
+              <h3 style={{ fontSize: "1.5rem", fontWeight: "bold", color: "#1f2937", marginBottom: "16px", margin: "0 0 16px 0" }}>
                 Vizyonumuz
               </h3>
-              <p style={{ color: "rgba(255,255,255,0.8)", lineHeight: "1.7", margin: 0, fontSize: "16px" }}>
+              <p style={{ color: "#6b7280", lineHeight: "1.7", margin: 0, fontSize: "16px" }}>
                 Türkiye'nin en güvenilir ve yaygın kullanılan eğitim teknolojisi platformu olmak. 
                 Tüm eğitim kademelerinde dijital çözümler sunarak, öğretmenlerin ve öğrencilerin hayatını kolaylaştırmak. 
                 Sürekli yenilik ve gelişim ile eğitim sektörüne değer katmaya devam etmek.
@@ -601,11 +601,11 @@ function LandingPage() {
           <div
             className="scroll-animate"
             style={{
-              background: "rgba(255,255,255,0.1)",
+              background: "#f8fafc",
               padding: "40px",
               borderRadius: "20px",
-              backdropFilter: "blur(10px)",
-              border: "1px solid rgba(255,255,255,0.2)",
+              border: "1px solid #e2e8f0",
+              boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
               textAlign: "center",
             }}
           >
@@ -623,14 +623,14 @@ function LandingPage() {
             >
               <FaShieldAlt style={{ fontSize: "28px", color: "white" }} />
             </div>
-            <h3 style={{ fontSize: "1.5rem", fontWeight: "bold", color: "white", marginBottom: "16px", margin: "0 0 16px 0" }}>
+            <h3 style={{ fontSize: "1.5rem", fontWeight: "bold", color: "#1f2937", marginBottom: "16px", margin: "0 0 16px 0" }}>
               Değerlerimiz
             </h3>
-            <p style={{ color: "rgba(255,255,255,0.8)", lineHeight: "1.7", margin: 0, fontSize: "16px", maxWidth: "800px", margin: "0 auto" }}>
-              <strong style={{ color: "white" }}>Güvenlik:</strong> Verilerinizin korunması en önceliğimiz. 
-              <strong style={{ color: "white" }}> • Yenilik:</strong> Sürekli gelişen teknoloji ile çözümler sunuyoruz. 
-              <strong style={{ color: "white" }}> • Kullanıcı Odaklılık:</strong> Kolay ve anlaşılır arayüzler tasarlıyoruz. 
-              <strong style={{ color: "white" }}> • Güvenilirlik:</strong> %99.9 uptime ile kesintisiz hizmet veriyoruz.
+            <p style={{ color: "#6b7280", lineHeight: "1.7", margin: 0, fontSize: "16px", maxWidth: "800px", margin: "0 auto" }}>
+              <strong style={{ color: "#1f2937" }}>Güvenlik:</strong> Verilerinizin korunması en önceliğimiz. 
+              <strong style={{ color: "#1f2937" }}> • Yenilik:</strong> Sürekli gelişen teknoloji ile çözümler sunuyoruz. 
+              <strong style={{ color: "#1f2937" }}> • Kullanıcı Odaklılık:</strong> Kolay ve anlaşılır arayüzler tasarlıyoruz. 
+              <strong style={{ color: "#1f2937" }}> • Güvenilirlik:</strong> %99.9 uptime ile kesintisiz hizmet veriyoruz.
             </p>
           </div>
         </div>
@@ -645,7 +645,7 @@ function LandingPage() {
               style={{
                 fontSize: "3rem",
                 fontWeight: "bold",
-                color: "white",
+                color: "#1f2937",
                 marginBottom: "24px",
                 margin: "0 0 24px 0",
               }}
@@ -656,7 +656,7 @@ function LandingPage() {
               className="scroll-animate delay-200"
               style={{
                 fontSize: "1.25rem",
-                color: "rgba(255,255,255,0.8)",
+                color: "#6b7280",
                 maxWidth: "800px",
                 margin: "0 auto",
                 lineHeight: "1.6",
@@ -676,11 +676,11 @@ function LandingPage() {
             <div
               className="scroll-animate-left hover-lift"
               style={{
-                background: "rgba(255,255,255,0.1)",
+                background: "#f8fafc",
                 padding: "32px",
                 borderRadius: "16px",
-                backdropFilter: "blur(10px)",
-                border: "1px solid rgba(255,255,255,0.2)",
+                border: "1px solid #e2e8f0",
+                boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
                 transition: "all 0.3s",
               }}
             >
@@ -698,10 +698,10 @@ function LandingPage() {
               >
                 <FaQrcode style={{ fontSize: "24px", color: "white" }} />
               </div>
-              <h3 style={{ fontSize: "1.5rem", fontWeight: "bold", color: "white", marginBottom: "16px", margin: "0 0 16px 0" }}>
+              <h3 style={{ fontSize: "1.5rem", fontWeight: "bold", color: "#1f2937", marginBottom: "16px", margin: "0 0 16px 0" }}>
                 QR Kod Teknolojisi
               </h3>
-              <p style={{ color: "rgba(255,255,255,0.8)", lineHeight: "1.6", margin: 0 }}>
+              <p style={{ color: "#6b7280", lineHeight: "1.6", margin: 0 }}>
                 Dinamik QR kod teknolojisi ile güvenli yoklama alın. Öğrenciler akıllı telefonları ile saniyeler içinde yoklama verebilir. Sahte yoklama girişlerini önleyen gelişmiş güvenlik sistemi.
               </p>
             </div>
@@ -709,11 +709,11 @@ function LandingPage() {
             <div
               className="scroll-animate hover-lift"
               style={{
-                background: "rgba(255,255,255,0.1)",
+                background: "#f8fafc",
                 padding: "32px",
                 borderRadius: "16px",
-                backdropFilter: "blur(10px)",
-                border: "1px solid rgba(255,255,255,0.2)",
+                border: "1px solid #e2e8f0",
+                boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
                 transition: "all 0.3s",
               }}
             >
@@ -731,10 +731,10 @@ function LandingPage() {
               >
                 <FaShieldAlt style={{ fontSize: "24px", color: "white" }} />
               </div>
-              <h3 style={{ fontSize: "1.5rem", fontWeight: "bold", color: "white", marginBottom: "16px", margin: "0 0 16px 0" }}>
+              <h3 style={{ fontSize: "1.5rem", fontWeight: "bold", color: "#1f2937", marginBottom: "16px", margin: "0 0 16px 0" }}>
                 Güvenli Sistem
               </h3>
-              <p style={{ color: "rgba(255,255,255,0.8)", lineHeight: "1.6", margin: 0 }}>
+              <p style={{ color: "#6b7280", lineHeight: "1.6", margin: 0 }}>
                 SSL şifreleme ve çok katmanlı güvenlik sistemi ile verileriniz korunur. KVKK ve ISO 27001 standartlarına uygun veri işleme. Yetkisiz erişimlere karşı 7/24 izleme.
               </p>
             </div>
@@ -742,11 +742,11 @@ function LandingPage() {
             <div
               className="scroll-animate-right hover-lift"
               style={{
-                background: "rgba(255,255,255,0.1)",
+                background: "#f8fafc",
                 padding: "32px",
                 borderRadius: "16px",
-                backdropFilter: "blur(10px)",
-                border: "1px solid rgba(255,255,255,0.2)",
+                border: "1px solid #e2e8f0",
+                boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
                 transition: "all 0.3s",
               }}
             >
@@ -764,10 +764,10 @@ function LandingPage() {
               >
                 <FaClock style={{ fontSize: "24px", color: "white" }} />
               </div>
-              <h3 style={{ fontSize: "1.5rem", fontWeight: "bold", color: "white", marginBottom: "16px", margin: "0 0 16px 0" }}>
+              <h3 style={{ fontSize: "1.5rem", fontWeight: "bold", color: "#1f2937", marginBottom: "16px", margin: "0 0 16px 0" }}>
                 Hızlı İşlem
               </h3>
-              <p style={{ color: "rgba(255,255,255,0.8)", lineHeight: "1.6", margin: 0 }}>
+              <p style={{ color: "#6b7280", lineHeight: "1.6", margin: 0 }}>
                 Geleneksel yoklama yöntemlerine göre %95 daha hızlı işlem. Anlık sonuç görüntüleme ve otomatik devam takibi. Büyük sınıflarda bile 30 saniyede tamamlanan yoklama süreci.
               </p>
             </div>
@@ -775,11 +775,11 @@ function LandingPage() {
             <div
               className="scroll-animate-left hover-lift"
               style={{
-                background: "rgba(255,255,255,0.1)",
+                background: "#f8fafc",
                 padding: "32px",
                 borderRadius: "16px",
-                backdropFilter: "blur(10px)",
-                border: "1px solid rgba(255,255,255,0.2)",
+                border: "1px solid #e2e8f0",
+                boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
                 transition: "all 0.3s",
               }}
             >
@@ -797,10 +797,10 @@ function LandingPage() {
               >
                 <FaChartLine style={{ fontSize: "24px", color: "white" }} />
               </div>
-              <h3 style={{ fontSize: "1.5rem", fontWeight: "bold", color: "white", marginBottom: "16px", margin: "0 0 16px 0" }}>
+              <h3 style={{ fontSize: "1.5rem", fontWeight: "bold", color: "#1f2937", marginBottom: "16px", margin: "0 0 16px 0" }}>
                 Detaylı Raporlama
               </h3>
-              <p style={{ color: "rgba(255,255,255,0.8)", lineHeight: "1.6", margin: 0 }}>
+              <p style={{ color: "#6b7280", lineHeight: "1.6", margin: 0 }}>
                 Detaylı devam istatistikleri ve trend analizleri. Excel, PDF formatında raporlar. Grafik ve çizelgelerle görsel analiz. Dönemlik ve yıllık karşılaştırma raporları.
               </p>
             </div>
