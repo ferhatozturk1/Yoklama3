@@ -20,33 +20,30 @@ import {
   TableRow,
   Paper,
   IconButton,
-  List,
-  ListItem,
-  ListItemText,
-  ListItemIcon,
   Avatar,
   LinearProgress,
   Badge,
-  TextField
+  TextField,
+  Divider
 } from '@mui/material';
-import { 
+import {
   ArrowBack,
-  School, 
-  LocationOn, 
-  Person,
-  Groups, 
-  Assessment, 
-  CloudUpload, 
-  FileDownload, 
-  CheckCircle, 
-  Refresh, 
+  School,
+  LocationOn,
+  Groups,
+  Assessment,
+  CloudUpload,
+  FileDownload,
+  CheckCircle,
+  Refresh,
   CalendarToday,
   InsertDriveFile,
   Edit,
   Delete,
   MoreVert,
   Visibility,
-  Add
+  Add,
+  Schedule
 } from '@mui/icons-material';
 import ÖğrenciDetay from './ÖğrenciDetay';
 
@@ -56,13 +53,13 @@ const DersDetay = ({ ders, onBack }) => {
   const [openFileDialog, setOpenFileDialog] = useState(false);
   const [openReportDialog, setOpenReportDialog] = useState(false);
   const [openYoklamaYenileDialog, setOpenYoklamaYenileDialog] = useState(false);
-  
+
   // Student list states
   const [sortOrder, setSortOrder] = useState('asc');
   const [viewMode, setViewMode] = useState('list');
   const [canEdit, setCanEdit] = useState(true);
   const [editMode, setEditMode] = useState(false);
-  
+
   // Student detail states
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [showStudentDetail, setShowStudentDetail] = useState(false);
@@ -76,15 +73,15 @@ const DersDetay = ({ ders, onBack }) => {
 
   // Sample students data
   const [students, setStudents] = useState([
-    { 
-      id: 1, 
-      name: 'Ahmet Yılmaz', 
-      number: '2021001', 
+    {
+      id: 1,
+      name: 'Ahmet Yılmaz',
+      number: '2021001',
       class: '10-A',
       department: 'Matematik Bölümü',
       order: 1,
-      attendance: 23, 
-      total: 25, 
+      attendance: 23,
+      total: 25,
       rate: 92,
       lastAttendanceStatus: 'Katıldı',
       attendanceHistory: [
@@ -94,15 +91,15 @@ const DersDetay = ({ ders, onBack }) => {
         { date: '2025-07-19', status: 'Katıldı' }
       ]
     },
-    { 
-      id: 2, 
-      name: 'Ayşe Kaya', 
-      number: '2021002', 
+    {
+      id: 2,
+      name: 'Ayşe Kaya',
+      number: '2021002',
       class: '10-A',
       department: 'Matematik Bölümü',
       order: 2,
-      attendance: 24, 
-      total: 25, 
+      attendance: 24,
+      total: 25,
       rate: 96,
       lastAttendanceStatus: 'Katıldı',
       attendanceHistory: [
@@ -142,7 +139,7 @@ const DersDetay = ({ ders, onBack }) => {
   };
 
   const getAttendanceStatusColor = (status) => {
-    switch(status) {
+    switch (status) {
       case 'completed': return 'success';
       case 'pending': return 'warning';
       case 'not_taken': return 'error';
@@ -151,7 +148,7 @@ const DersDetay = ({ ders, onBack }) => {
   };
 
   const getAttendanceStatusText = (status) => {
-    switch(status) {
+    switch (status) {
       case 'completed': return 'Tamamlandı';
       case 'pending': return 'Beklemede';
       case 'not_taken': return 'Alınmadı';
@@ -240,7 +237,7 @@ const DersDetay = ({ ders, onBack }) => {
   // Eğer öğrenci detayı gösteriliyorsa ÖğrenciDetay bileşenini render et
   if (showStudentDetail && selectedStudent) {
     return (
-      <ÖğrenciDetay 
+      <ÖğrenciDetay
         student={selectedStudent}
         course={ders}
         onBack={handleBackFromStudentDetail}
@@ -249,156 +246,108 @@ const DersDetay = ({ ders, onBack }) => {
   }
 
   return (
-    <Container maxWidth="lg" sx={{ mt: 4, pb: 4 }}>
-      {/* Başlık ve Geri Butonu */}
-      <Box sx={{ display: 'flex', alignItems: 'center', mb: 4 }}>
-        <IconButton 
-          onClick={onBack}
-          sx={{ mr: 2, bgcolor: '#f5f5f5', '&:hover': { bgcolor: '#e0e0e0' } }}
-        >
-          <ArrowBack />
-        </IconButton>
-        <Typography variant="h4" sx={{ fontWeight: 'bold', color: '#1a237e' }}>
-          {ders.name}
-        </Typography>
-        <IconButton sx={{ ml: 'auto' }}>
+    <Container maxWidth="xl" sx={{ py: 2 }}>
+      {/* Compact Header */}
+      <Box sx={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        mb: 2,
+        p: 1.5,
+        bgcolor: 'white',
+        borderRadius: 2,
+        boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
+      }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <IconButton
+            onClick={onBack}
+            size="small"
+            sx={{ bgcolor: '#f5f5f5', '&:hover': { bgcolor: '#e0e0e0' } }}
+          >
+            <ArrowBack fontSize="small" />
+          </IconButton>
+          <Typography variant="h5" sx={{ fontWeight: 600, color: '#1a237e' }}>
+            {ders.name}
+          </Typography>
+          <Chip
+            label={ders.code}
+            size="small"
+            color="primary"
+            sx={{ ml: 1 }}
+          />
+        </Box>
+        <IconButton size="small">
           <MoreVert />
         </IconButton>
       </Box>
 
-      {/* Ders Bilgi Chipları ve Hızlı Erişim Butonları */}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4, flexWrap: 'wrap', gap: 2 }}>
-        {/* Sol taraf - Ders bilgi chipları */}
-        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-          <Chip 
-            icon={<School />} 
-            label={`${ders.code} - ${ders.section}`} 
-            color="primary" 
-            sx={{ bgcolor: '#2196f3', color: 'white' }}
-          />
-          <Chip 
-            icon={<LocationOn />} 
-            label={`${ders.building} ${ders.room}`} 
-            color="secondary" 
-            sx={{ bgcolor: '#9c27b0', color: 'white' }}
-          />
-          <Chip 
-            icon={<Groups />} 
-            label={`${ders.studentCount} Öğrenci`} 
-            color="info" 
-            sx={{ bgcolor: '#00bcd4', color: 'white' }}
-          />
-        </Box>
 
-        {/* Sağ taraf - Hızlı erişim butonları */}
-        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-          <Button 
-            variant="contained" 
-            startIcon={<Groups />}
-            onClick={handleStudentList}
-            sx={{ 
-              bgcolor: '#4caf50', 
-              '&:hover': { bgcolor: '#388e3c' },
-              minWidth: 120,
-              fontSize: '0.8rem'
-            }}
-            size="small"
-          >
-            ÖĞRENCİLER
-          </Button>
-          <Button 
-            variant="contained" 
-            startIcon={<CloudUpload />}
-            onClick={handleFileManagement}
-            sx={{ 
-              bgcolor: '#ff9800', 
-              '&:hover': { bgcolor: '#f57c00' },
-              minWidth: 120,
-              fontSize: '0.8rem'
-            }}
-            size="small"
-          >
-            DOSYALAR
-          </Button>
-          <Button 
-            variant="contained" 
-            startIcon={<Assessment />}
-            onClick={handleGenerateReport}
-            sx={{ 
-              bgcolor: '#9c27b0', 
-              '&:hover': { bgcolor: '#7b1fa2' },
-              minWidth: 120,
-              fontSize: '0.8rem'
-            }}
-            size="small"
-          >
-            RAPOR
-          </Button>
-        </Box>
-      </Box>
 
-      <Grid container spacing={4}>
-        {/* Sol Taraf - Ders Bilgileri */}
-        <Grid item xs={12} md={6}>
-          <Card elevation={2} sx={{ mb: 3 }}>
-            <CardContent>
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                <InsertDriveFile sx={{ mr: 1, color: '#666' }} />
-                <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#1a237e' }}>
+      {/* 3-Column Grid Layout */}
+      <Grid container spacing={2}>
+        {/* Left Column - Course Information */}
+        <Grid item xs={12} lg={4}>
+          <Card sx={{ mb: 2, borderRadius: 2, boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
+            <CardContent sx={{ p: 2 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 1.5 }}>
+                <School sx={{ mr: 1, color: '#1976d2', fontSize: 20 }} />
+                <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1.1rem' }}>
                   Ders Bilgileri
                 </Typography>
               </Box>
-              
-              <List dense>
-                <ListItem>
-                  <ListItemIcon><School /></ListItemIcon>
-                  <ListItemText 
-                    primary="Ders Kodu" 
-                    secondary={`${ders.code} - ${ders.section}`} 
-                  />
-                </ListItem>
-                <ListItem>
-                  <ListItemIcon><LocationOn /></ListItemIcon>
-                  <ListItemText 
-                    primary="Derslik" 
-                    secondary={`${ders.building} - ${ders.room}`} 
-                  />
-                </ListItem>
-                <ListItem>
-                  <ListItemIcon><Person /></ListItemIcon>
-                  <ListItemText 
-                    primary="Öğretim Görevlisi" 
-                    secondary={ders.instructor} 
-                  />
-                </ListItem>
-                <ListItem>
-                  <ListItemIcon><Groups /></ListItemIcon>
-                  <ListItemText 
-                    primary="Öğrenci Sayısı" 
-                    secondary={`${ders.studentCount} öğrenci`} 
-                  />
-                </ListItem>
-              </List>
+
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <School sx={{ fontSize: 16, color: '#666' }} />
+                  <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                    {ders.code} - {ders.section}
+                  </Typography>
+                </Box>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <LocationOn sx={{ fontSize: 16, color: '#666' }} />
+                  <Typography variant="body2">
+                    {ders.building} - {ders.room}
+                  </Typography>
+                </Box>
+
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Groups sx={{ fontSize: 16, color: '#666' }} />
+                  <Typography variant="body2">
+                    {ders.studentCount} öğrenci
+                  </Typography>
+                </Box>
+              </Box>
             </CardContent>
           </Card>
 
-          {/* Haftalık Program */}
-          <Card elevation={2}>
-            <CardContent>
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                <CalendarToday sx={{ mr: 1, color: '#2196f3' }} />
-                <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#1a237e' }}>
+          {/* Weekly Schedule - Compact */}
+          <Card sx={{ borderRadius: 2, boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
+            <CardContent sx={{ p: 2 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 1.5 }}>
+                <Schedule sx={{ mr: 1, color: '#1976d2', fontSize: 20 }} />
+                <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1.1rem' }}>
                   Haftalık Program
                 </Typography>
               </Box>
-              
+
               {Object.entries(ders.schedule).map(([day, schedules]) => (
-                <Box key={day} sx={{ mb: 2, p: 2, bgcolor: '#f8f9fa', borderRadius: 3 }}>
-                  <Typography variant="body1" sx={{ textTransform: 'capitalize', fontWeight: 'bold', mb: 1 }}>
+                <Box key={day} sx={{
+                  mb: 1,
+                  p: 1.5,
+                  bgcolor: '#f8f9fa',
+                  borderRadius: 1,
+                  border: '1px solid #e9ecef'
+                }}>
+                  <Typography variant="body2" sx={{
+                    textTransform: 'capitalize',
+                    fontWeight: 600,
+                    mb: 0.5,
+                    fontSize: '0.875rem'
+                  }}>
                     {day}:
                   </Typography>
                   {schedules.map((s, index) => (
-                    <Typography key={index} variant="body2" color="text.secondary">
+                    <Typography key={index} variant="caption" color="text.secondary" sx={{ display: 'block' }}>
                       {s.startTime}-{s.endTime} ({s.room})
                     </Typography>
                   ))}
@@ -408,83 +357,203 @@ const DersDetay = ({ ders, onBack }) => {
           </Card>
         </Grid>
 
-        {/* Sağ Taraf - Yoklama Durumu */}
-        <Grid item xs={12} md={6}>
-          <Card elevation={2} sx={{ mb: 3 }}>
-            <CardContent>
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                <CheckCircle sx={{ mr: 1, color: '#4caf50' }} />
-                <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#1a237e' }}>
+        {/* Middle Column - Attendance Status */}
+        <Grid item xs={12} lg={4}>
+          <Card sx={{ mb: 2, borderRadius: 2, boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
+            <CardContent sx={{ p: 2 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 1.5 }}>
+                <CheckCircle sx={{ mr: 1, color: '#4caf50', fontSize: 20 }} />
+                <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1.1rem' }}>
                   Yoklama Durumu
                 </Typography>
               </Box>
-              
-              <Box sx={{ mb: 3 }}>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-                  <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
-                    Son Yoklama Durumu:
-                  </Typography>
-                  <Chip 
-                    label={getAttendanceStatusText(ders.attendanceStatus)}
-                    color={getAttendanceStatusColor(ders.attendanceStatus)}
-                    size="small"
-                  />
-                </Box>
-                
-                {ders.lastAttendance && (
-                  <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                    Son Yoklama: {new Date(ders.lastAttendance).toLocaleDateString('tr-TR')}
-                  </Typography>
-                )}
-                
-                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                  Genel Katılım Oranı: %{ders.attendanceRate}
+
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                  Son Durum:
                 </Typography>
-
-
+                <Chip
+                  label={getAttendanceStatusText(ders.attendanceStatus)}
+                  color={getAttendanceStatusColor(ders.attendanceStatus)}
+                  size="small"
+                />
               </Box>
 
-              {/* Dönem İlerlemesi */}
-              <Box sx={{ p: 2, bgcolor: '#e3f2fd', borderRadius: 4, mb: 2 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                  <Assessment sx={{ mr: 1, color: '#2196f3' }} />
-                  <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
-                    Dönem İlerlemesi: {ders.currentWeek}/{ders.totalWeeks} Hafta
+              {ders.lastAttendance && (
+                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
+                  Son alınan: {new Date(ders.lastAttendance).toLocaleDateString('tr-TR')}
+                </Typography>
+              )}
+
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                  Katılım Oranı:
+                </Typography>
+                <Typography variant="body2" sx={{ fontWeight: 600, color: '#1976d2' }}>
+                  %{ders.attendanceRate}
+                </Typography>
+              </Box>
+
+              {/* Progress Indicator */}
+              <Box sx={{
+                p: 1.5,
+                bgcolor: '#e3f2fd',
+                borderRadius: 1,
+                mb: 2,
+                border: '1px solid #bbdefb'
+              }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+                  <Typography variant="body2" sx={{ fontWeight: 500, fontSize: '0.875rem' }}>
+                    Dönem İlerlemesi
+                  </Typography>
+                  <Typography variant="caption" sx={{ fontWeight: 600 }}>
+                    {ders.currentWeek}/{ders.totalWeeks}
                   </Typography>
                 </Box>
-                <LinearProgress 
-                  variant="determinate" 
+                <LinearProgress
+                  variant="determinate"
                   value={(ders.currentWeek / ders.totalWeeks) * 100}
-                  sx={{ 
-                    height: 8, 
-                    borderRadius: 6,
+                  sx={{
+                    height: 6,
+                    borderRadius: 3,
                     bgcolor: '#e0e0e0',
                     '& .MuiLinearProgress-bar': {
-                      bgcolor: '#2196f3'
+                      bgcolor: '#1976d2'
                     }
                   }}
                 />
-                <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+                <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, display: 'block' }}>
                   %{Math.round((ders.currentWeek / ders.totalWeeks) * 100)} tamamlandı
                 </Typography>
               </Box>
 
-              {/* Ders Dosyaları */}
-              <Box sx={{ p: 2, bgcolor: '#fff3e0', borderRadius: 4 }}>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                    <InsertDriveFile sx={{ mr: 1, color: '#ff9800' }} />
-                    <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
-                      Ders Dosyaları
-                    </Typography>
-                  </Box>
-                  <Badge badgeContent={ders.files?.length || 0} color="primary">
-                    <InsertDriveFile />
-                  </Badge>
+              {/* Files Info */}
+              <Box sx={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                p: 1.5,
+                bgcolor: '#fff3e0',
+                borderRadius: 1,
+                border: '1px solid #ffcc02'
+              }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <InsertDriveFile sx={{ fontSize: 16, color: '#ff9800' }} />
+                  <Typography variant="body2" sx={{ fontWeight: 500, fontSize: '0.875rem' }}>
+                    Ders Dosyaları
+                  </Typography>
                 </Box>
-                <Typography variant="caption" color="text.secondary">
-                  {ders.files?.length || 0} dosya yüklendi
-                </Typography>
+                <Badge badgeContent={ders.files?.length || 0} color="primary">
+                  <InsertDriveFile sx={{ fontSize: 16 }} />
+                </Badge>
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid>
+
+        {/* Right Column - Quick Actions */}
+        <Grid item xs={12} lg={4}>
+          <Card sx={{ borderRadius: 2, boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
+            <CardContent sx={{ p: 2 }}>
+              <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1.1rem', mb: 2 }}>
+                Hızlı İşlemler
+              </Typography>
+
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                <Button
+                  variant="contained"
+                  startIcon={<Groups />}
+                  onClick={handleStudentList}
+                  fullWidth
+                  size="small"
+                  sx={{
+                    bgcolor: '#4caf50',
+                    '&:hover': { bgcolor: '#388e3c' },
+                    textTransform: 'none',
+                    fontWeight: 500,
+                    py: 1
+                  }}
+                >
+                  Öğrenciler ({ders.studentCount})
+                </Button>
+
+                <Button
+                  variant="contained"
+                  startIcon={<CloudUpload />}
+                  onClick={handleFileManagement}
+                  fullWidth
+                  size="small"
+                  sx={{
+                    bgcolor: '#ff9800',
+                    '&:hover': { bgcolor: '#f57c00' },
+                    textTransform: 'none',
+                    fontWeight: 500,
+                    py: 1
+                  }}
+                >
+                  Dosyalar ({ders.files?.length || 0})
+                </Button>
+
+                <Button
+                  variant="contained"
+                  startIcon={<Assessment />}
+                  onClick={handleGenerateReport}
+                  fullWidth
+                  size="small"
+                  sx={{
+                    bgcolor: '#9c27b0',
+                    '&:hover': { bgcolor: '#7b1fa2' },
+                    textTransform: 'none',
+                    fontWeight: 500,
+                    py: 1
+                  }}
+                >
+                  Rapor Oluştur
+                </Button>
+
+                <Divider sx={{ my: 1 }} />
+
+                <Button
+                  variant="outlined"
+                  startIcon={<Refresh />}
+                  onClick={handleYoklamaYenile}
+                  fullWidth
+                  size="small"
+                  sx={{
+                    borderColor: '#1976d2',
+                    color: '#1976d2',
+                    '&:hover': {
+                      bgcolor: '#1976d2',
+                      color: 'white'
+                    },
+                    textTransform: 'none',
+                    fontWeight: 500,
+                    py: 1
+                  }}
+                >
+                  Yoklamayı Yenile
+                </Button>
+
+                <Button
+                  variant="outlined"
+                  startIcon={<CalendarToday />}
+                  onClick={handleTelafiDers}
+                  fullWidth
+                  size="small"
+                  sx={{
+                    borderColor: '#9c27b0',
+                    color: '#9c27b0',
+                    '&:hover': {
+                      bgcolor: '#9c27b0',
+                      color: 'white'
+                    },
+                    textTransform: 'none',
+                    fontWeight: 500,
+                    py: 1
+                  }}
+                >
+                  Telafi Ders
+                </Button>
               </Box>
             </CardContent>
           </Card>
@@ -493,44 +562,52 @@ const DersDetay = ({ ders, onBack }) => {
 
 
 
-      {/* Öğrenci Listesi Dialog - Aynı detaylı dialog */}
-      <Dialog 
-        open={openStudentDialog} 
+      {/* Student List Dialog */}
+      <Dialog
+        open={openStudentDialog}
         onClose={() => {
           setOpenStudentDialog(false);
           setEditMode(false);
           setViewMode('list');
-        }} 
-        maxWidth="lg" 
+        }}
+        maxWidth="lg"
         fullWidth
       >
-        <DialogTitle>
+        <DialogTitle sx={{ pb: 1 }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+            <Typography variant="h6" sx={{ fontWeight: 600 }}>
               👥 Öğrenci Listesi - {ders?.name} ({ders?.code})
             </Typography>
             <Box sx={{ display: 'flex', gap: 1 }}>
-              <Chip 
-                label={`${students.length} Öğrenci`} 
-                color="primary" 
-                size="small" 
+              <Chip
+                label={`${students.length} Öğrenci`}
+                color="primary"
+                size="small"
               />
               {checkEditPermission() && (
-                <Chip 
-                  label={editMode ? "Düzenleme Modu" : "Görüntüleme Modu"} 
-                  color={editMode ? "warning" : "default"} 
-                  size="small" 
+                <Chip
+                  label={editMode ? "Düzenleme Modu" : "Görüntüleme Modu"}
+                  color={editMode ? "warning" : "default"}
+                  size="small"
                 />
               )}
             </Box>
           </Box>
         </DialogTitle>
-        
-        <DialogContent>
-          {/* Kontrol Paneli */}
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, p: 2, bgcolor: '#f8f9fa', borderRadius: 4 }}>
-            <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-              <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
+
+        <DialogContent sx={{ pt: 1 }}>
+          {/* Control Panel - Compact */}
+          <Box sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            mb: 2,
+            p: 1.5,
+            bgcolor: '#f8f9fa',
+            borderRadius: 2
+          }}>
+            <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+              <Typography variant="body2" sx={{ fontWeight: 600, mr: 1 }}>
                 Görünüm:
               </Typography>
               <Button
@@ -538,43 +615,42 @@ const DersDetay = ({ ders, onBack }) => {
                 size="small"
                 onClick={() => handleViewModeChange('list')}
                 startIcon={<Groups />}
+                sx={{ textTransform: 'none', minWidth: 'auto', px: 1.5 }}
               >
-                Öğrenci Listesi
+                Liste
               </Button>
               <Button
                 variant={viewMode === 'attendance' ? 'contained' : 'outlined'}
                 size="small"
                 onClick={() => handleViewModeChange('attendance')}
                 startIcon={<CheckCircle />}
+                sx={{ textTransform: 'none', minWidth: 'auto', px: 1.5 }}
               >
-                Yoklama Görüntüle
+                Yoklama
               </Button>
             </Box>
-            
+
             <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-              <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
-                Sıralama:
-              </Typography>
               <Button
                 variant="outlined"
                 size="small"
                 onClick={handleSortChange}
-                startIcon={sortOrder === 'asc' ? <span>A-Z</span> : <span>Z-A</span>}
+                sx={{ textTransform: 'none', minWidth: 'auto', px: 1.5 }}
               >
                 {sortOrder === 'asc' ? 'A-Z' : 'Z-A'}
               </Button>
-              
+
               <Button
                 variant="contained"
                 size="small"
                 color="success"
                 onClick={handleAddStudent}
                 startIcon={<Add />}
-                sx={{ ml: 1 }}
+                sx={{ textTransform: 'none', px: 1.5 }}
               >
                 Öğrenci Ekle
               </Button>
-              
+
               {checkEditPermission() && (
                 <Button
                   variant={editMode ? 'contained' : 'outlined'}
@@ -582,82 +658,83 @@ const DersDetay = ({ ders, onBack }) => {
                   color={editMode ? 'warning' : 'primary'}
                   onClick={handleEditModeToggle}
                   startIcon={<Edit />}
+                  sx={{ textTransform: 'none', px: 1.5 }}
                 >
-                  {editMode ? 'Düzenlemeyi Bitir' : 'Listeyi Düzenle'}
+                  {editMode ? 'Düzenlemeyi Bitir' : 'Düzenle'}
                 </Button>
               )}
             </Box>
           </Box>
 
-          {/* Öğrenci Listesi Görünümü */}
+          {/* Student List View - Compact Table */}
           {viewMode === 'list' && (
-            <TableContainer component={Paper}>
-              <Table>
+            <TableContainer component={Paper} sx={{ boxShadow: 1 }}>
+              <Table size="small">
                 <TableHead>
                   <TableRow sx={{ bgcolor: '#f5f5f5' }}>
-                    <TableCell><strong>Sıra</strong></TableCell>
-                    <TableCell><strong>Öğrenci Adı</strong></TableCell>
-                    <TableCell><strong>Bölüm</strong></TableCell>
-                    <TableCell><strong>İşlemler</strong></TableCell>
+                    <TableCell sx={{ fontWeight: 600, py: 1 }}>#</TableCell>
+                    <TableCell sx={{ fontWeight: 600, py: 1 }}>Öğrenci Adı</TableCell>
+                    <TableCell sx={{ fontWeight: 600, py: 1 }}>Bölüm</TableCell>
+                    <TableCell sx={{ fontWeight: 600, py: 1 }}>İşlemler</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
                   {getSortedStudents().map((student, index) => (
-                    <TableRow 
-                      key={student.id} 
-                      sx={{ 
+                    <TableRow
+                      key={student.id}
+                      sx={{
                         '&:hover': { bgcolor: '#f8f9fa', cursor: 'pointer' },
                         cursor: 'pointer'
                       }}
                       onClick={() => handleStudentClick(student)}
                     >
-                      <TableCell>
-                        <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
+                      <TableCell sx={{ py: 1 }}>
+                        <Typography variant="body2" sx={{ fontWeight: 600 }}>
                           {index + 1}
                         </Typography>
                       </TableCell>
-                      <TableCell>
+                      <TableCell sx={{ py: 1 }}>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <Avatar sx={{ width: 32, height: 32, bgcolor: '#1a237e' }}>
+                          <Avatar sx={{ width: 28, height: 28, bgcolor: '#1a237e', fontSize: '0.875rem' }}>
                             {student.name.charAt(0)}
                           </Avatar>
-                          <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
+                          <Typography variant="body2" sx={{ fontWeight: 500 }}>
                             {student.name}
                           </Typography>
                         </Box>
                       </TableCell>
-                      <TableCell>
-                        <Typography variant="body2" sx={{ fontSize: '0.8rem' }}>
+                      <TableCell sx={{ py: 1 }}>
+                        <Typography variant="caption" color="text.secondary">
                           {student.department}
                         </Typography>
                       </TableCell>
-                      <TableCell>
+                      <TableCell sx={{ py: 1 }}>
                         <Box sx={{ display: 'flex', gap: 0.5 }}>
-                          <IconButton 
-                            size="small" 
+                          <IconButton
+                            size="small"
                             color="primary"
                             onClick={(e) => {
                               e.stopPropagation();
                               handleStudentClick(student);
                             }}
                           >
-                            <Visibility />
+                            <Visibility fontSize="small" />
                           </IconButton>
                           {editMode && (
                             <>
-                              <IconButton 
-                                size="small" 
+                              <IconButton
+                                size="small"
                                 color="primary"
                                 onClick={(e) => e.stopPropagation()}
                               >
-                                <Edit />
+                                <Edit fontSize="small" />
                               </IconButton>
-                              <IconButton 
-                                size="small" 
+                              <IconButton
+                                size="small"
                                 color="error"
                                 onClick={(e) => e.stopPropagation()}
                               >
-                                <Delete />
+                                <Delete fontSize="small" />
                               </IconButton>
                             </>
                           )}
@@ -670,24 +747,31 @@ const DersDetay = ({ ders, onBack }) => {
             </TableContainer>
           )}
         </DialogContent>
-        
-        <DialogActions sx={{ p: 3, bgcolor: '#f8f9fa' }}>
+
+        <DialogActions sx={{ p: 2, bgcolor: '#f8f9fa' }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
             <Box>
-              <Typography variant="body2" color="text.secondary">
-                Toplam: {students.length} öğrenci | 
-                Ortalama Katılım: %{Math.round(students.reduce((acc, s) => acc + s.rate, 0) / students.length)}
+              <Typography variant="caption" color="text.secondary">
+                Toplam: {students.length} öğrenci |
+                Ort. Katılım: %{Math.round(students.reduce((acc, s) => acc + s.rate, 0) / students.length)}
               </Typography>
             </Box>
             <Box sx={{ display: 'flex', gap: 1 }}>
-              <Button onClick={() => {
-                setOpenStudentDialog(false);
-                setEditMode(false);
-                setViewMode('list');
-              }}>
+              <Button
+                size="small"
+                onClick={() => {
+                  setOpenStudentDialog(false);
+                  setEditMode(false);
+                  setViewMode('list');
+                }}
+              >
                 Kapat
               </Button>
-              <Button variant="outlined" startIcon={<FileDownload />}>
+              <Button
+                variant="outlined"
+                startIcon={<FileDownload />}
+                size="small"
+              >
                 Excel'e Aktar
               </Button>
             </Box>
@@ -695,27 +779,28 @@ const DersDetay = ({ ders, onBack }) => {
         </DialogActions>
       </Dialog>
 
-      {/* Öğrenci Ekleme Dialog */}
-      <Dialog 
-        open={openAddStudentDialog} 
+      {/* Add Student Dialog - Compact */}
+      <Dialog
+        open={openAddStudentDialog}
         onClose={handleCloseAddStudentDialog}
         maxWidth="sm"
         fullWidth
       >
-        <DialogTitle>
-          <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#1a237e' }}>
+        <DialogTitle sx={{ pb: 1 }}>
+          <Typography variant="h6" sx={{ fontWeight: 600, color: '#1a237e' }}>
             👤 Yeni Öğrenci Ekle
           </Typography>
         </DialogTitle>
-        
-        <DialogContent>
-          <Box sx={{ mt: 2 }}>
+
+        <DialogContent sx={{ pt: 1 }}>
+          <Box sx={{ mt: 1 }}>
             <TextField
               fullWidth
               label="Öğrenci Adı Soyadı"
               value={newStudent.name}
               onChange={(e) => handleStudentInputChange('name', e.target.value)}
               sx={{ mb: 2 }}
+              size="small"
               required
             />
             <TextField
@@ -724,6 +809,7 @@ const DersDetay = ({ ders, onBack }) => {
               value={newStudent.number}
               onChange={(e) => handleStudentInputChange('number', e.target.value)}
               sx={{ mb: 2 }}
+              size="small"
               required
             />
             <TextField
@@ -733,6 +819,7 @@ const DersDetay = ({ ders, onBack }) => {
               onChange={(e) => handleStudentInputChange('class', e.target.value)}
               placeholder="Örn: 10-A"
               sx={{ mb: 2 }}
+              size="small"
             />
             <TextField
               fullWidth
@@ -741,129 +828,76 @@ const DersDetay = ({ ders, onBack }) => {
               onChange={(e) => handleStudentInputChange('department', e.target.value)}
               placeholder="Örn: Matematik Bölümü"
               sx={{ mb: 2 }}
+              size="small"
             />
           </Box>
         </DialogContent>
-        
-        <DialogActions sx={{ p: 3 }}>
-          <Button onClick={handleCloseAddStudentDialog}>
+
+        <DialogActions sx={{ p: 2 }}>
+          <Button onClick={handleCloseAddStudentDialog} size="small">
             İptal
           </Button>
-          <Button 
-            variant="contained" 
+          <Button
+            variant="contained"
             onClick={handleSaveStudent}
             disabled={!newStudent.name || !newStudent.number}
             sx={{ bgcolor: '#4caf50', '&:hover': { bgcolor: '#388e3c' } }}
+            size="small"
           >
             Öğrenciyi Ekle
           </Button>
         </DialogActions>
       </Dialog>
 
-      {/* Yoklama Yenileme Onay Dialog */}
-      <Dialog 
-        open={openYoklamaYenileDialog} 
+      {/* Confirmation Dialog - Compact */}
+      <Dialog
+        open={openYoklamaYenileDialog}
         onClose={() => setOpenYoklamaYenileDialog(false)}
         maxWidth="sm"
         fullWidth
       >
-        <DialogTitle>
+        <DialogTitle sx={{ pb: 1 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Refresh sx={{ color: '#ff9800' }} />
-            <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#1a237e' }}>
+            <Refresh sx={{ color: '#ff9800', fontSize: 20 }} />
+            <Typography variant="h6" sx={{ fontWeight: 600, color: '#1a237e' }}>
               Yoklamayı Yenile
             </Typography>
           </Box>
         </DialogTitle>
-        
-        <DialogContent>
-          <Typography variant="body1" sx={{ mb: 2 }}>
+
+        <DialogContent sx={{ pt: 1 }}>
+          <Typography variant="body1" sx={{ mb: 1.5 }}>
             Bu işlem, <strong>{ders.name}</strong> dersi için mevcut tüm yoklama bilgilerini sıfırlayacaktır.
           </Typography>
-          <Typography variant="body2" color="error" sx={{ mb: 2 }}>
+          <Typography variant="body2" color="error" sx={{ mb: 1.5 }}>
             ⚠️ <strong>Dikkat:</strong> Bu ders için diğer yoklama bilgileriniz silinecektir ve bu işlem geri alınamaz.
           </Typography>
           <Typography variant="body2" color="text.secondary">
             Devam etmek istediğinizden emin misiniz?
           </Typography>
         </DialogContent>
-        
-        <DialogActions sx={{ p: 3 }}>
-          <Button 
+
+        <DialogActions sx={{ p: 2 }}>
+          <Button
             onClick={() => setOpenYoklamaYenileDialog(false)}
             variant="outlined"
+            size="small"
           >
             İptal
           </Button>
-          <Button 
+          <Button
             onClick={handleConfirmYoklamaYenile}
             variant="contained"
             color="warning"
             startIcon={<Refresh />}
+            size="small"
           >
             Evet, Yenile
           </Button>
         </DialogActions>
       </Dialog>
 
-      {/* Sağ Alt Sabit Butonlar */}
-      <Box
-        sx={{
-          position: 'fixed',
-          bottom: 20,
-          right: 20,
-          display: 'flex',
-          gap: 0.8,
-          zIndex: 1000,
-        }}
-      >
-        <Button 
-          variant="contained" 
-          color="primary"
-          startIcon={<Refresh />}
-          onClick={handleYoklamaYenile}
-          size="small"
-          sx={{
-            minWidth: 120,
-            height: 36,
-            fontSize: '0.75rem',
-            fontWeight: 'bold',
-            borderRadius: '20px',
-            px: 2,
-            boxShadow: '0 3px 10px rgba(0,0,0,0.12)',
-            '&:hover': {
-              boxShadow: '0 5px 14px rgba(0,0,0,0.18)',
-              transform: 'translateY(-1px)',
-            },
-            transition: 'all 0.2s ease-in-out',
-          }}
-        >
-          YOKLAMAYI YENİLE
-        </Button>
-        <Button 
-          variant="contained" 
-          color="secondary"
-          startIcon={<CalendarToday />}
-          onClick={handleTelafiDers}
-          size="small"
-          sx={{
-            minWidth: 100,
-            height: 36,
-            fontSize: '0.75rem',
-            fontWeight: 'bold',
-            borderRadius: '20px',
-            px: 2,
-            boxShadow: '0 3px 10px rgba(0,0,0,0.12)',
-            '&:hover': {
-              boxShadow: '0 5px 14px rgba(0,0,0,0.18)',
-              transform: 'translateY(-1px)',
-            },
-            transition: 'all 0.2s ease-in-out',
-          }}
-        >
-          TELAFİ DERS
-        </Button>
-      </Box>
+
     </Container>
   );
 };
