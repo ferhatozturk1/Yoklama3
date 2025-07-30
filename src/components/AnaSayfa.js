@@ -204,44 +204,68 @@ const AnaSayfa = ({
   // Get real schedule data from course data
   const getRealScheduleData = () => {
     const schedule = {};
-    
+
     // Check if courseScheduleData exists
     if (!courseScheduleData || !courseScheduleData["2025-2026-guz"]) {
       console.error("courseScheduleData is not available");
       // Return empty schedule as fallback
-      const timeSlots = ["09:00", "09:50", "11:00", "13:40", "14:40", "15:40", "16:40", "17:40", "18:40", "19:40"];
+      const timeSlots = [
+        "09:00",
+        "09:55",
+        "10:50",
+        "11:45",
+        "13:30",
+        "14:30",
+        "15:20",
+        "16:15",
+        "17:00",
+        "17:55",
+      ];
       const dayKeys = ["pazartesi", "sali", "carsamba", "persembe", "cuma"];
-      
-      timeSlots.forEach(timeSlot => {
+
+      timeSlots.forEach((timeSlot) => {
         schedule[timeSlot] = {};
-        dayKeys.forEach(day => {
+        dayKeys.forEach((day) => {
           schedule[timeSlot][day] = "";
         });
       });
       return schedule;
     }
-    
-    const currentSchedule = courseScheduleData[selectedSemester] || courseScheduleData["2025-2026-guz"];
-    
+
+    const currentSchedule =
+      courseScheduleData[selectedSemester] ||
+      courseScheduleData["2025-2026-guz"];
+
     // Initialize empty schedule
-    const timeSlots = ["09:00", "09:50", "11:00", "13:40", "14:40", "15:40", "16:40", "17:40", "18:40", "19:40"];
+    const timeSlots = [
+      "09:00",
+      "09:55",
+      "10:50",
+      "11:45",
+      "13:30",
+      "14:30",
+      "15:20",
+      "16:15",
+      "17:00",
+      "17:55",
+    ];
     const dayKeys = ["pazartesi", "sali", "carsamba", "persembe", "cuma"];
-    
-    timeSlots.forEach(timeSlot => {
+
+    timeSlots.forEach((timeSlot) => {
       schedule[timeSlot] = {};
-      dayKeys.forEach(day => {
+      dayKeys.forEach((day) => {
         schedule[timeSlot][day] = "";
       });
     });
 
     // Fill with real course data
     if (currentSchedule) {
-      Object.keys(currentSchedule).forEach(day => {
+      Object.keys(currentSchedule).forEach((day) => {
         const daySchedule = currentSchedule[day];
         if (daySchedule) {
-          Object.keys(daySchedule).forEach(timeSlot => {
+          Object.keys(daySchedule).forEach((timeSlot) => {
             const course = daySchedule[timeSlot];
-            
+
             if (course && course.name) {
               let courseText = "";
               if (course.code) {
@@ -282,15 +306,15 @@ const AnaSayfa = ({
 
   const timeSlots = [
     "09:00",
-    "09:50",
-    "11:00",
-    "13:40",
-    "14:40",
-    "15:40",
-    "16:40",
-    "17:40",
-    "18:40",
-    "19:40",
+    "09:55",
+    "10:50",
+    "11:45",
+    "13:30",
+    "14:30",
+    "15:20",
+    "16:15",
+    "17:00",
+    "17:55",
   ];
   const days = ["Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma"];
 
@@ -1179,7 +1203,7 @@ const AnaSayfa = ({
     >
       <WelcomeHeader />
 
-      {/* Compact Lesson Status */}
+      {/* Schedule Table */}
       <Paper
         elevation={2}
         sx={{
@@ -1189,175 +1213,6 @@ const AnaSayfa = ({
           background: "linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)",
         }}
       >
-        {(() => {
-          const nextClass = getNextClass();
-
-          if (currentClass) {
-            return (
-              <Box
-                sx={{
-                  cursor: "pointer",
-                  "&:hover": { opacity: 0.9 },
-                }}
-                onClick={() =>
-                  handleLessonClick(
-                    currentClass.lesson,
-                    currentClass.time,
-                    dayKeys[currentTime.getDay() - 1]
-                  )
-                }
-              >
-                {/* Şu Anki Ders */}
-                <Box
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 1,
-                    mb: 1.5,
-                  }}
-                >
-                  <CircleIcon
-                    sx={{
-                      color: "#27AE60",
-                      fontSize: 16,
-                      animation: "pulse 2s infinite",
-                    }}
-                  />
-                  <Typography
-                    variant="subtitle1"
-                    sx={{ fontWeight: 600, color: "#27AE60", fontSize: "1rem" }}
-                  >
-                    Şu Andaki Ders
-                  </Typography>
-                  <Chip
-                    label="DEVAM EDIYOR"
-                    size="small"
-                    sx={{
-                      bgcolor: "#27AE60",
-                      color: "white",
-                      fontWeight: 500,
-                      fontSize: "0.7rem",
-                      height: "20px",
-                    }}
-                  />
-                  <Chip
-                    label="YOKLAMA AL"
-                    size="small"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleYoklamaAl(currentClass);
-                    }}
-                    sx={{
-                      bgcolor: "#4F46E5",
-                      color: "white",
-                      fontWeight: 500,
-                      fontSize: "0.7rem",
-                      height: "20px",
-                      cursor: "pointer",
-                      "&:hover": { bgcolor: "#3730A3" },
-                    }}
-                  />
-                </Box>
-
-                <Box
-                  sx={{
-                    display: "flex",
-                    flexDirection: { xs: "column", md: "row" },
-                    gap: 2,
-                  }}
-                >
-                  {/* Sol: Şu Anki Ders Bilgileri */}
-                  <Box sx={{ flex: 1 }}>
-                    <Box
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 1,
-                        mb: 0.5,
-                      }}
-                    >
-                      <Typography
-                        variant="h6"
-                        sx={{
-                          fontWeight: 500,
-                          color: "#1B2E6D",
-                          fontSize: "1rem",
-                        }}
-                      >
-                        {currentClass.lesson.replace("\n", " - ")}
-                      </Typography>
-                      <Typography
-                        variant="body2"
-                        sx={{
-                          color: "#666",
-                          fontSize: "0.75rem",
-                          fontStyle: "italic",
-                          display: "-webkit-box",
-                          WebkitLineClamp: 1,
-                          WebkitBoxOrient: "vertical",
-                          overflow: "hidden",
-                        }}
-                      >
-                        💡 Matematik temel kavramları ve analitik geometri
-                      </Typography>
-                    </Box>
-                    <Typography
-                      variant="body2"
-                      sx={{ color: "#666", fontSize: "0.8rem", mb: 0.5 }}
-                    >
-                      📍 A Blok - 201 Nolu Sınıf
-                    </Typography>
-                    <Box
-                      sx={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                      }}
-                    >
-                      <Typography
-                        variant="body2"
-                        sx={{ color: "#666", fontSize: "0.8rem" }}
-                      >
-                        {currentClass.time} -{" "}
-                        {parseInt(currentClass.time.split(":")[0]) + 1}:
-                        {currentClass.time.split(":")[1]}
-                      </Typography>
-                      <Typography
-                        variant="body2"
-                        sx={{
-                          fontWeight: 500,
-                          color: "#27AE60",
-                          fontSize: "0.8rem",
-                        }}
-                      >
-                        Kalan: {Math.floor(currentClass.remainingMinutes / 60)}:
-                        {(currentClass.remainingMinutes % 60)
-                          .toString()
-                          .padStart(2, "0")}{" "}
-                        dk
-                      </Typography>
-                    </Box>
-                    <LinearProgress
-                      variant="determinate"
-                      value={currentClass.progressPercent}
-                      sx={{
-                        height: 4,
-                        borderRadius: 2,
-                        bgcolor: "#C8E6C9",
-                        mt: 0.5,
-                        "& .MuiLinearProgress-bar": { bgcolor: "#27AE60" },
-                      }}
-                    />
-                  </Box>
-
-
-                </Box>
-              </Box>
-            );
-          }
-        })()}
-
-        {/* Schedule Table */}
         <Box sx={{ mt: 1 }}>
           {isMobile ? <MobileSchedule /> : <DesktopSchedule />}
         </Box>
