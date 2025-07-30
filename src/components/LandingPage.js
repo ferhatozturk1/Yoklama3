@@ -313,12 +313,13 @@ function LandingPage() {
       <section
         id="home"
         style={{
-          minHeight: "100vh",
+          minHeight: "85vh",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
           position: "relative",
           overflow: "hidden",
+          paddingTop: "80px",
         }}
       >
         {/* Background Elements */}
@@ -372,12 +373,12 @@ function LandingPage() {
             <h1
               className="scroll-animate-stagger"
               style={{
-                fontSize: "4rem",
-                fontWeight: "900",
+                fontSize: "3rem",
+                fontWeight: "800",
                 color: "#1f2937",
-                marginBottom: "24px",
-                lineHeight: "1.1",
-                margin: "0 0 24px 0",
+                marginBottom: "20px",
+                lineHeight: "1.2",
+                margin: "0 0 20px 0",
               }}
             >
               QR Kodlu Yoklama
@@ -386,10 +387,10 @@ function LandingPage() {
             <p
               className="scroll-animate-stagger delay-200"
               style={{
-                fontSize: "1.25rem",
+                fontSize: "1.125rem",
                 color: "#6b7280",
-                maxWidth: "800px",
-                margin: "0 auto 48px auto",
+                maxWidth: "700px",
+                margin: "0 auto 36px auto",
                 lineHeight: "1.6",
               }}
             >
@@ -403,31 +404,29 @@ function LandingPage() {
             className="scroll-animate-stagger delay-400"
             style={{
               display: "flex",
-              flexDirection: "column",
-              gap: "24px",
               justifyContent: "center",
-              marginBottom: "64px",
+              marginBottom: "48px",
             }}
           >
             <Link
               to="/kayit"
               className="hover-lift"
               style={{
-                background: "white",
-                color: "#8b5cf6",
-                padding: "20px 40px",
-                borderRadius: "16px",
+                background: "linear-gradient(135deg, #3b82f6, #8b5cf6)",
+                color: "white",
+                padding: "14px 32px",
+                borderRadius: "12px",
                 textDecoration: "none",
-                fontWeight: "bold",
-                fontSize: "18px",
+                fontWeight: "600",
+                fontSize: "16px",
                 display: "inline-flex",
                 alignItems: "center",
                 justifyContent: "center",
                 transition: "all 0.3s",
-                boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
+                boxShadow: "0 10px 25px rgba(59, 130, 246, 0.3)",
               }}
             >
-              <FaArrowRight style={{ marginRight: "12px" }} />
+              <FaArrowRight style={{ marginRight: "8px", fontSize: "14px" }} />
               Denemeye Başlayın
             </Link> 
           </div>
@@ -436,72 +435,75 @@ function LandingPage() {
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
-              gap: "32px",
-              maxWidth: "800px",
+              gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+              gap: "24px",
+              maxWidth: "700px",
               margin: "0 auto",
             }}
           >
             <div
               className="scroll-animate-stagger delay-500 hover-lift"
               style={{
-                background: "#f8fafc",
-                borderRadius: "16px",
-                padding: "24px",
-                border: "1px solid #e2e8f0",
-                boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
+                background: "rgba(255, 255, 255, 0.9)",
+                borderRadius: "12px",
+                padding: "20px",
+                border: "1px solid rgba(59, 130, 246, 0.1)",
+                boxShadow: "0 4px 12px rgba(0, 0, 0, 0.05)",
+                textAlign: "center",
               }}
             >
-              <div style={{ fontSize: "2.5rem", fontWeight: "bold", color: "#3b82f6", marginBottom: "8px" }}>
+              <div style={{ fontSize: "2rem", fontWeight: "700", color: "#3b82f6", marginBottom: "6px" }}>
                 5000+
               </div>
-              <div style={{ color: "#6b7280" }}>Aktif Öğretmen</div>
+              <div style={{ color: "#6b7280", fontSize: "14px" }}>Aktif Öğretmen</div>
             </div>
             <div
               className="scroll-animate-stagger delay-600 hover-lift"
               style={{
-                background: "#f8fafc",
-                borderRadius: "16px",
-                padding: "24px",
-                border: "1px solid #e2e8f0",
-                boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
+                background: "rgba(255, 255, 255, 0.9)",
+                borderRadius: "12px",
+                padding: "20px",
+                border: "1px solid rgba(59, 130, 246, 0.1)",
+                boxShadow: "0 4px 12px rgba(0, 0, 0, 0.05)",
+                textAlign: "center",
               }}
             >
-              <div style={{ fontSize: "2.5rem", fontWeight: "bold", color: "#3b82f6", marginBottom: "8px" }}>
+              <div style={{ fontSize: "2rem", fontWeight: "700", color: "#3b82f6", marginBottom: "6px" }}>
                 50K+
               </div>
-              <div style={{ color: "#6b7280" }}>Kayıtlı Öğrenci</div>
+              <div style={{ color: "#6b7280", fontSize: "14px" }}>Kayıtlı Öğrenci</div>
             </div>
             <div
               className="scroll-animate-stagger delay-700 hover-lift"
               style={{
-                background: "#f8fafc",
-                borderRadius: "16px",
-                padding: "24px",
-                border: "1px solid #e2e8f0",
-                boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
+                background: "rgba(255, 255, 255, 0.9)",
+                borderRadius: "12px",
+                padding: "20px",
+                border: "1px solid rgba(59, 130, 246, 0.1)",
+                boxShadow: "0 4px 12px rgba(0, 0, 0, 0.05)",
+                textAlign: "center",
               }}
             >
-              <div style={{ fontSize: "2.5rem", fontWeight: "bold", color: "#3b82f6", marginBottom: "8px" }}>
+              <div style={{ fontSize: "2rem", fontWeight: "700", color: "#3b82f6", marginBottom: "6px" }}>
                 99.9%
               </div>
-              <div style={{ color: "#6b7280" }}>Güvenilirlik</div>
+              <div style={{ color: "#6b7280", fontSize: "14px" }}>Güvenilirlik</div>
             </div>
           </div>
         </div>
       </section> 
       {/* About Section */}
-      <section id="about" style={{ padding: "80px 0", position: "relative" }}>
+      <section id="about" style={{ padding: "60px 0", position: "relative" }}>
         <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "0 20px" }}>
           <div className="scroll-animate" style={{ textAlign: "center", marginBottom: "64px" }}>
             <h2
               className="scroll-animate-fade"
               style={{
-                fontSize: "3rem",
-                fontWeight: "bold",
+                fontSize: "2.5rem",
+                fontWeight: "700",
                 color: "#1f2937",
-                marginBottom: "24px",
-                margin: "0 0 24px 0",
+                marginBottom: "20px",
+                margin: "0 0 20px 0",
               }}
             >
               Hakkımızda
@@ -509,11 +511,11 @@ function LandingPage() {
             <p
               className="scroll-animate delay-200"
               style={{
-                fontSize: "1.25rem",
+                fontSize: "1.125rem",
                 color: "#6b7280",
-                maxWidth: "900px",
-                margin: "0 auto 40px auto",
-                lineHeight: "1.8",
+                maxWidth: "800px",
+                margin: "0 auto 32px auto",
+                lineHeight: "1.7",
               }}
             >
               QR Yoklama Sistemi, eğitim kurumlarının dijital dönüşüm sürecinde yanlarında olan, 
@@ -637,17 +639,17 @@ function LandingPage() {
       </section>
 
       {/* Features Section */}
-      <section id="features" style={{ padding: "80px 0", position: "relative" }}>
+      <section id="features" style={{ padding: "60px 0", position: "relative" }}>
         <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "0 20px" }}>
           <div className="scroll-animate" style={{ textAlign: "center", marginBottom: "64px" }}>
             <h2
               className="scroll-animate-fade"
               style={{
-                fontSize: "3rem",
-                fontWeight: "bold",
+                fontSize: "2.5rem",
+                fontWeight: "700",
                 color: "#1f2937",
-                marginBottom: "24px",
-                margin: "0 0 24px 0",
+                marginBottom: "20px",
+                margin: "0 0 20px 0",
               }}
             >
               Özellikler
@@ -655,9 +657,9 @@ function LandingPage() {
             <p
               className="scroll-animate delay-200"
               style={{
-                fontSize: "1.25rem",
+                fontSize: "1.125rem",
                 color: "#6b7280",
-                maxWidth: "800px",
+                maxWidth: "700px",
                 margin: "0 auto",
                 lineHeight: "1.6",
               }}
@@ -808,11 +810,11 @@ function LandingPage() {
             <div
               className="scroll-animate hover-lift"
               style={{
-                background: "rgba(255,255,255,0.1)",
+                background: "#f8fafc",
                 padding: "32px",
                 borderRadius: "16px",
-                backdropFilter: "blur(10px)",
-                border: "1px solid rgba(255,255,255,0.2)",
+                border: "1px solid #e2e8f0",
+                boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
                 transition: "all 0.3s",
               }}
             >
@@ -830,10 +832,10 @@ function LandingPage() {
               >
                 <FaUsers style={{ fontSize: "24px", color: "white" }} />
               </div>
-              <h3 style={{ fontSize: "1.5rem", fontWeight: "bold", color: "white", marginBottom: "16px", margin: "0 0 16px 0" }}>
+              <h3 style={{ fontSize: "1.5rem", fontWeight: "bold", color: "#1f2937", marginBottom: "16px", margin: "0 0 16px 0" }}>
                 Kolay Kullanım
               </h3>
-              <p style={{ color: "rgba(255,255,255,0.8)", lineHeight: "1.6", margin: 0 }}>
+              <p style={{ color: "#6b7280", lineHeight: "1.6", margin: 0 }}>
                 Kullanıcı dostu arayüz ile herkes kolayca kullanabilir. Teknik bilgi gerektirmez. Türkçe dil desteği ve sesli yönlendirme. 5 dakikada öğrenebilir, hemen kullanmaya başlayabilirsiniz.
               </p>
             </div>
@@ -874,17 +876,17 @@ function LandingPage() {
         </div>
       </section> 
      {/* Contact Section */}
-      <section id="contact" style={{ padding: "80px 0", position: "relative" }}>
+      <section id="contact" style={{ padding: "60px 0", position: "relative", background: "#f8fafc" }}>
         <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "0 20px" }}>
-          <div className="scroll-animate" style={{ textAlign: "center", marginBottom: "64px" }}>
+          <div className="scroll-animate" style={{ textAlign: "center", marginBottom: "48px" }}>
             <h2
               className="scroll-animate-fade"
               style={{
-                fontSize: "3rem",
-                fontWeight: "bold",
-                color: "white",
-                marginBottom: "24px",
-                margin: "0 0 24px 0",
+                fontSize: "2.5rem",
+                fontWeight: "700",
+                color: "#1f2937",
+                marginBottom: "20px",
+                margin: "0 0 20px 0",
               }}
             >
               İletişim
@@ -892,9 +894,9 @@ function LandingPage() {
             <p
               className="scroll-animate delay-200"
               style={{
-                fontSize: "1.25rem",
-                color: "rgba(255,255,255,0.8)",
-                maxWidth: "800px",
+                fontSize: "1.125rem",
+                color: "#6b7280",
+                maxWidth: "700px",
                 margin: "0 auto",
                 lineHeight: "1.6",
               }}
@@ -907,20 +909,20 @@ function LandingPage() {
             style={{
               display: "grid",
               gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
-              gap: "48px",
+              gap: "32px",
             }}
           >
             <div
               className="scroll-animate-left"
               style={{
-                background: "rgba(255,255,255,0.1)",
+                background: "white",
                 borderRadius: "16px",
                 padding: "32px",
-                backdropFilter: "blur(10px)",
-                border: "1px solid rgba(255,255,255,0.2)",
+                border: "1px solid #e2e8f0",
+                boxShadow: "0 4px 12px rgba(0, 0, 0, 0.05)",
               }}
             >
-              <h3 style={{ fontSize: "1.5rem", fontWeight: "bold", color: "white", marginBottom: "24px", margin: "0 0 24px 0" }}>
+              <h3 style={{ fontSize: "1.5rem", fontWeight: "600", color: "#1f2937", marginBottom: "24px", margin: "0 0 24px 0" }}>
                 İletişim Bilgileri
               </h3>
               
@@ -940,10 +942,10 @@ function LandingPage() {
                     <FaEnvelope style={{ fontSize: "18px", color: "white" }} />
                   </div>
                   <div>
-                    <p style={{ color: "rgba(255,255,255,0.6)", fontSize: "14px", margin: "0 0 4px 0" }}>
+                    <p style={{ color: "#6b7280", fontSize: "14px", margin: "0 0 4px 0" }}>
                       E-posta
                     </p>
-                    <p style={{ color: "white", fontSize: "16px", margin: 0 }}>
+                    <p style={{ color: "#1f2937", fontSize: "16px", margin: 0 }}>
                     info@motivexintelligence.com
                     </p>
                   </div>
@@ -964,10 +966,10 @@ function LandingPage() {
                     <FaPhone style={{ fontSize: "18px", color: "white" }} />
                   </div>
                   <div>
-                    <p style={{ color: "rgba(255,255,255,0.6)", fontSize: "14px", margin: "0 0 4px 0" }}>
+                    <p style={{ color: "#6b7280", fontSize: "14px", margin: "0 0 4px 0" }}>
                       Telefon
                     </p>
-                    <p style={{ color: "white", fontSize: "16px", margin: 0 }}>
+                    <p style={{ color: "#1f2937", fontSize: "16px", margin: 0 }}>
                     +90 546 515 27 45
                     </p>
                   </div>
@@ -988,10 +990,10 @@ function LandingPage() {
                     <FaMapMarkerAlt style={{ fontSize: "18px", color: "white" }} />
                   </div>
                   <div>
-                    <p style={{ color: "rgba(255,255,255,0.6)", fontSize: "14px", margin: "0 0 4px 0" }}>
+                    <p style={{ color: "#6b7280", fontSize: "14px", margin: "0 0 4px 0" }}>
                       Adres
                     </p>
-                    <p style={{ color: "white", fontSize: "16px", margin: 0 }}>
+                    <p style={{ color: "#1f2937", fontSize: "16px", margin: 0 }}>
                     Manisa Celal Bayar Üniversitesi
 Teknoloji Geliştirme Bölgesi Z-15
 Yunusemre/MANİSA
@@ -1004,14 +1006,14 @@ Yunusemre/MANİSA
             <div
               className="scroll-animate-right"
               style={{
-                background: "rgba(255,255,255,0.1)",
+                background: "white",
                 borderRadius: "16px",
                 padding: "32px",
-                backdropFilter: "blur(10px)",
-                border: "1px solid rgba(255,255,255,0.2)",
+                border: "1px solid #e2e8f0",
+                boxShadow: "0 4px 12px rgba(0, 0, 0, 0.05)",
               }}
             >
-              <h3 style={{ fontSize: "1.5rem", fontWeight: "bold", color: "white", marginBottom: "24px", margin: "0 0 24px 0" }}>
+              <h3 style={{ fontSize: "1.5rem", fontWeight: "600", color: "#1f2937", marginBottom: "24px", margin: "0 0 24px 0" }}>
                 Mesaj Gönderin
               </h3>
               
@@ -1023,10 +1025,10 @@ Yunusemre/MANİSA
                     style={{
                       width: "100%",
                       padding: "12px 16px",
-                      background: "rgba(255,255,255,0.1)",
-                      border: "1px solid rgba(255,255,255,0.2)",
+                      background: "#f8fafc",
+                      border: "1px solid #e2e8f0",
                       borderRadius: "8px",
-                      color: "white",
+                      color: "#1f2937",
                       fontSize: "16px",
                       outline: "none",
                     }}
@@ -1039,10 +1041,10 @@ Yunusemre/MANİSA
                     style={{
                       width: "100%",
                       padding: "12px 16px",
-                      background: "rgba(255,255,255,0.1)",
-                      border: "1px solid rgba(255,255,255,0.2)",
+                      background: "#f8fafc",
+                      border: "1px solid #e2e8f0",
                       borderRadius: "8px",
-                      color: "white",
+                      color: "#1f2937",
                       fontSize: "16px",
                       outline: "none",
                     }}
@@ -1055,10 +1057,10 @@ Yunusemre/MANİSA
                     style={{
                       width: "100%",
                       padding: "12px 16px",
-                      background: "rgba(255,255,255,0.1)",
-                      border: "1px solid rgba(255,255,255,0.2)",
+                      background: "#f8fafc",
+                      border: "1px solid #e2e8f0",
                       borderRadius: "8px",
-                      color: "white",
+                      color: "#1f2937",
                       fontSize: "16px",
                       outline: "none",
                       resize: "vertical",
@@ -1067,6 +1069,7 @@ Yunusemre/MANİSA
                 </div>
                 <button
                   type="submit"
+                  className="hover-lift"
                   style={{
                     background: "linear-gradient(135deg, #3b82f6, #8b5cf6)",
                     color: "white",
@@ -1088,7 +1091,7 @@ Yunusemre/MANİSA
       </section>
 
       {/* Footer */}
-      <footer style={{ background: "rgba(0,0,0,0.3)", padding: "40px 0", borderTop: "1px solid rgba(255,255,255,0.1)" }}>
+      <footer style={{ background: "#1f2937", padding: "40px 0", borderTop: "1px solid #374151" }}>
         <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "0 20px" }}>
           <div
             style={{
