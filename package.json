@@ -41,6 +41,7 @@
     ]
   },
   "devDependencies": {
+    "@gradio/client": "^1.15.6",
     "@types/react": "^19.1.8"
   }
 }
