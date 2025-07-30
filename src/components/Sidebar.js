@@ -116,18 +116,17 @@ const Sidebar = ({ open, onToggle, isMobile, onNavigate }) => {
       <List sx={{ flexGrow: 1, py: 1, px: 0 }}>
         {/* Main Navigation Items */}
         {navigationItems.map((item) => {
-          // Uzun metinler için özel yükseklik hesaplama
+          // Consistent height for all menu items
           const isLongText = item.label.length > 15;
-          const minHeight = isLongText ? 44 : 36;
 
           return (
             <ListItem key={item.key} disablePadding sx={{ mb: 0.5 }}>
               <ListItemButton
                 onClick={() => onNavigate && onNavigate(item.path)}
                 sx={{
-                  minHeight: minHeight,
+                  minHeight: 48,
                   px: 2.5,
-                  py: 1.25,
+                  py: 1.5,
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "flex-start",
@@ -139,48 +138,47 @@ const Sidebar = ({ open, onToggle, isMobile, onNavigate }) => {
                   transition: "all 0.2s ease-in-out",
                 }}
               >
-                {/* İkon Container */}
+                {/* Icon Container - Moved up */}
                 <Box
                   sx={{
-                    width: 24,
-                    height: 24,
+                    width: 22,
+                    height: 22,
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    mr: 2,
+                    mr: 1.5, // 12px spacing between icon and text
                     flexShrink: 0,
-                    mt: 0.25, // Move icon down slightly
+                    mt: -0.99, // Move icons up
                   }}
                 >
                   {React.cloneElement(item.icon, {
                     sx: {
                       color: "white",
-                      fontSize: 22,
+                      fontSize: 20, // Slightly smaller icon for better balance
                       display: "block",
                     },
                   })}
                 </Box>
 
-                {/* Metin Container */}
+                {/* Text Container - Perfect vertical alignment */}
                 <Box
                   sx={{
                     display: "flex",
                     alignItems: "center",
-                    minHeight: 24,
                     flex: 1,
+                    minHeight: 22,
                   }}
                 >
                   <Typography
                     sx={{
-                      fontSize: "0.9rem",
-                      fontWeight: 500,
+                      fontSize: "14px", // Reduced from 0.9rem to 14px for better balance
+                      fontWeight: 400, // Regular weight as specified
                       color: "white",
-                      lineHeight: 1.1,
-                      letterSpacing: "0.2px",
+                      lineHeight: 1.2,
+                      letterSpacing: "0.1px",
                       fontFamily: '"Inter", "Roboto", sans-serif',
                       whiteSpace: isLongText ? "normal" : "nowrap",
                       wordBreak: isLongText ? "break-word" : "normal",
-                      mt: 0.5, // Move text down to align with icons
                     }}
                   >
                     {item.label}

@@ -278,10 +278,16 @@ const Profilim = ({
 
   return (
     <Container maxWidth="lg" sx={{ mt: 2, pb: 2, position: "relative" }}>
-      {/* Page Title */}
+      {/* Modern Page Title */}
       <Typography
         variant="h4"
-        sx={{ fontWeight: "bold", color: "#1a237e", mb: 2 }}
+        sx={{ 
+          fontWeight: 600, 
+          color: "#1a237e", 
+          mb: 3,
+          fontFamily: '"Inter", "Roboto", system-ui, sans-serif',
+          letterSpacing: "-0.02em",
+        }}
         tabIndex="0"
         role="heading"
         aria-level="1"
@@ -320,13 +326,16 @@ const Profilim = ({
         </Box>
       )}
 
-      {/* Compact Single Column Layout */}
+      {/* Modern Card Layout */}
       <Paper
-        elevation={3}
+        elevation={0}
         sx={{
-          p: { xs: 1.5, sm: 2 },
-          borderRadius: 2,
+          p: { xs: 2, sm: 3 },
+          borderRadius: 3,
           position: "relative",
+          background: "linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%)",
+          border: "1px solid rgba(26, 35, 126, 0.08)",
+          boxShadow: "0 4px 20px rgba(26, 35, 126, 0.08)",
         }}
       >
         {/* Profile Header Section */}
@@ -387,31 +396,46 @@ const Profilim = ({
             )}
           </Box>
 
-          {/* Profile Info */}
+          {/* Modern Profile Info */}
           <Box
             sx={{
               flex: 1,
               display: "flex",
-              alignItems: "center",
-              justifyContent: { xs: "center", sm: "flex-start" },
-              minHeight: 80, // Avatar yüksekliği ile aynı
+              flexDirection: "column",
+              justifyContent: "center",
+              alignItems: { xs: "center", sm: "flex-start" },
+              minHeight: 80,
+              gap: 0.5,
             }}
           >
             <Typography
-              variant="h6"
+              variant="h5"
               component="div"
               sx={{
-                fontWeight: "bold",
+                fontWeight: 600,
                 color: "#1a237e",
                 textAlign: { xs: "center", sm: "left" },
+                fontFamily: '"Inter", "Roboto", system-ui, sans-serif',
+                letterSpacing: "-0.01em",
+                lineHeight: 1.2,
               }}
             >
-              {userProfile.title || "Ögr. Gör."}{" "}
               {isEditing
                 ? `${values.firstName || "MEHMET NURİ"} ${
                     values.lastName || "ÖĞÜT"
                   }`
                 : userProfile.name || "MEHMET NURİ ÖĞÜT"}
+            </Typography>
+            <Typography
+              variant="body2"
+              sx={{
+                color: "#64748b",
+                textAlign: { xs: "center", sm: "left" },
+                fontFamily: '"Inter", "Roboto", system-ui, sans-serif',
+                fontWeight: 500,
+              }}
+            >
+              {userProfile.title || "Öğr. Gör."}
             </Typography>
           </Box>
 
@@ -429,10 +453,20 @@ const Profilim = ({
                 onClick={handleEditClick}
                 disabled={isSaving}
                 sx={{
-                  bgcolor: "#1a237e",
+                  background: "linear-gradient(135deg, #1a237e 0%, #283593 100%)",
+                  borderRadius: 2,
+                  px: 3,
+                  py: 1,
+                  fontFamily: '"Inter", "Roboto", system-ui, sans-serif',
+                  fontWeight: 500,
+                  textTransform: "none",
+                  boxShadow: "0 2px 8px rgba(26, 35, 126, 0.2)",
                   "&:hover": {
-                    bgcolor: "#0d1642",
+                    background: "linear-gradient(135deg, #0d1642 0%, #1a237e 100%)",
+                    boxShadow: "0 4px 12px rgba(26, 35, 126, 0.3)",
+                    transform: "translateY(-1px)",
                   },
+                  transition: "all 0.2s ease-in-out",
                 }}
                 ref={editButtonRef}
                 aria-label="Profili Düzenle"
@@ -447,10 +481,20 @@ const Profilim = ({
                   onClick={handleSaveClick}
                   disabled={isSaving}
                   sx={{
-                    bgcolor: "#1a237e",
+                    background: "linear-gradient(135deg, #1a237e 0%, #283593 100%)",
+                    borderRadius: 2,
+                    px: 3,
+                    py: 1,
+                    fontFamily: '"Inter", "Roboto", system-ui, sans-serif',
+                    fontWeight: 500,
+                    textTransform: "none",
+                    boxShadow: "0 2px 8px rgba(26, 35, 126, 0.2)",
                     "&:hover": {
-                      bgcolor: "#0d1642",
+                      background: "linear-gradient(135deg, #0d1642 0%, #1a237e 100%)",
+                      boxShadow: "0 4px 12px rgba(26, 35, 126, 0.3)",
+                      transform: "translateY(-1px)",
                     },
+                    transition: "all 0.2s ease-in-out",
                   }}
                 >
                   {isSaving ? "Kaydediliyor..." : "Kaydet"}
@@ -460,6 +504,21 @@ const Profilim = ({
                   startIcon={<Cancel />}
                   onClick={handleCancelClick}
                   disabled={isSaving}
+                  sx={{
+                    borderColor: "#cbd5e1",
+                    color: "#64748b",
+                    borderRadius: 2,
+                    px: 3,
+                    py: 1,
+                    fontFamily: '"Inter", "Roboto", system-ui, sans-serif',
+                    fontWeight: 500,
+                    textTransform: "none",
+                    "&:hover": {
+                      borderColor: "#94a3b8",
+                      backgroundColor: "#f8fafc",
+                    },
+                    transition: "all 0.2s ease-in-out",
+                  }}
                 >
                   İptal
                 </Button>
@@ -468,9 +527,9 @@ const Profilim = ({
           </Box>
         </Box>
 
-        {/* Form Fields in Compact Grid */}
-        <Grid container spacing={1.5}>
-          {/* Personal Information */}
+        {/* Modern Form Fields */}
+        <Grid container spacing={2.5}>
+          {/* Modern Personal Information Fields */}
           <Grid item xs={12} sm={6}>
             <TextField
               label="Ad"
@@ -479,11 +538,36 @@ const Profilim = ({
               onBlur={() => handleBlur("firstName")}
               fullWidth
               variant="outlined"
-              size="small"
+              size="medium"
               error={touched.firstName && !!errors.firstName}
               helperText={touched.firstName && errors.firstName}
               InputProps={{
                 readOnly: !isEditing,
+                sx: {
+                  borderRadius: 2,
+                  fontFamily: '"Inter", "Roboto", system-ui, sans-serif',
+                  backgroundColor: isEditing ? "#ffffff" : "#f8fafc",
+                  "& .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#e2e8f0",
+                  },
+                  "&:hover .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#cbd5e1",
+                  },
+                  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#1a237e",
+                    borderWidth: 2,
+                  },
+                },
+              }}
+              InputLabelProps={{
+                sx: {
+                  fontFamily: '"Inter", "Roboto", system-ui, sans-serif',
+                  fontWeight: 500,
+                  color: "#64748b",
+                  "&.Mui-focused": {
+                    color: "#1a237e",
+                  },
+                },
               }}
               inputRef={isEditing ? firstFieldRef : null}
             />
@@ -497,11 +581,36 @@ const Profilim = ({
               onBlur={() => handleBlur("lastName")}
               fullWidth
               variant="outlined"
-              size="small"
+              size="medium"
               error={touched.lastName && !!errors.lastName}
               helperText={touched.lastName && errors.lastName}
               InputProps={{
                 readOnly: !isEditing,
+                sx: {
+                  borderRadius: 2,
+                  fontFamily: '"Inter", "Roboto", system-ui, sans-serif',
+                  backgroundColor: isEditing ? "#ffffff" : "#f8fafc",
+                  "& .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#e2e8f0",
+                  },
+                  "&:hover .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#cbd5e1",
+                  },
+                  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#1a237e",
+                    borderWidth: 2,
+                  },
+                },
+              }}
+              InputLabelProps={{
+                sx: {
+                  fontFamily: '"Inter", "Roboto", system-ui, sans-serif',
+                  fontWeight: 500,
+                  color: "#64748b",
+                  "&.Mui-focused": {
+                    color: "#1a237e",
+                  },
+                },
               }}
             />
           </Grid>
@@ -514,11 +623,36 @@ const Profilim = ({
               onBlur={() => handleBlur("email")}
               fullWidth
               variant="outlined"
-              size="small"
+              size="medium"
               error={touched.email && !!errors.email}
               helperText={touched.email && errors.email}
               InputProps={{
                 readOnly: !isEditing,
+                sx: {
+                  borderRadius: 2,
+                  fontFamily: '"Inter", "Roboto", system-ui, sans-serif',
+                  backgroundColor: isEditing ? "#ffffff" : "#f8fafc",
+                  "& .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#e2e8f0",
+                  },
+                  "&:hover .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#cbd5e1",
+                  },
+                  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#1a237e",
+                    borderWidth: 2,
+                  },
+                },
+              }}
+              InputLabelProps={{
+                sx: {
+                  fontFamily: '"Inter", "Roboto", system-ui, sans-serif',
+                  fontWeight: 500,
+                  color: "#64748b",
+                  "&.Mui-focused": {
+                    color: "#1a237e",
+                  },
+                },
               }}
               inputProps={{
                 type: "email",
@@ -534,11 +668,36 @@ const Profilim = ({
               onBlur={() => handleBlur("phone")}
               fullWidth
               variant="outlined"
-              size="small"
+              size="medium"
               error={touched.phone && !!errors.phone}
               helperText={touched.phone && errors.phone}
               InputProps={{
                 readOnly: !isEditing,
+                sx: {
+                  borderRadius: 2,
+                  fontFamily: '"Inter", "Roboto", system-ui, sans-serif',
+                  backgroundColor: isEditing ? "#ffffff" : "#f8fafc",
+                  "& .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#e2e8f0",
+                  },
+                  "&:hover .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#cbd5e1",
+                  },
+                  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#1a237e",
+                    borderWidth: 2,
+                  },
+                },
+              }}
+              InputLabelProps={{
+                sx: {
+                  fontFamily: '"Inter", "Roboto", system-ui, sans-serif',
+                  fontWeight: 500,
+                  color: "#64748b",
+                  "&.Mui-focused": {
+                    color: "#1a237e",
+                  },
+                },
               }}
             />
           </Grid>
@@ -551,11 +710,36 @@ const Profilim = ({
               onBlur={() => handleBlur("university")}
               fullWidth
               variant="outlined"
-              size="small"
+              size="medium"
               error={touched.university && !!errors.university}
               helperText={touched.university && errors.university}
               InputProps={{
                 readOnly: !isEditing,
+                sx: {
+                  borderRadius: 2,
+                  fontFamily: '"Inter", "Roboto", system-ui, sans-serif',
+                  backgroundColor: isEditing ? "#ffffff" : "#f8fafc",
+                  "& .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#e2e8f0",
+                  },
+                  "&:hover .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#cbd5e1",
+                  },
+                  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#1a237e",
+                    borderWidth: 2,
+                  },
+                },
+              }}
+              InputLabelProps={{
+                sx: {
+                  fontFamily: '"Inter", "Roboto", system-ui, sans-serif',
+                  fontWeight: 500,
+                  color: "#64748b",
+                  "&.Mui-focused": {
+                    color: "#1a237e",
+                  },
+                },
               }}
             />
           </Grid>
@@ -568,11 +752,36 @@ const Profilim = ({
               onBlur={() => handleBlur("faculty")}
               fullWidth
               variant="outlined"
-              size="small"
+              size="medium"
               error={touched.faculty && !!errors.faculty}
               helperText={touched.faculty && errors.faculty}
               InputProps={{
                 readOnly: !isEditing,
+                sx: {
+                  borderRadius: 2,
+                  fontFamily: '"Inter", "Roboto", system-ui, sans-serif',
+                  backgroundColor: isEditing ? "#ffffff" : "#f8fafc",
+                  "& .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#e2e8f0",
+                  },
+                  "&:hover .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#cbd5e1",
+                  },
+                  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#1a237e",
+                    borderWidth: 2,
+                  },
+                },
+              }}
+              InputLabelProps={{
+                sx: {
+                  fontFamily: '"Inter", "Roboto", system-ui, sans-serif',
+                  fontWeight: 500,
+                  color: "#64748b",
+                  "&.Mui-focused": {
+                    color: "#1a237e",
+                  },
+                },
               }}
             />
           </Grid>
@@ -585,11 +794,36 @@ const Profilim = ({
               onBlur={() => handleBlur("department")}
               fullWidth
               variant="outlined"
-              size="small"
+              size="medium"
               error={touched.department && !!errors.department}
               helperText={touched.department && errors.department}
               InputProps={{
                 readOnly: !isEditing,
+                sx: {
+                  borderRadius: 2,
+                  fontFamily: '"Inter", "Roboto", system-ui, sans-serif',
+                  backgroundColor: isEditing ? "#ffffff" : "#f8fafc",
+                  "& .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#e2e8f0",
+                  },
+                  "&:hover .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#cbd5e1",
+                  },
+                  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#1a237e",
+                    borderWidth: 2,
+                  },
+                },
+              }}
+              InputLabelProps={{
+                sx: {
+                  fontFamily: '"Inter", "Roboto", system-ui, sans-serif',
+                  fontWeight: 500,
+                  color: "#64748b",
+                  "&.Mui-focused": {
+                    color: "#1a237e",
+                  },
+                },
               }}
             />
           </Grid>
@@ -602,11 +836,36 @@ const Profilim = ({
               onBlur={() => handleBlur("webUrl")}
               fullWidth
               variant="outlined"
-              size="small"
+              size="medium"
               error={touched.webUrl && !!errors.webUrl}
               helperText={touched.webUrl && errors.webUrl}
               InputProps={{
                 readOnly: !isEditing,
+                sx: {
+                  borderRadius: 2,
+                  fontFamily: '"Inter", "Roboto", system-ui, sans-serif',
+                  backgroundColor: isEditing ? "#ffffff" : "#f8fafc",
+                  "& .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#e2e8f0",
+                  },
+                  "&:hover .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#cbd5e1",
+                  },
+                  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#1a237e",
+                    borderWidth: 2,
+                  },
+                },
+              }}
+              InputLabelProps={{
+                sx: {
+                  fontFamily: '"Inter", "Roboto", system-ui, sans-serif',
+                  fontWeight: 500,
+                  color: "#64748b",
+                  "&.Mui-focused": {
+                    color: "#1a237e",
+                  },
+                },
               }}
               inputProps={{
                 type: "url",
