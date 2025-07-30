@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import profilePhoto from "../assets/mno.jpg";
 import {
   AppBar,
   Toolbar,
@@ -195,6 +196,7 @@ const TopNavigation = ({
                 lineHeight: "28px", // İkon boyutu ile aynı
                 display: "flex",
                 alignItems: "center",
+                mt:1,
 
                 "&:hover": {
                   opacity: 0.9,
@@ -275,11 +277,11 @@ const TopNavigation = ({
           {/* Profile Avatar */}
           <IconButton onClick={handleProfileClick} sx={{ p: 0 }}>
             <Avatar
-              src={userProfile.profilePhoto}
-              alt={userProfile.name}
+              src={userProfile?.profilePhoto || profilePhoto}
+              alt={userProfile?.name || "Kullanıcı"}
               sx={{ width: 32, height: 32 }}
             >
-              {userProfile.name.charAt(0)}
+              {userProfile?.name?.charAt(0) || "M"}
             </Avatar>
           </IconButton>
         </Box>
