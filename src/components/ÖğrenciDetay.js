@@ -78,7 +78,18 @@ const ÖğrenciDetay = ({ student, course, onBack }) => {
       <Box sx={{ display: 'flex', alignItems: 'center', mb: 4 }}>
         <IconButton
           onClick={onBack}
-          sx={{ mr: 2, bgcolor: '#f5f5f5', '&:hover': { bgcolor: '#e0e0e0' }, borderRadius: 3 }}
+          sx={{ 
+            mr: 2, 
+            bgcolor: '#1976d2', 
+            color: 'white',
+            '&:hover': { 
+              bgcolor: '#1565c0',
+              transform: 'scale(1.05)',
+            }, 
+            borderRadius: 3,
+            boxShadow: "0 2px 8px rgba(25, 118, 210, 0.3)",
+            transition: "all 0.2s ease-in-out",
+          }}
         >
           <ArrowBack />
         </IconButton>
@@ -270,11 +281,26 @@ const ÖğrenciDetay = ({ student, course, onBack }) => {
       {/* Geri Dön Butonu */}
       <Box sx={{ mt: 4 }}>
         <Button
-          variant="outlined"
+          variant="contained"
           color="primary"
           startIcon={<ArrowBack />}
           onClick={onBack}
-          sx={{ minWidth: 150 }}
+          sx={{ 
+            minWidth: 150,
+            bgcolor: "#1976d2",
+            color: "white",
+            fontWeight: 600,
+            px: 3,
+            py: 1.5,
+            borderRadius: 2,
+            boxShadow: "0 2px 8px rgba(25, 118, 210, 0.3)",
+            "&:hover": {
+              bgcolor: "#1565c0",
+              transform: "translateY(-1px)",
+              boxShadow: "0 4px 12px rgba(25, 118, 210, 0.4)",
+            },
+            transition: "all 0.2s ease-in-out",
+          }}
         >
           Geri Dön
         </Button>

@@ -190,8 +190,27 @@ const DersKayit = ({ onBack, selectedSemester = "2025-2026-Güz" }) => {
               >
                 {editingCourse ? "Ders Güncelle" : "Ders Bilgileri"}
               </Typography>
-              <Button variant="outlined" onClick={onBack} size="small">
-                Geri Dön
+              <Button 
+                variant="contained" 
+                onClick={onBack} 
+                size="medium"
+                sx={{
+                  bgcolor: "#1a237e",
+                  color: "white",
+                  fontWeight: 600,
+                  px: 3,
+                  py: 1,
+                  borderRadius: 2,
+                  boxShadow: "0 2px 8px rgba(26, 35, 126, 0.3)",
+                  "&:hover": {
+                    bgcolor: "#0d1b5e",
+                    transform: "translateY(-1px)",
+                    boxShadow: "0 4px 12px rgba(26, 35, 126, 0.4)",
+                  },
+                  transition: "all 0.2s ease-in-out",
+                }}
+              >
+                ← Geri Dön
               </Button>
             </Box>
 

@@ -174,8 +174,22 @@ const DersEkleBirak = ({ onBack, selectedSemester = '2025-2026-Güz' }) => {
               alignItems: 'center',
               justifyContent: 'center'
             }}>
-              <IconButton onClick={onBack} sx={{ color: "white", p: 0 }}>
-                <ArrowBackIcon sx={{ fontSize: 28 }} />
+              <IconButton 
+                onClick={onBack} 
+                sx={{ 
+                  color: "white", 
+                  p: 1,
+                  bgcolor: "rgba(255, 255, 255, 0.2)",
+                  borderRadius: 2,
+                  "&:hover": { 
+                    bgcolor: "rgba(255, 255, 255, 0.3)",
+                    transform: "scale(1.1)",
+                  },
+                  boxShadow: "0 2px 8px rgba(0, 0, 0, 0.2)",
+                  transition: "all 0.2s ease-in-out",
+                }}
+              >
+                <ArrowBackIcon sx={{ fontSize: 32 }} />
               </IconButton>
             </Box>
             <Box>

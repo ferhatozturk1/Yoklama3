@@ -279,10 +279,19 @@ const DersDetay = ({ ders, onBack }) => {
         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
           <IconButton
             onClick={onBack}
-            size="small"
-            sx={{ bgcolor: "#f5f5f5", "&:hover": { bgcolor: "#e0e0e0" } }}
+            size="medium"
+            sx={{ 
+              bgcolor: "#1a237e", 
+              color: "white",
+              "&:hover": { 
+                bgcolor: "#0d1b5e",
+                transform: "scale(1.05)",
+              },
+              boxShadow: "0 2px 8px rgba(26, 35, 126, 0.3)",
+              transition: "all 0.2s ease-in-out",
+            }}
           >
-            <ArrowBack fontSize="small" />
+            <ArrowBack fontSize="medium" />
           </IconButton>
           <Typography
             variant="h5"
@@ -531,22 +540,7 @@ const DersDetay = ({ ders, onBack }) => {
                 </Typography>
               </Box>
 
-              {/* Files Info */}
-              <Box
-                sx={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  p: 1.5,
-                  bgcolor: "#fff3e0",
-                  borderRadius: 1,
-                  border: "1px solid #ffcc02",
-                }}
-              >
-                <Badge badgeContent={ders.files?.length || 0} color="primary">
-                  <InsertDriveFile sx={{ fontSize: 16 }} />
-                </Badge>
-              </Box>
+
             </CardContent>
           </Card>
         </Grid>
