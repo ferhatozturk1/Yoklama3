@@ -82,7 +82,6 @@ const Derslerim = () => {
       name: "Matematik",
       code: "MRK 1116",
 
-      sectionFull: "MRK-A1",
       building: "Manisa Teknik Bilimler MYO",
       room: "Amfi-6",
       schedule: {
@@ -101,7 +100,7 @@ const Derslerim = () => {
       name: "Matematik",
       code: "IYS 1101",
 
-      sectionFull: "IYS-B1",
+      
       building: "Manisa Teknik Bilimler MYO",
       room: "Amfi-...",
       schedule: {
@@ -120,7 +119,7 @@ const Derslerim = () => {
       name: "Mesleki Matematik",
       code: "EKT 1117",
 
-      sectionFull: "EKT-C1",
+      
       building: "Manisa Teknik Bilimler MYO",
       room: "Amfi-6",
       schedule: {
@@ -139,7 +138,7 @@ const Derslerim = () => {
       name: "Programlama",
       code: "IYS 1103",
 
-      sectionFull: "IYS-Lab1",
+      
       building: "Manisa Teknik Bilimler MYO",
       room: "Derslik-7",
       schedule: {
@@ -161,7 +160,7 @@ const Derslerim = () => {
       name: "Akademik Yapay Zekaya Giriş",
       code: "SSD 3264",
 
-      sectionFull: "SSD-A1",
+      
       building: "Mühendislik ve Doğa Bilimleri Fakültesi",
       room: "Derslik",
       schedule: {
@@ -181,7 +180,7 @@ const Derslerim = () => {
       name: "Bilişim ve Bilgisayar Ağları Temelleri",
       code: "IYS 1107",
 
-      sectionFull: "IYS-B1",
+      
       building: "Manisa Teknik Bilimler MYO",
       room: "Derslik-8",
       schedule: {
@@ -200,7 +199,7 @@ const Derslerim = () => {
       name: "Yapay Zeka ile Zenginleştirilmiş Proje Yönetimi",
       code: "USD 1165",
 
-      sectionFull: "USD-A1",
+      
       building: "Mühendislik ve Doğa Bilimleri Fakültesi",
       room: "Amfi-...",
       schedule: {
@@ -220,7 +219,7 @@ const Derslerim = () => {
       name: "Veri Toplama ve Analizi",
       code: "IYS 2103",
 
-      sectionFull: "IYS-B1",
+      
       building: "Manisa Teknik Bilimler MYO",
       room: "Derslik-6",
       schedule: {
@@ -581,6 +580,7 @@ const Derslerim = () => {
                         variant="body2"
                         sx={{
                           fontWeight: 700,
+                          mt:1,
                           color:
                             ders.attendanceRate >= 80
                               ? "#4caf50"
