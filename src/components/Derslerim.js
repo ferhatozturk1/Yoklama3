@@ -312,7 +312,9 @@ const Derslerim = () => {
   };
 
   const getDaysText = (schedule) => {
-    return Object.keys(schedule).join(", ");
+    return Object.keys(schedule)
+      .map((day) => day.charAt(0).toUpperCase() + day.slice(1))
+      .join(", ");
   };
 
   // Open schedule modal
@@ -414,51 +416,75 @@ const Derslerim = () => {
   }
 
   return (
-    <Container maxWidth="lg" sx={{ py: 1.5 }}>
-    {/* Compact Header */}
-    <Box
+    <Container
+      maxWidth={false}
       sx={{
-        maxHeight: "48px",
-        height: "48px",
-        borderRadius: "999px", // oval görünüm
-        display: "flex",
-        justifyContent: "center", // ortala
-        alignItems: "center",
-        mb: 2,
-        px: 3,        // yatay padding (daha net oval için)
-        py: 0,        // dikey padding az olmalı
-        bgcolor: "white",
-        boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+        py: { xs: 1, sm: 1.5, md: 2, lg: 2.5, xl: 3 },
+        px: { xs: 1, sm: 2, md: 3, lg: 4, xl: 6 },
+        maxWidth: {
+          xs: "100%",
+          sm: "100%",
+          md: "1200px",
+          lg: "1400px",
+          xl: "1800px",
+        },
+        mx: "auto",
       }}
     >
-      <Typography
-        variant="h6"
+      {/* Compact Header */}
+      <Box
         sx={{
-          fontWeight: 600,
-          color: "#1a237e",
+          height: {
+            xs: "32px",
+            sm: "36px",
+            md: "40px",
+            lg: "42px",
+            xl: "44px",
+          },
+          borderRadius: "999px",
           display: "flex",
+          justifyContent: "center",
           alignItems: "center",
-          gap: 1,
+          mb: { xs: 0.8, sm: 1, md: 1.2, lg: 1.4, xl: 1.6 },
+          px: { xs: 1.5, sm: 2, md: 2.5, lg: 3, xl: 3.5 },
+          bgcolor: "white",
+          boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
         }}
       >
-        📚 Derslerim
-      </Typography>
-    </Box>
-  
-      {/* Compact Course Grid */}
-      <Grid container spacing={1.5}>
+        <Typography
+          variant="h6"
+          sx={{
+            fontWeight: 600,
+            color: "#1a237e",
+            display: "flex",
+            alignItems: "center",
+            gap: 0.8,
+            fontSize: {
+              xs: "0.875rem",
+              sm: "0.95rem",
+              md: "1rem",
+              lg: "1.05rem",
+              xl: "1.1rem",
+            },
+          }}
+        >
+          📚 Derslerim
+        </Typography>
+      </Box>
+
+      {/* Responsive Course Grid */}
+      <Grid container spacing={{ xs: 1, sm: 1.5, md: 2, lg: 2.5, xl: 3 }}>
         {dersler.map((ders) => (
-          <Grid item xs={12} sm={6} md={4} key={ders.id}>
+          <Grid item xs={12} sm={6} md={4} lg={3} xl={3} key={ders.id}>
             <Card
               elevation={0}
               sx={{
                 height: "100%",
                 cursor: "pointer",
                 transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-                borderRadius: 3,
+                borderRadius: 2,
                 background: "white",
-                border: "1px solid rgba(0,0,0,0.08)",
-                boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+                border: "1px solid #e0e0e0",
                 position: "relative",
                 overflow: "hidden",
                 "&::before": {
@@ -467,177 +493,232 @@ const Derslerim = () => {
                   top: 0,
                   left: 0,
                   right: 0,
-                  height: "3px",
-                  background: `linear-gradient(90deg, ${
+                  height: "4px",
+                  background:
                     ders.attendanceRate >= 80
                       ? "#4caf50"
                       : ders.attendanceRate >= 60
                       ? "#ff9800"
-                      : "#f44336"
-                  } 0%, ${
-                    ders.attendanceRate >= 80
-                      ? "#66bb6a"
-                      : ders.attendanceRate >= 60
-                      ? "#ffb74d"
-                      : "#ef5350"
-                  } 100%)`,
+                      : "#f44336",
                 },
                 "&:hover": {
-                  transform: "translateY(-4px)",
-                  boxShadow: "0 8px 25px rgba(0,0,0,0.15)",
-                  border: "1px solid rgba(25, 118, 210, 0.2)",
+                  transform: "translateY(-2px)",
+                  boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+                  border: "1px solid #1976d2",
                 },
               }}
               onClick={() => handleDersClick(ders)}
             >
-              <CardContent sx={{ p: 1.2 }}>
-                {/* Course Header */}
-                <Box
-                  sx={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "flex-start",
-                    mb: 1.2,
-                  }}
-                >
-                  <Box>
-                    <Typography
-                      variant="h6"
-                      sx={{
-                        fontWeight: 600,
-                        color: "#1a237e",
-                        mb: 0.2,
-                        fontSize: "1.1rem",
-                      }}
-                    >
-                      {ders.code}
-                    </Typography>
-                    <Typography
-                      variant="body2"
-                      sx={{
-                        color: "rgba(26, 35, 126, 0.7)",
-                        fontWeight: 500,
-                      }}
-                    >
-                      {ders.section}
-                    </Typography>
-                  </Box>
-
-                  {/* Attendance Rate Circle - Compact */}
+              <CardContent
+                sx={{
+                  p: 2,
+                  height: "100%",
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "space-between",
+                }}
+              >
+                {/* Main Content */}
+                <Box sx={{ flex: 1 }}>
+                  {/* Header with Course Code and Attendance */}
                   <Box
                     sx={{
-                      width: 45,
-                      height: 45,
-                      borderRadius: "50%",
-                      border: `2px solid ${
-                        ders.attendanceRate >= 80
-                          ? "#4caf50"
-                          : ders.attendanceRate >= 60
-                          ? "#ff9800"
-                          : "#f44336"
-                      }`,
                       display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      background: `radial-gradient(circle, ${
-                        ders.attendanceRate >= 80
-                          ? "rgba(76, 175, 80, 0.1)"
-                          : ders.attendanceRate >= 60
-                          ? "rgba(255, 152, 0, 0.1)"
-                          : "rgba(244, 67, 54, 0.1)"
-                      } 0%, rgba(255, 255, 255, 0.9) 100%)`,
+                      justifyContent: "space-between",
+                      alignItems: "flex-start",
+                      mb: 1,
                     }}
                   >
-                    <Typography
-                      variant="body2"
+                    <Box sx={{ flex: 1 }}>
+                      <Typography
+                        variant="h6"
+                        sx={{
+                          fontWeight: 700,
+                          color: "#1a237e",
+                          fontSize: "1.1rem",
+                          mb: 0.3,
+                        }}
+                      >
+                        {ders.code}
+                      </Typography>
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          color: "#666",
+                          fontSize: "0.875rem",
+                          fontWeight: 500,
+                        }}
+                      >
+                        {ders.sectionFull || ders.section}
+                      </Typography>
+                    </Box>
+
+                    {/* Attendance Rate Badge */}
+                    <Box
                       sx={{
-                        fontWeight: 700,
-                        color:
+                        minWidth: 50,
+                        height: 50,
+                        borderRadius: "50%",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        bgcolor:
+                          ders.attendanceRate >= 80
+                            ? "#e8f5e8"
+                            : ders.attendanceRate >= 60
+                            ? "#fff3e0"
+                            : "#ffebee",
+                        border: `2px solid ${
                           ders.attendanceRate >= 80
                             ? "#4caf50"
                             : ders.attendanceRate >= 60
                             ? "#ff9800"
-                            : "#f44336",
-                        fontSize: "0.875rem",
+                            : "#f44336"
+                        }`,
                       }}
                     >
-                      %{ders.attendanceRate}
-                    </Typography>
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          fontWeight: 700,
+                          color:
+                            ders.attendanceRate >= 80
+                              ? "#4caf50"
+                              : ders.attendanceRate >= 60
+                              ? "#ff9800"
+                              : "#f44336",
+                          fontSize: "0.875rem",
+                        }}
+                      >
+                        %{ders.attendanceRate}
+                      </Typography>
+                    </Box>
+                  </Box>
+
+                  {/* Course Name */}
+                  <Typography
+                    variant="h6"
+                    sx={{
+                      fontWeight: 600,
+                      color: "#1a237e",
+                      fontSize: "1rem",
+                      mb:
+                        ders.name.length > 20
+                          ? 0.3
+                          : ders.name.length > 15
+                          ? 0.2
+                          : 0.1,
+                      lineHeight: 1.3,
+                      minHeight:
+                        ders.name.length > 20
+                          ? "2.6em"
+                          : ders.name.length > 15
+                          ? "2.2em"
+                          : "1.8em",
+                      display: "-webkit-box",
+                      WebkitLineClamp: ders.name.length > 20 ? 2 : 1,
+                      WebkitBoxOrient: "vertical",
+                      overflow: "hidden",
+                    }}
+                  >
+                    {ders.name}
+                  </Typography>
+
+                  {/* Course Details */}
+                  <Box
+                    sx={{
+                      mb:
+                        ders.name.length > 20
+                          ? 0.8
+                          : ders.name.length > 15
+                          ? 0.6
+                          : 0.4,
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        display: "flex",
+                        alignItems: "flex-start",
+                        gap: 0.8,
+                        mb: 0.3,
+                      }}
+                    >
+                      <LocationOn
+                        sx={{ fontSize: 16, color: "#666", mt: 0.1 }}
+                      />
+                      <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        sx={{ fontSize: "0.875rem", lineHeight: 1.2 }}
+                      >
+                        {ders.building} - {ders.room}
+                      </Typography>
+                    </Box>
+
+                    <Box
+                      sx={{
+                        display: "flex",
+                        alignItems: "flex-start",
+                        gap: 0.8,
+                        mb: 0.3,
+                      }}
+                    >
+                      <Groups sx={{ fontSize: 16, color: "#666", mt: 0.1 }} />
+                      <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        sx={{ fontSize: "0.875rem", lineHeight: 1.2 }}
+                      >
+                        {ders.studentCount} öğrenci
+                      </Typography>
+                    </Box>
+
+                    <Box
+                      sx={{
+                        display: "flex",
+                        alignItems: "flex-start",
+                        gap: 0.8,
+                      }}
+                    >
+                      <CalendarToday
+                        sx={{ fontSize: 16, color: "#666", mt: 0.1 }}
+                      />
+                      <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        sx={{ fontSize: "0.875rem", lineHeight: 1.2 }}
+                      >
+                        {getDaysText(ders.schedule)}
+                      </Typography>
+                    </Box>
                   </Box>
                 </Box>
 
-                {/* Course Name */}
-                <Typography
-                  variant="h6"
-                  sx={{
-                    fontWeight: 600,
-                    color: "#1a237e",
-                    mb: 1.2,
-                    mt: -3,
-                    fontSize: "0.95rem",
-                  }}
-                >
-                  {ders.name}
-                </Typography>
-
-                {/* Course Info - Horizontal Layout */}
-                <Box
-                  sx={{
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: 0.6,
-                    mb: 1.2,
-                    mt: -1
-                  }}
-                >
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                    <LocationOn sx={{ fontSize: 16, color: "#666" }} />
-                    <Typography variant="caption" color="text.secondary">
-                      {ders.building} - {ders.room}
-                    </Typography>
-                  </Box>
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                    <Groups sx={{ fontSize: 16, color: "#666" }} />
-                    <Typography variant="caption" color="text.secondary">
-                      {ders.studentCount} öğrenci
-                    </Typography>
-                  </Box>
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                    <CalendarToday sx={{ fontSize: 16, color: "#666" }} />
-                    <Typography variant="caption" color="text.secondary">
-                      {getDaysText(ders.schedule)}
-                    </Typography>
-                  </Box>
+                {/* Action Button - Always at bottom */}
+                <Box sx={{ mt: "auto" }}>
+                  <Button
+                    variant="contained"
+                    startIcon={<Edit sx={{ fontSize: 18 }} />}
+                    fullWidth
+                    sx={{
+                      bgcolor: "#1a237e",
+                      color: "white",
+                      py: 1,
+                      borderRadius: 1.5,
+                      fontSize: "0.875rem",
+                      fontWeight: 600,
+                      textTransform: "none",
+                      boxShadow: "0 2px 8px rgba(26, 35, 126, 0.3)",
+                      "&:hover": {
+                        bgcolor: "#0d47a1",
+                        transform: "translateY(-1px)",
+                        boxShadow: "0 4px 12px rgba(26, 35, 126, 0.4)",
+                      },
+                    }}
+                  >
+                    Derse Git
+                  </Button>
                 </Box>
-
-                <Divider sx={{ my: 0.8 }} />
-
-                {/* Action Button */}
-                <Button
-                  variant="contained"
-                  startIcon={<Edit />}
-                  fullWidth
-                  size="small"
-                  sx={{
-                    background:
-                      "linear-gradient(135deg, #1a237e 0%, #3949ab 100%)",
-                    borderRadius: 2,
-                    py: 1,
-                    fontSize: "0.875rem",
-                    fontWeight: 500,
-                    textTransform: "none",
-                    boxShadow: "0 2px 8px rgba(26, 35, 126, 0.3)",
-                    "&:hover": {
-                      background:
-                        "linear-gradient(135deg, #0d47a1 0%, #283593 100%)",
-                      transform: "translateY(-1px)",
-                      boxShadow: "0 4px 12px rgba(26, 35, 126, 0.4)",
-                      
-                    },
-                  }}
-                >
-                  Derse Git
-                </Button>
               </CardContent>
             </Card>
           </Grid>
