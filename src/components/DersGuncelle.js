@@ -54,7 +54,16 @@ const DersGuncelle = ({
   };
 
   return (
-    <Container maxWidth="lg" sx={{ mt: 2, pb: 4 }}>
+    <Container 
+      maxWidth={false} 
+      sx={{ 
+        mt: { xs: 1, sm: 1.25, md: 1.5, lg: 1.75, xl: 2 }, 
+        pb: { xs: 2, sm: 2.5, md: 3, lg: 3.5, xl: 4 },
+        px: { xs: 1, sm: 2, md: 3, lg: 4, xl: 6 },
+        maxWidth: { xs: "100%", sm: "100%", md: "1200px", lg: "1400px", xl: "1800px" },
+        mx: "auto"
+      }}
+    >
       {/* Simple Header */}
       <Box
         sx={{

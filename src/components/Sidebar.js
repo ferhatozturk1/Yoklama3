@@ -15,6 +15,7 @@ import {
   ManageAccounts as ManageAccountsIcon,
 } from "@mui/icons-material";
 import cbuLogo from "../theme/cbulogo.png";
+import profilePhoto from "../assets/mno.jpg";
 
 const Sidebar = ({ open, onToggle, isMobile, onNavigate }) => {
   // Navigation items
@@ -109,6 +110,77 @@ const Sidebar = ({ open, onToggle, isMobile, onNavigate }) => {
           >
             Manisa Celal Bayar Üniversitesi
           </Typography>
+        </Box>
+      </Box>
+
+      {/* User Profile Section */}
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          alignItems: "center",
+          py: 2,
+          px: 2,
+          borderBottom: "1px solid rgba(255,255,255,0.1)",
+        }}
+      >
+        {/* User Avatar and Info */}
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            gap: 2,
+            p: 2,
+            background: "rgba(255,255,255,0.1)",
+            borderRadius: "12px",
+            width: "100%",
+          }}
+        >
+          <Box
+            sx={{
+              width: 50,
+              height: 50,
+              borderRadius: "50%",
+              overflow: "hidden",
+              border: "2px solid rgba(255,255,255,0.3)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <img
+              src={profilePhoto}
+              alt="Mehmet Nuri Öğüt"
+              style={{
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
+              }}
+            />
+          </Box>
+          <Box sx={{ flex: 1 }}>
+            <Typography
+              sx={{
+                fontSize: "14px",
+                fontWeight: 600,
+                color: "white",
+                lineHeight: 1.2,
+                mb: 0.5,
+              }}
+            >
+              Öğr. Gör. Mehmet Nuri Öğüt
+            </Typography>
+            <Typography
+              sx={{
+                fontSize: "12px",
+                color: "rgba(255,255,255,0.8)",
+                lineHeight: 1.2,
+              }}
+            >
+              2025-2026 Güz Dönemi
+            </Typography>
+          </Box>
         </Box>
       </Box>
 

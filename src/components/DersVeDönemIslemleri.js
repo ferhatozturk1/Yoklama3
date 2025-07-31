@@ -69,7 +69,7 @@ const DersVeDönemIslemleri = ({ onNavigate }) => {
       building: "Manisa Teknik Bilimler MYO",
       room: "Amfi-6",
       schedule: {
-        çarşamba: [{ startTime: "08:40", endTime: "11:30", room: "Amfi-6" }],
+        Çarşamba: [{ startTime: "08:40", endTime: "11:30", room: "Amfi-6" }],
       },
       studentCount: 45,
       attendanceStatus: "completed",
@@ -83,7 +83,7 @@ const DersVeDönemIslemleri = ({ onNavigate }) => {
       building: "Manisa Teknik Bilimler MYO",
       room: "Amfi",
       schedule: {
-        salı: [{ startTime: "08:40", endTime: "10:30", room: "Amfi" }],
+        Salı: [{ startTime: "08:40", endTime: "10:30", room: "Amfi" }],
       },
       studentCount: 38,
       attendanceStatus: "completed",
@@ -97,7 +97,7 @@ const DersVeDönemIslemleri = ({ onNavigate }) => {
       building: "Manisa Teknik Bilimler MYO",
       room: "Amfi-6",
       schedule: {
-        çarşamba: [{ startTime: "11:45", endTime: "12:30", room: "Amfi-6" }],
+        Çarşamba: [{ startTime: "11:45", endTime: "12:30", room: "Amfi-6" }],
       },
       studentCount: 32,
       attendanceStatus: "completed",
@@ -111,8 +111,8 @@ const DersVeDönemIslemleri = ({ onNavigate }) => {
       building: "Manisa Teknik Bilimler MYO",
       room: "Derslik-7",
       schedule: {
-        salı: [{ startTime: "16:15", endTime: "17:00", room: "Derslik-7" }],
-        cuma: [
+        Salı: [{ startTime: "16:15", endTime: "17:00", room: "Derslik-7" }],
+        Cuma: [
           { startTime: "13:40", endTime: "15:30", room: "Bilgisayar Lab-2" },
         ],
       },
@@ -128,8 +128,8 @@ const DersVeDönemIslemleri = ({ onNavigate }) => {
       building: "Mühendislik ve Doğa Bilimleri Fakültesi",
       room: "Derslik",
       schedule: {
-        perşembe: [{ startTime: "16:15", endTime: "17:00", room: "Derslik" }],
-        cuma: [{ startTime: "16:15", endTime: "17:00", room: "Derslik" }],
+        Perşembe: [{ startTime: "16:15", endTime: "17:00", room: "Derslik" }],
+        Cuma: [{ startTime: "16:15", endTime: "17:00", room: "Derslik" }],
       },
       studentCount: 22,
       attendanceStatus: "completed",
@@ -143,7 +143,7 @@ const DersVeDönemIslemleri = ({ onNavigate }) => {
       building: "Manisa Teknik Bilimler MYO",
       room: "Derslik-8",
       schedule: {
-        salı: [{ startTime: "11:45", endTime: "12:30", room: "Derslik-8" }],
+        Salı: [{ startTime: "11:45", endTime: "12:30", room: "Derslik-8" }],
       },
       studentCount: 35,
       attendanceStatus: "pending",
@@ -157,7 +157,7 @@ const DersVeDönemIslemleri = ({ onNavigate }) => {
       building: "Mühendislik ve Doğa Bilimleri Fakültesi",
       room: "Amfi",
       schedule: {
-        perşembe: [
+        Perşembe: [
           { startTime: "13:40", endTime: "15:30", room: "Amfi" },
           { startTime: "17:00", endTime: "17:45", room: "Amfi" },
         ],
@@ -174,7 +174,7 @@ const DersVeDönemIslemleri = ({ onNavigate }) => {
       building: "Manisa Teknik Bilimler MYO",
       room: "Derslik-6",
       schedule: {
-        cuma: [{ startTime: "08:40", endTime: "10:30", room: "Derslik-6" }],
+        Cuma: [{ startTime: "08:40", endTime: "10:30", room: "Derslik-6" }],
       },
       studentCount: 26,
       attendanceStatus: "completed",
@@ -213,7 +213,15 @@ const DersVeDönemIslemleri = ({ onNavigate }) => {
   };
 
   return (
-    <Container maxWidth="xl" sx={{ py: 1 }}>
+    <Container 
+      maxWidth={false} 
+      sx={{ 
+        py: { xs: 0.5, sm: 0.75, md: 1, lg: 1.25, xl: 1.5 },
+        px: { xs: 1, sm: 2, md: 3, lg: 4, xl: 6 },
+        maxWidth: { xs: "100%", sm: "100%", md: "1200px", lg: "1400px", xl: "1800px" },
+        mx: "auto"
+      }}
+    >
       {/* Minimal Header */}
       <Box
         sx={{
@@ -310,7 +318,7 @@ const DersVeDönemIslemleri = ({ onNavigate }) => {
                 >
                   <AddCircleIcon
                     sx={{
-                      fontSize: 16,
+                      fontSize: 24,
                       color: isTermActive ? "#2196f3" : "#9e9e9e",
                     }}
                   />
@@ -325,7 +333,7 @@ const DersVeDönemIslemleri = ({ onNavigate }) => {
                     lineHeight: 1.2,
                   }}
                 >
-                  Ders Ekle
+                  Ders Kaydetme
                 </Typography>
                 <Typography
                   variant="caption"
@@ -336,7 +344,7 @@ const DersVeDönemIslemleri = ({ onNavigate }) => {
                   }}
                 >
                   {isTermActive
-                    ? "Yeni ders tanımlama"
+                    ? "Yeni ders kaydetme "
                     : "Sadece aktif dönemde"}
                 </Typography>
               </CardContent>
@@ -375,7 +383,7 @@ const DersVeDönemIslemleri = ({ onNavigate }) => {
                 >
                   <UpdateIcon
                     sx={{
-                      fontSize: 16,
+                      fontSize: 24,
                       color: isTermActive ? "#4caf50" : "#9e9e9e",
                     }}
                   />
@@ -401,7 +409,7 @@ const DersVeDönemIslemleri = ({ onNavigate }) => {
                   }}
                 >
                   {isTermActive
-                    ? "Ders bilgilerini güncelle"
+                    ? "Ders bilgilerini güncelleme"
                     : "Sadece aktif dönemde"}
                 </Typography>
               </CardContent>
