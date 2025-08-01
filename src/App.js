@@ -5,26 +5,32 @@ import GirisYap from './components/GirisYap';
 import OgretmenKayit from './components/OgretmenKayit';
 import MainPortal from './components/MainPortal';
 import { ROUTES } from './utils/routes';
+import { AuthProvider } from './contexts/AuthContext';
+import { DataProvider } from './contexts/DataContext';
 import './index.css';
 
 const App = () => (
   <Router>
-    <Routes>
-      {/* Giriş ve Kayıt rotaları */}
-      <Route path="/giris" element={<GirisYap />} />
-      <Route path="/kayit" element={<OgretmenKayit />} />
-      
-      {/* Panel rotaları */}
-      <Route path="/panel" element={<Navigate to={ROUTES.ANA_SAYFA} replace />} />
-      <Route path="/portal/*" element={<MainPortal />} />
-      
-      {/* Legacy routes for backward compatibility */}
-      <Route path="/ogretmen-kayit" element={<Navigate to="/kayit" replace />} />
-      <Route path="/ogretmen-panel" element={<Navigate to={ROUTES.ANA_SAYFA} replace />} />
-      
-      {/* Ziyaretçi sayfası (Landing Page) rotaları - En sonda olmalı */}
-      <Route path="/*" element={<LandingPage />} />
-    </Routes>
+    <AuthProvider>
+      <DataProvider>
+        <Routes>
+          {/* Giriş ve Kayıt rotaları */}
+          <Route path="/giris" element={<GirisYap />} />
+          <Route path="/kayit" element={<OgretmenKayit />} />
+          
+          {/* Panel rotaları */}
+          <Route path="/panel" element={<Navigate to={ROUTES.ANA_SAYFA} replace />} />
+          <Route path="/portal/*" element={<MainPortal />} />
+          
+          {/* Legacy routes for backward compatibility */}
+          <Route path="/ogretmen-kayit" element={<Navigate to="/kayit" replace />} />
+          <Route path="/ogretmen-panel" element={<Navigate to={ROUTES.ANA_SAYFA} replace />} />
+          
+          {/* Ziyaretçi sayfası (Landing Page) rotaları - En sonda olmalı */}
+          <Route path="/*" element={<LandingPage />} />
+        </Routes>
+      </DataProvider>
+    </AuthProvider>
   </Router>
 );
 

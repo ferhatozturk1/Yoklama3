@@ -15,6 +15,7 @@ import {
   Tooltip,
   Switch,
   FormControlLabel,
+  CircularProgress,
 } from "@mui/material";
 import {
   School,
@@ -27,16 +28,26 @@ import {
   DarkMode,
   LightMode,
 } from "@mui/icons-material";
+import { useAuth } from "../contexts/AuthContext";
+import { ROUTES } from "../utils/routes";
 
 const GirisYap = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const [showContent, setShowContent] = useState(false);
+  const [selectedTestUser, setSelectedTestUser] = useState(0);
+  
   const navigate = useNavigate();
+  const { login, loading, error, clearError, isAuthenticated, user } = useAuth();
+
+  // Kullanıcı zaten giriş yapmışsa portal'a yönlendir
+  useEffect(() => {
+    if (isAuthenticated()) {
+      navigate(ROUTES.ANA_SAYFA);
+    }
+  }, [isAuthenticated, navigate]);
 
   // Fade-in animation on page load
   useEffect(() => {
@@ -46,32 +57,67 @@ const GirisYap = () => {
     return () => clearTimeout(timer);
   }, []);
 
+  // Error temizleme
+  useEffect(() => {
+    if (error) {
+      const timer = setTimeout(() => {
+        clearError();
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [error, clearError]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
-    setIsLoading(true);
+    clearError();
 
     if (!email || !password) {
-      setError("Lütfen tüm alanları doldurun!");
-      setIsLoading(false);
       return;
     }
 
-    // Simulate loading
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
-    // Demo: Sadece akademik personel girişi
-    if (email === "mehmetnuri.ogut@cbu.edu.tr" && password === "1234") {
-      navigate("/panel");
-    } else {
-      setError("Geçersiz e-posta veya şifre!");
+    try {
+      const result = await login(email, password);
+      if (result.success) {
+        navigate(ROUTES.ANA_SAYFA);
+      }
+    } catch (error) {
+      // Error AuthContext tarafından handle ediliyor
+      console.error('Login error:', error);
     }
-    setIsLoading(false);
   };
 
+  // Test kullanıcıları
+  const testUsers = [
+    {
+      name: "Prof. Dr. Göktürk Üçoluk",
+      email: "ucoluk@ceng.metu.edu.tr",
+      password: "ucoluk.1234"
+    },
+    {
+      name: "Prof. Dr. İsmail Şengör Altıngövde",
+      email: "altingovde@ceng.metu.edu.tr",
+      password: "altingovde.1234"
+    },
+    {
+      name: "Dr. Onur Tolga Şehitoğlu",
+      email: "onur@ceng.metu.edu.tr",
+      password: "onur.1234"
+    },
+    {
+      name: "Prof. Dr. İsmail Hakkı Toroslu",
+      email: "toroslu@ceng.metu.edu.tr",
+      password: "toroslu.1234"
+    }
+  ];
+
   const copyDemoCredentials = () => {
-    setEmail("mehmetnuri.ogut@cbu.edu.tr");
-    setPassword("1234");
+    const currentUser = testUsers[selectedTestUser];
+    setEmail(currentUser.email);
+    setPassword(currentUser.password);
+  };
+
+  const nextTestUser = () => {
+    setSelectedTestUser((prev) => (prev + 1) % testUsers.length);
   };
 
   return (
@@ -503,9 +549,13 @@ const GirisYap = () => {
                     type="submit"
                     variant="contained"
                     fullWidth
-                    disabled={isLoading}
+                    disabled={loading || !email || !password}
                     startIcon={
-                      isLoading ? null : <Login sx={{ fontSize: 20 }} />
+                      loading ? (
+                        <CircularProgress size={20} color="inherit" />
+                      ) : (
+                        <Login sx={{ fontSize: 20 }} />
+                      )
                     }
                     sx={{
                       height: { xs: "50px", sm: "56px" },
@@ -542,11 +592,11 @@ const GirisYap = () => {
                       },
                     }}
                   >
-                    {isLoading ? "Giriş yapılıyor..." : "Giriş Yap"}
+                    {loading ? "Giriş yapılıyor..." : "Giriş Yap"}
                   </Button>
                 </form>
 
-                {/* Demo Credentials Card - Less Prominent */}
+                {/* Demo Credentials Card */}
                 <Box
                   sx={{
                     background: darkMode
@@ -592,30 +642,67 @@ const GirisYap = () => {
                         gap: 1,
                       }}
                     >
-                      📝 Demo Giriş Bilgileri
+                      📝 Test Kullanıcıları ({selectedTestUser + 1}/{testUsers.length})
                     </Typography>
-                    <Tooltip title="Bilgileri kopyala" arrow>
-                      <IconButton
-                        onClick={copyDemoCredentials}
-                        size="small"
-                        sx={{
-                          color: darkMode
-                            ? "rgba(255, 255, 255, 0.5)"
-                            : "rgba(30, 41, 59, 0.5)",
-                          "&:hover": {
+                    <Box sx={{ display: "flex", gap: 0.5 }}>
+                      <Tooltip title="Sonraki kullanıcı" arrow>
+                        <IconButton
+                          onClick={nextTestUser}
+                          size="small"
+                          sx={{
                             color: darkMode
-                              ? "rgba(255, 255, 255, 0.8)"
-                              : "rgba(30, 41, 59, 0.8)",
-                            backgroundColor: darkMode
-                              ? "rgba(255, 255, 255, 0.05)"
-                              : "rgba(0, 0, 0, 0.05)",
-                          },
-                        }}
-                      >
-                        <ContentCopy fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
+                              ? "rgba(255, 255, 255, 0.5)"
+                              : "rgba(30, 41, 59, 0.5)",
+                            "&:hover": {
+                              color: darkMode
+                                ? "rgba(255, 255, 255, 0.8)"
+                                : "rgba(30, 41, 59, 0.8)",
+                              backgroundColor: darkMode
+                                ? "rgba(255, 255, 255, 0.05)"
+                                : "rgba(0, 0, 0, 0.05)",
+                            },
+                          }}
+                        >
+                          🔄
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="Bilgileri kopyala" arrow>
+                        <IconButton
+                          onClick={copyDemoCredentials}
+                          size="small"
+                          sx={{
+                            color: darkMode
+                              ? "rgba(255, 255, 255, 0.5)"
+                              : "rgba(30, 41, 59, 0.5)",
+                            "&:hover": {
+                              color: darkMode
+                                ? "rgba(255, 255, 255, 0.8)"
+                                : "rgba(30, 41, 59, 0.8)",
+                              backgroundColor: darkMode
+                                ? "rgba(255, 255, 255, 0.05)"
+                                : "rgba(0, 0, 0, 0.05)",
+                            },
+                          }}
+                        >
+                          <ContentCopy fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                    </Box>
                   </Box>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      color: darkMode
+                        ? "rgba(255, 255, 255, 0.7)"
+                        : "rgba(30, 41, 59, 0.7)",
+                      fontFamily: '"Inter", "Roboto", sans-serif',
+                      fontSize: "13px",
+                      lineHeight: 1.5,
+                      mb: 1,
+                    }}
+                  >
+                    <strong>Ad:</strong> {testUsers[selectedTestUser].name}
+                  </Typography>
                   <Typography
                     variant="body2"
                     sx={{
@@ -627,9 +714,9 @@ const GirisYap = () => {
                       lineHeight: 1.5,
                     }}
                   >
-                    <strong>E-posta:</strong> mehmetnuri.ogut@cbu.edu.tr
+                    <strong>E-posta:</strong> {testUsers[selectedTestUser].email}
                     <br />
-                    <strong>Şifre:</strong> 1234
+                    <strong>Şifre:</strong> {testUsers[selectedTestUser].password}
                   </Typography>
                 </Box>
 

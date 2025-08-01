@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import profilePhoto from "../assets/mno.jpg";
 import {
   AppBar,
   Toolbar,
@@ -33,10 +32,10 @@ import {
   LightMode as LightModeIcon,
 } from "@mui/icons-material";
 import { NAVIGATION_ITEMS } from "../utils/routes";
+import { useAuth } from "../contexts/AuthContext";
 
 const TopNavigation = ({
   currentSection,
-  userProfile,
   onSectionChange,
   selectedSemester,
   onSemesterChange,
@@ -48,6 +47,8 @@ const TopNavigation = ({
   const location = useLocation();
   const theme = useTheme();
   const isSmallScreen = useMediaQuery(theme.breakpoints.down("md"));
+  
+  const { user, logout } = useAuth();
 
   const [mobileMenuAnchor, setMobileMenuAnchor] = useState(null);
   const [profileMenuAnchor, setProfileMenuAnchor] = useState(null);
@@ -127,9 +128,17 @@ const TopNavigation = ({
     handleProfileMenuClose();
   };
 
-  const handleLogout = () => {
-    navigate("/");
-    handleProfileMenuClose();
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate("/giris");
+    } catch (error) {
+      console.error('Logout error:', error);
+      // Hata olsa bile yönlendir
+      navigate("/giris");
+    } finally {
+      handleProfileMenuClose();
+    }
   };
 
   const isActive = (itemKey) => {
@@ -277,11 +286,11 @@ const TopNavigation = ({
           {/* Profile Avatar */}
           <IconButton onClick={handleProfileClick} sx={{ p: 0 }}>
             <Avatar
-              src={userProfile?.profilePhoto || profilePhoto}
-              alt={userProfile?.name || "Kullanıcı"}
+              src={user?.profile_photo}
+              alt={user?.name || "Kullanıcı"}
               sx={{ width: 32, height: 32 }}
             >
-              {userProfile?.name?.charAt(0) || "M"}
+              {user?.name?.charAt(0) || user?.first_name?.charAt(0) || "U"}
             </Avatar>
           </IconButton>
         </Box>
@@ -311,14 +320,48 @@ const TopNavigation = ({
           anchorEl={profileMenuAnchor}
           open={Boolean(profileMenuAnchor)}
           onClose={handleProfileMenuClose}
+          PaperProps={{
+            sx: {
+              minWidth: 280,
+              mt: 1,
+            },
+          }}
         >
+          {/* User Info Card */}
+          <Box sx={{ p: 2, borderBottom: '1px solid', borderColor: 'divider' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
+              <Avatar
+                src={user?.profile_photo}
+                alt={user?.name}
+                sx={{ width: 40, height: 40 }}
+              >
+                {user?.name?.charAt(0) || user?.first_name?.charAt(0) || "U"}
+              </Avatar>
+              <Box>
+                <Typography variant="subtitle1" fontWeight="bold">
+                  {user?.name || `${user?.first_name} ${user?.last_name}`}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {user?.title}
+                </Typography>
+              </Box>
+            </Box>
+            <Typography variant="body2" color="text.secondary">
+              {user?.email}
+            </Typography>
+          </Box>
+          
           <MenuItem onClick={handleProfileView}>
-            <Person sx={{ mr: 1 }} />
-            Profili Görüntüle
+            <ListItemIcon>
+              <Person />
+            </ListItemIcon>
+            <ListItemText primary="Profili Görüntüle" />
           </MenuItem>
           <MenuItem onClick={handleLogout}>
-            <ExitToApp sx={{ mr: 1 }} />
-            Çıkış Yap
+            <ListItemIcon>
+              <ExitToApp />
+            </ListItemIcon>
+            <ListItemText primary="Çıkış Yap" />
           </MenuItem>
         </Menu>
       </Toolbar>

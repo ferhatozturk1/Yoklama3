@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import profilePhoto from "../assets/mno.jpg";
-import { courseScheduleData } from "../data/courseSchedule";
+import { useAuth } from "../contexts/AuthContext";
+import { useData } from "../contexts/DataContext";
 import {
   Container,
   Typography,
@@ -78,12 +78,23 @@ const AnaSayfa = ({
   const [expandedDay, setExpandedDay] = useState(false);
   const [currentWeek, setCurrentWeek] = useState(8); // Şu anki hafta (8. hafta)
 
+  // API Context'leri
+  const { user } = useAuth();
+  const { lecturerSections, loading, fetchLecturerSections } = useData();
+
   // QR Code System States
   const [yoklamaDialog, setYoklamaDialog] = useState(false);
   const [currentQRCode, setCurrentQRCode] = useState("");
   const [qrTimer, setQrTimer] = useState(5);
   const [attendanceList, setAttendanceList] = useState([]);
   const [activeLesson, setActiveLesson] = useState(null);
+
+  // Öğretmenin section'larını yükle
+  useEffect(() => {
+    if (user?.id && lecturerSections.length === 0) {
+      fetchLecturerSections();
+    }
+  }, [user?.id]);
 
   // Update time every second
   useEffect(() => {
@@ -208,45 +219,14 @@ const AnaSayfa = ({
     setExpandedDay(isExpanded ? panel : false);
   };
 
-  // Get real schedule data from course data
+  // Get real schedule data from API
   const getRealScheduleData = () => {
     const schedule = {};
 
-    // Check if courseScheduleData exists
-    if (!courseScheduleData || !courseScheduleData["2025-2026-Güz"]) {
-      console.error("courseScheduleData is not available");
-      // Return empty schedule as fallback
-      const timeSlots = [
-        "09:00",
-        "09:55",
-        "10:50",
-        "11:45",
-        "13:30",
-        "14:30",
-        "15:20",
-        "16:15",
-        "17:00",
-        "17:55",
-      ];
-      const dayKeys = ["pazartesi", "sali", "carsamba", "persembe", "cuma"];
-
-      timeSlots.forEach((timeSlot) => {
-        schedule[timeSlot] = {};
-        dayKeys.forEach((day) => {
-          schedule[timeSlot][day] = "";
-        });
-      });
-      return schedule;
-    }
-
-    const currentSchedule =
-      courseScheduleData[selectedSemester] ||
-      courseScheduleData["2025-2026-Güz"];
-
-    // Initialize empty schedule
+    // Temel zaman dilimlerini tanımla
     const timeSlots = [
       "09:00",
-      "09:55",
+      "09:55", 
       "10:50",
       "11:45",
       "13:30",
@@ -256,7 +236,54 @@ const AnaSayfa = ({
       "17:00",
       "17:55",
     ];
+    
     const dayKeys = ["pazartesi", "sali", "carsamba", "persembe", "cuma"];
+    const dayMapping = {
+      "Monday": "pazartesi",
+      "Tuesday": "sali", 
+      "Wednesday": "carsamba",
+      "Thursday": "persembe",
+      "Friday": "cuma"
+    };
+
+    // Boş program oluştur
+    timeSlots.forEach((timeSlot) => {
+      schedule[timeSlot] = {};
+      dayKeys.forEach((day) => {
+        schedule[timeSlot][day] = "";
+      });
+    });
+
+    // API'den gelen section'ları programa yerleştir
+    if (lecturerSections && lecturerSections.length > 0) {
+      lecturerSections.forEach((section) => {
+        if (section.hours && section.hours.length > 0) {
+          section.hours.forEach((hour) => {
+            const dayKey = dayMapping[hour.day];
+            const timeStart = hour.time_start?.substring(0, 5); // "09:40:00" -> "09:40"
+            
+            if (dayKey && timeStart) {
+              // En yakın zaman dilimini bul
+              const closestTimeSlot = timeSlots.find(slot => slot <= timeStart) || timeSlots[0];
+              
+              if (schedule[closestTimeSlot] && schedule[closestTimeSlot][dayKey] !== undefined) {
+                schedule[closestTimeSlot][dayKey] = {
+                  course: section.lecture?.name || "Ders",
+                  code: `${section.lecture?.name || ""} ${section.lecture?.code || ""}`,
+                  section: section.section_number,
+                  room: hour.classroom?.name || "Sınıf",
+                  time: `${hour.time_start?.substring(0, 5)}-${hour.time_end?.substring(0, 5)}`,
+                  sectionId: section.id,
+                  hourId: hour.id
+                };
+              }
+            }
+          });
+        }
+      });
+    }
+
+    // timeSlots ve dayKeys zaten yukarıda tanımlandı
 
     timeSlots.forEach((timeSlot) => {
       schedule[timeSlot] = {};
@@ -265,35 +292,12 @@ const AnaSayfa = ({
       });
     });
 
-    // Fill with real course data
-    if (currentSchedule) {
-      Object.keys(currentSchedule).forEach((day) => {
-        const daySchedule = currentSchedule[day];
-        if (daySchedule) {
-          Object.keys(daySchedule).forEach((timeSlot) => {
-            const course = daySchedule[timeSlot];
+    // API verisi zaten yukarıda schedule'a yerleştirildi
 
-            if (course && course.name) {
-              let courseText = "";
-              if (course.code) {
-                courseText = `${course.code}\n${course.name}`;
-              } else {
-                courseText = course.name;
-              }
-              if (course.room) {
-                courseText += `\n${course.room}`;
-              }
-              schedule[timeSlot][day] = courseText;
-            }
-          });
-        }
-      });
-    }
-
-    return schedule;
+    return { schedule, timeSlots };
   };
 
-  const baseSchedule = getRealScheduleData();
+  const { schedule: baseSchedule, timeSlots } = getRealScheduleData();
 
   // Generate dynamic schedule with holidays
   const weeklySchedule = {};
@@ -311,18 +315,7 @@ const AnaSayfa = ({
     });
   });
 
-  const timeSlots = [
-    "09:00",
-    "09:55",
-    "10:50",
-    "11:45",
-    "13:30",
-    "14:30",
-    "15:20",
-    "16:15",
-    "17:00",
-    "17:55",
-  ];
+  // timeSlots zaten getRealScheduleData fonksiyonunda tanımlandı
 
   // Function to calculate end time for each time slot
   const getEndTime = (startTime) => {

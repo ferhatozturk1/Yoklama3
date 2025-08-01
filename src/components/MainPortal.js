@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Routes,
   Route,
@@ -6,8 +6,7 @@ import {
   useLocation,
   useNavigate,
 } from "react-router-dom";
-import profilePhoto from "../assets/mno.jpg";
-import { Box, useTheme, useMediaQuery } from "@mui/material";
+import { Box, useTheme, useMediaQuery, CircularProgress, Typography } from "@mui/material";
 import TopNavigation from "./TopNavigation";
 import Sidebar from "./Sidebar";
 import AnaSayfa from "./AnaSayfa";
@@ -16,10 +15,11 @@ import DersVeDönemIslemleri from "./DersVeDönemIslemleri";
 import DersKayit from "./DersKayit";
 import DersEkleBirak from "./DersEkleBirak";
 import DersGuncelle from "./DersGuncelle";
-
 import Derslerim from "./Derslerim";
 import Yoklama from "./Yoklama";
 import Profilim from "./Profilim";
+import { useAuth } from "../contexts/AuthContext";
+import { useData } from "../contexts/DataContext";
 
 const MainPortal = () => {
   const location = useLocation();
@@ -29,19 +29,49 @@ const MainPortal = () => {
   const [selectedSemester, setSelectedSemester] = useState("2025-2026-Güz");
   const [sidebarOpen, setSidebarOpen] = useState(!isMobile);
   const [selectedCourse, setSelectedCourse] = useState(null);
-  const [userProfile] = useState({
-    name: "MEHMET NURİ ÖĞÜT",
-    email: "mehmetnuri.ogut@cbu.edu.tr",
-    phone: "+90 551 406 11 90",
-    title: "Ögr. Gör.",
-    school: "MANİSA TEKNİK BİLİMLER MESLEK YÜKSEKOKULU",
-    faculty: "MAKİNE VE METAL TEKNOLOJİLERİ",
-    department: "ENDÜSTRİYEL KALIPÇILIK",
-    webUrl: "https://avesis.mcbu.edu.tr/mehmetnuri.ogut",
-    otherDetails:
-      "WoS Araştırma Alanları: Bilgisayar Bilimi, Yapay Zeka, Matematik\nDiğer E-posta: mehmetnuri.ogut@gmail.com",
-    profilePhoto: profilePhoto,
-  });
+  
+  const { user, loading: authLoading, isAuthenticated } = useAuth();
+  const { loadInitialData } = useData();
+
+  // Authentication kontrolü
+  useEffect(() => {
+    if (!authLoading && !isAuthenticated()) {
+      navigate("/giris");
+    }
+  }, [authLoading, isAuthenticated, navigate]);
+
+  // İlk veri yükleme - sadece bir kez çalışsın
+  useEffect(() => {
+    if (user?.id) {
+      loadInitialData();
+    }
+  }, [user?.id]); // Sadece user ID değiştiğinde çalışsın
+
+  // Loading durumu
+  if (authLoading) {
+    return (
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          minHeight: '100vh',
+          gap: 2
+        }}
+      >
+        <CircularProgress size={40} />
+        <Typography variant="body1" color="text.secondary">
+          Yükleniyor...
+        </Typography>
+      </Box>
+    );
+  }
+
+  // Kullanıcı giriş yapmamışsa
+  if (!isAuthenticated()) {
+    return null; // useEffect zaten yönlendirme yapacak
+  }
 
   // Get current section from URL
   const getCurrentSection = () => {
@@ -120,7 +150,6 @@ const MainPortal = () => {
         {/* Top Navigation */}
         <TopNavigation
           currentSection={getCurrentSection()}
-          userProfile={userProfile}
           onSectionChange={handleSectionChange}
           selectedSemester={selectedSemester}
           onSemesterChange={handleSemesterChange}
@@ -206,7 +235,7 @@ const MainPortal = () => {
             <Route path="/yoklama" element={<Yoklama />} />
             <Route
               path="/profilim"
-              element={<Profilim userProfile={userProfile} />}
+              element={<Profilim />}
             />
             <Route
               path="*"

@@ -1,0 +1,202 @@
+{
+  "api_info": {
+    "base_url": "http://127.0.0.1:8000",
+    "api_prefix": "lecturer_data",
+    "port": 8000,
+    "protocol": "HTTP",
+    "content_type": "application/json",
+    "cors": "enabled",
+    "csrf": "disabled"
+  },
+  "endpoints": {
+    "GET": {
+      "universities": {
+        "url": "/lecturer_data/universities/",
+        "description": "Tüm üniversitelerin listesi",
+        "response_type": "array"
+      },
+      "faculties": {
+        "url": "/lecturer_data/faculties/{university_id}/",
+        "description": "Belirli üniversitenin fakülteleri",
+        "response_type": "array",
+        "nested": ["university"]
+      },
+      "departments": {
+        "url": "/lecturer_data/departments/{faculty_id}/",
+        "description": "Belirli fakültenin departmanları",
+        "response_type": "array",
+        "nested": ["faculty", "university"]
+      },
+      "buildings": {
+        "url": "/lecturer_data/buildings/{university_id}/",
+        "description": "Belirli üniversitenin binaları",
+        "response_type": "array",
+        "nested": ["department", "faculty", "university"]
+      },
+      "classrooms": {
+        "url": "/lecturer_data/classrooms/{building_id}/",
+        "description": "Belirli binanın sınıfları",
+        "response_type": "array",
+        "nested": ["building", "department", "faculty", "university"]
+      },
+      "lectures": {
+        "url": "/lecturer_data/lectures/{department_id}/",
+        "description": "Belirli departmanın dersleri",
+        "response_type": "array",
+        "nested": ["department"]
+      },
+      "sections_by_lecture": {
+        "url": "/lecturer_data/sections/lecture/{lecture_id}/",
+        "description": "Belirli dersin section'ları",
+        "response_type": "array",
+        "nested": ["lecture", "lecturer"]
+      },
+      "section_detail": {
+        "url": "/lecturer_data/sections/{section_id}/",
+        "description": "Belirli section'ın detayı",
+        "response_type": "object",
+        "nested": ["lecture", "lecturer"]
+      },
+      "hours_by_section": {
+        "url": "/lecturer_data/hours/section/{section_id}/",
+        "description": "Belirli section'ın saatleri",
+        "response_type": "array",
+        "nested": ["section", "classroom"]
+      },
+      "hour_detail": {
+        "url": "/lecturer_data/hours/{hour_id}/",
+        "description": "Belirli saatin detayı",
+        "response_type": "object",
+        "nested": ["section", "classroom"]
+      },
+      "lecturer_profile": {
+        "url": "/lecturer_data/lecturers/{lecturer_id}/",
+        "description": "Öğretmen profil bilgileri",
+        "response_type": "object"
+      }
+    },
+    "POST": {
+      "lecturer_signup": {
+        "url": "/lecturer_data/lecturers/signup/",
+        "description": "Yeni öğretmen kaydı",
+        "required_fields": ["title", "first_name", "last_name", "email", "department_id", "password"],
+        "response_type": "object"
+      },
+      "lecturer_login": {
+        "url": "/lecturer_data/lecturers/login/",
+        "description": "Öğretmen girişi",
+        "required_fields": ["email", "password"],
+        "response_type": "object"
+      },
+      "lecturer_logout": {
+        "url": "/lecturer_data/lecturers/logout/",
+        "description": "Öğretmen çıkışı",
+        "required_fields": ["email"],
+        "response_type": "object"
+      },
+      "create_section": {
+        "url": "/lecturer_data/sections/lecture/{lecture_id}/",
+        "description": "Yeni section oluşturma",
+        "required_fields": ["section_number", "lecture_id", "lecturer_id"],
+        "response_type": "object"
+      },
+      "create_hour": {
+        "url": "/lecturer_data/hours/section/{section_id}/",
+        "description": "Yeni saat oluşturma",
+        "required_fields": ["order", "day", "time_start", "time_end", "section_id", "classroom_id"],
+        "response_type": "object"
+      }
+    },
+    "PUT": {
+      "update_lecturer": {
+        "url": "/lecturer_data/lecturers/{lecturer_id}/",
+        "description": "Öğretmen profil güncelleme",
+        "optional_fields": ["title", "first_name", "last_name", "email_update", "department_id", "phone"],
+        "response_type": "object"
+      },
+      "update_section": {
+        "url": "/lecturer_data/sections/{section_id}/",
+        "description": "Section güncelleme",
+        "required_fields": ["section_number"],
+        "optional_fields": ["lecture_id", "lecturer_id"],
+        "response_type": "object"
+      },
+      "update_hour": {
+        "url": "/lecturer_data/hours/{hour_id}/",
+        "description": "Saat güncelleme",
+        "optional_fields": ["order", "day", "time_start", "time_end", "classroom_id"],
+        "response_type": "object"
+      }
+    }
+  },
+  "test_data": {
+    "system_ids": {
+      "university_id": "d4eb3bb2-b63e-4d83-b0e6-a0fe13f512e7",
+      "faculty_id": "c2b5af33-8904-4a65-928d-8cdfb24efa40",
+      "department_id": "1599f007-573e-468e-816d-202e5701a8be",
+      "building_id": "0610400f-fbb6-447e-8f5e-507b962c9145",
+      "classroom_id": "00528919-0caf-4056-9812-fea1bda7219a",
+      "lecture_id": "1526d6b6-cc20-4139-bcfb-bcb044ede01b",
+      "section_id": "18a4581d-c6a9-4cda-9ce3-10af9cd2ddb4",
+      "hour_id": "0106a87a-6270-4369-b909-ea08061daa30",
+      "lecturer_id": "08a3f6eb-4e36-40e6-b02c-eeb6bb4c6fbc"
+    },
+    "test_users": [
+      {
+        "name": "Prof. Dr. Göktürk Üçoluk",
+        "email": "ucoluk@ceng.metu.edu.tr",
+        "password": "ucoluk.1234"
+      },
+      {
+        "name": "Prof. Dr. İsmail Şengör Altıngövde",
+        "email": "altingovde@ceng.metu.edu.tr",
+        "password": "altingovde.1234"
+      },
+      {
+        "name": "Dr. Onur Tolga Şehitoğlu",
+        "email": "onur@ceng.metu.edu.tr",
+        "password": "onur.1234"
+      },
+      {
+        "name": "Prof. Dr. İsmail Hakkı Toroslu",
+        "email": "toroslu@ceng.metu.edu.tr",
+        "password": "toroslu.1234"
+      },
+      {
+        "name": "Prof. Dr. Murathan Manguoğlu",
+        "email": "mangu@ceng.metu.edu.tr",
+        "password": "mangu.1234"
+      },
+      {
+        "name": "Assoc. Prof. Dr. Şeyda Ertekin",
+        "email": "ertekin@ceng.metu.edu.tr",
+        "password": "ertekin.1234"
+      },
+      {
+        "name": "Prof. Dr. Pınar Karagöz",
+        "email": "karagoz@ceng.metu.edu.tr",
+        "password": "karagoz.1234"
+      }
+    ],
+    "constants": {
+      "days": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+      "time_format": "HH:MM",
+      "response_time_format": "HH:MM:SS"
+    }
+  },
+  "frontend_examples": {
+    "axios_config": {
+      "baseURL": "http://127.0.0.1:8000/lecturer_data",
+      "headers": {
+        "Content-Type": "application/json"
+      },
+      "withCredentials": true
+    },
+    "fetch_config": {
+      "credentials": "include",
+      "headers": {
+        "Content-Type": "application/json"
+      }
+    }
+  }
+}

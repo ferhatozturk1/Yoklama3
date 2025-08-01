@@ -25,6 +25,8 @@ import {
   IconButton,
   Paper,
   Divider,
+  CircularProgress,
+  Alert,
 } from "@mui/material";
 import {
   Edit,
@@ -37,8 +39,14 @@ import {
 } from "@mui/icons-material";
 
 import DersDetay from "./DersDetay";
+import { useAuth } from "../contexts/AuthContext";
+import { useData } from "../contexts/DataContext";
 
 const Derslerim = () => {
+  // API Context'leri
+  const { user } = useAuth();
+  const { lecturerSections, loading, fetchLecturerSections, lectures, fetchLectures } = useData();
+
   // View state - 'list' veya 'detail'
   const [currentView, setCurrentView] = useState("list");
   const [selectedDers, setSelectedDers] = useState(null);

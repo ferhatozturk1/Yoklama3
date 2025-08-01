@@ -16,6 +16,8 @@ import {
   Grow,
   Switch,
   FormControlLabel,
+  CircularProgress,
+  Autocomplete,
 } from "@mui/material";
 import {
   School,
@@ -32,27 +34,49 @@ import {
   Badge,
   DarkMode,
   LightMode,
+  Business,
+  LocationCity,
 } from "@mui/icons-material";
+import { useAuth } from "../contexts/AuthContext";
+import { useData } from "../contexts/DataContext";
+import { ROUTES } from "../utils/routes";
 
 const OgretmenKayit = () => {
   const [form, setForm] = useState({
-    ad: "",
-    soyad: "",
+    title: "",
+    first_name: "",
+    last_name: "",
     email: "",
-    sifre: "",
-    sifreTekrar: "",
-    brans: "",
-    sicilNo: "",
-    telefon: "",
+    password: "",
+    passwordConfirm: "",
+    department_id: "",
+    phone: "",
   });
-  const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const [showContent, setShowContent] = useState(false);
+  
   const navigate = useNavigate();
+  const { register, loading, error, clearError, isAuthenticated } = useAuth();
+  const { 
+    universities, 
+    faculties, 
+    departments, 
+    fetchUniversities, 
+    fetchFaculties, 
+    fetchDepartments,
+    systemIds,
+    loading: dataLoading 
+  } = useData();
+
+  // Kullanıcı zaten giriş yapmışsa portal'a yönlendir
+  useEffect(() => {
+    if (isAuthenticated()) {
+      navigate(ROUTES.ANA_SAYFA);
+    }
+  }, [isAuthenticated, navigate]);
 
   // Fade-in animation on page load
   useEffect(() => {
@@ -62,81 +86,97 @@ const OgretmenKayit = () => {
     return () => clearTimeout(timer);
   }, []);
 
-  const branslar = [
-    "Matematik",
-    "Fizik",
-    "Kimya",
-    "Biyoloji",
-    "Türkçe",
-    "Tarih",
-    "Coğrafya",
-    "Felsefe",
-    "İngilizce",
-    "Almanca",
-    "Fransızca",
-    "Beden Eğitimi",
-    "Müzik",
-    "Resim",
-    "Bilgisayar",
-    "Diğer",
+  // İlk yüklemede verileri getir
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        await fetchUniversities();
+        await fetchFaculties(systemIds.university_id);
+        await fetchDepartments(systemIds.faculty_id);
+      } catch (error) {
+        console.error('Data loading error:', error);
+      }
+    };
+    loadData();
+  }, []);
+
+  // Error temizleme
+  useEffect(() => {
+    if (error) {
+      const timer = setTimeout(() => {
+        clearError();
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [error, clearError]);
+
+  const titles = [
+    "Prof. Dr.",
+    "Doç. Dr.",
+    "Dr. Öğr. Üyesi",
+    "Dr.",
+    "Öğr. Gör.",
+    "Arş. Gör.",
+    "Okutman"
   ];
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
-    setError("");
+    clearError();
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
-    setSuccess("");
-    setIsLoading(true);
+    clearError();
 
     // Validasyon
     if (
-      !form.ad ||
-      !form.soyad ||
+      !form.title ||
+      !form.first_name ||
+      !form.last_name ||
       !form.email ||
-      !form.sifre ||
-      !form.sifreTekrar ||
-      !form.brans ||
-      !form.sicilNo
+      !form.password ||
+      !form.passwordConfirm ||
+      !form.department_id
     ) {
-      setError("Zorunlu alanları doldurun!");
-      setIsLoading(false);
       return;
     }
 
     // E-posta edu.tr doğrulaması
     if (!form.email.endsWith(".edu.tr")) {
-      setError(
-        "Sadece .edu.tr uzantılı kurumsal e-posta adresleri kabul edilir!"
-      );
-      setIsLoading(false);
       return;
     }
 
-    if (form.sifre !== form.sifreTekrar) {
-      setError("Şifreler eşleşmiyor!");
-      setIsLoading(false);
+    if (form.password !== form.passwordConfirm) {
       return;
     }
 
-    if (form.sifre.length < 4) {
-      setError("Şifre en az 4 karakter olmalıdır!");
-      setIsLoading(false);
+    if (form.password.length < 4) {
       return;
     }
 
-    // Simulate loading
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    try {
+      const signupData = {
+        title: form.title,
+        first_name: form.first_name,
+        last_name: form.last_name,
+        email: form.email,
+        password: form.password,
+        department_id: form.department_id,
+        phone: form.phone || null
+      };
 
-    // Demo: Kayıt başarılı
-    setSuccess("Kayıt başarılı! Giriş sayfasına yönlendiriliyorsunuz...");
-    setIsLoading(false);
-    setTimeout(() => {
-      navigate("/panel");
-    }, 2000);
+      const result = await register(signupData);
+      if (result.success) {
+        setSuccess("Kayıt başarılı! Ana sayfaya yönlendiriliyorsunuz...");
+        setTimeout(() => {
+          navigate(ROUTES.ANA_SAYFA);
+        }, 2000);
+      }
+    } catch (error) {
+      // Error AuthContext tarafından handle ediliyor
+      console.error('Register error:', error);
+    }
   };
 
   return (
@@ -386,9 +426,9 @@ const OgretmenKayit = () => {
                         Ad
                       </Typography>
                       <TextField
-                        name="ad"
+                        name="first_name"
                         fullWidth
-                        value={form.ad}
+                        value={form.first_name}
                         onChange={handleChange}
                         required
                         placeholder="Adınızı girin"
@@ -476,9 +516,9 @@ const OgretmenKayit = () => {
                         Soyad
                       </Typography>
                       <TextField
-                        name="soyad"
+                        name="last_name"
                         fullWidth
-                        value={form.soyad}
+                        value={form.last_name}
                         onChange={handleChange}
                         required
                         placeholder="Soyadınızı girin"
@@ -563,19 +603,20 @@ const OgretmenKayit = () => {
                           ml: 0.5,
                         }}
                       >
-                        Sicil Numarası
+                        Unvan
                       </Typography>
                       <TextField
-                        name="sicilNo"
+                        name="title"
                         fullWidth
-                        value={form.sicilNo}
+                        value={form.title}
                         onChange={handleChange}
                         required
-                        placeholder="Sicil numaranızı girin"
+                        select
+                        placeholder="Unvanınızı seçin"
                         InputProps={{
                           startAdornment: (
                             <InputAdornment position="start">
-                              <Badge
+                              <SupervisorAccount
                                 sx={{
                                   color: "#4F46E5",
                                   fontSize: 20,
@@ -635,10 +676,16 @@ const OgretmenKayit = () => {
                             marginRight: "12px",
                           },
                         }}
-                      />
+                      >
+                        {titles.map((title) => (
+                          <MenuItem key={title} value={title}>
+                            {title}
+                          </MenuItem>
+                        ))}
+                      </TextField>
                     </Grid>
 
-                    {/* Branş */}
+                    {/* Departman */}
                     <Grid item xs={12} sm={6}>
                       <Typography
                         variant="body2"
@@ -653,20 +700,21 @@ const OgretmenKayit = () => {
                           ml: 0.5,
                         }}
                       >
-                        Branş
+                        Departman
                       </Typography>
                       <TextField
-                        name="brans"
+                        name="department_id"
                         select
                         fullWidth
-                        value={form.brans}
+                        value={form.department_id}
                         onChange={handleChange}
                         required
-                        placeholder="Branşınızı seçin"
+                        placeholder="Departmanınızı seçin"
+                        disabled={dataLoading.departments}
                         InputProps={{
                           startAdornment: (
                             <InputAdornment position="start">
-                              <Subject
+                              <Business
                                 sx={{
                                   color: "#4F46E5",
                                   fontSize: 20,
@@ -727,9 +775,9 @@ const OgretmenKayit = () => {
                           },
                         }}
                       >
-                        {branslar.map((brans) => (
-                          <MenuItem key={brans} value={brans}>
-                            {brans}
+                        {departments.map((department) => (
+                          <MenuItem key={department.id} value={department.id}>
+                            {department.name}
                           </MenuItem>
                         ))}
                       </TextField>
@@ -759,7 +807,9 @@ const OgretmenKayit = () => {
                         value={form.email}
                         onChange={handleChange}
                         required
-                        placeholder="ornek@cbu.edu.tr"
+                        placeholder="ornek@metu.edu.tr"
+                        error={form.email && !form.email.endsWith('.edu.tr')}
+                        helperText={form.email && !form.email.endsWith('.edu.tr') ? 'Sadece .edu.tr uzantılı e-posta adresleri kabul edilir' : ''}
                         InputProps={{
                           startAdornment: (
                             <InputAdornment position="start">
@@ -873,10 +923,10 @@ const OgretmenKayit = () => {
                         Telefon (Opsiyonel)
                       </Typography>
                       <TextField
-                        name="telefon"
+                        name="phone"
                         fullWidth
-                        placeholder="0555 123 45 67"
-                        value={form.telefon}
+                        placeholder="+90 555 123 45 67"
+                        value={form.phone}
                         onChange={handleChange}
                         InputProps={{
                           startAdornment: (
@@ -968,13 +1018,15 @@ const OgretmenKayit = () => {
                         Şifre
                       </Typography>
                       <TextField
-                        name="sifre"
+                        name="password"
                         type={showPassword ? "text" : "password"}
                         fullWidth
-                        value={form.sifre}
+                        value={form.password}
                         onChange={handleChange}
                         required
                         placeholder="Şifrenizi girin"
+                        error={form.password && form.password.length < 4}
+                        helperText={form.password && form.password.length < 4 ? 'Şifre en az 4 karakter olmalıdır' : ''}
                         InputProps={{
                           startAdornment: (
                             <InputAdornment position="start">
@@ -1091,13 +1143,15 @@ const OgretmenKayit = () => {
                         Şifre Tekrar
                       </Typography>
                       <TextField
-                        name="sifreTekrar"
+                        name="passwordConfirm"
                         type={showPasswordConfirm ? "text" : "password"}
                         fullWidth
-                        value={form.sifreTekrar}
+                        value={form.passwordConfirm}
                         onChange={handleChange}
                         required
                         placeholder="Şifrenizi tekrar girin"
+                        error={form.passwordConfirm && form.password !== form.passwordConfirm}
+                        helperText={form.passwordConfirm && form.password !== form.passwordConfirm ? 'Şifreler eşleşmiyor' : ''}
                         InputProps={{
                           startAdornment: (
                             <InputAdornment position="start">
@@ -1249,9 +1303,13 @@ const OgretmenKayit = () => {
                     type="submit"
                     variant="contained"
                     fullWidth
-                    disabled={isLoading}
+                    disabled={loading || !form.title || !form.first_name || !form.last_name || !form.email || !form.password || !form.passwordConfirm || !form.department_id || form.password !== form.passwordConfirm || form.password.length < 4 || !form.email.endsWith('.edu.tr')}
                     startIcon={
-                      isLoading ? null : <PersonAdd sx={{ fontSize: 20 }} />
+                      loading ? (
+                        <CircularProgress size={20} color="inherit" />
+                      ) : (
+                        <PersonAdd sx={{ fontSize: 20 }} />
+                      )
                     }
                     sx={{
                       mt: 4,
@@ -1288,7 +1346,7 @@ const OgretmenKayit = () => {
                       },
                     }}
                   >
-                    {isLoading
+                    {loading
                       ? "Kayıt yapılıyor..."
                       : "Akademik Personel Olarak Kayıt Ol"}
                   </Button>
