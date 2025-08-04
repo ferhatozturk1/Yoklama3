@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
+
 import {
   TextField,
   Button,
@@ -57,21 +58,38 @@ const GirisYap = () => {
       return;
     }
 
-    // Simulate loading
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
-    // Demo: Sadece akademik personel girişi
-    if (email === "mehmetnuri.ogut@cbu.edu.tr" && password === "1234") {
-      navigate("/panel");
-    } else {
-      setError("Geçersiz e-posta veya şifre!");
+    try {
+      // Basit demo giriş kontrolü
+      if (email === "mehmetnuri.ogut@cbu.edu.tr" && password === "1234") {
+        // Başarılı giriş - demo kullanıcı bilgileri
+        localStorage.setItem('user', JSON.stringify({
+          email: email,
+          name: "Mehmet Nuri Öğüt",
+          title: "Dr. Öğr. Üyesi"
+        }));
+        
+        // Panel sayfasına yönlendir
+        navigate('/panel');
+      } else {
+        setError("Geçersiz e-posta veya şifre!");
+      }
+      
+    } catch (error) {
+      setError("Giriş başarısız!");
+      console.error("Login error:", error);
     }
+    
     setIsLoading(false);
   };
 
   const copyDemoCredentials = () => {
-    setEmail("mehmetnuri.ogut@cbu.edu.tr");
-    setPassword("1234");
+    const credentials = "E-posta: mehmetnuri.ogut@cbu.edu.tr\nŞifre: 1234";
+    navigator.clipboard.writeText(credentials).then(() => {
+      // Başarılı kopyalama için küçük bir bildirim gösterebiliriz
+      console.log("Demo credentials copied to clipboard");
+    }).catch(err => {
+      console.error("Failed to copy: ", err);
+    });
   };
 
   return (
