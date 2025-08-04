@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import {
   Routes,
   Route,
@@ -20,6 +20,8 @@ import DersGuncelle from "./DersGuncelle";
 import Derslerim from "./Derslerim";
 import Yoklama from "./Yoklama";
 import Profilim from "./Profilim";
+import ProfileTest from "./ProfileTest";
+import SessionDebug from "./SessionDebug";
 
 const MainPortal = () => {
   const location = useLocation();
@@ -29,7 +31,7 @@ const MainPortal = () => {
   const [selectedSemester, setSelectedSemester] = useState("2025-2026-Güz");
   const [sidebarOpen, setSidebarOpen] = useState(!isMobile);
   const [selectedCourse, setSelectedCourse] = useState(null);
-  const [userProfile] = useState({
+  const [userProfile, setUserProfile] = useState({
     name: "MEHMET NURİ ÖĞÜT",
     email: "mehmetnuri.ogut@cbu.edu.tr",
     phone: "+90 551 406 11 90",
@@ -42,6 +44,11 @@ const MainPortal = () => {
       "WoS Araştırma Alanları: Bilgisayar Bilimi, Yapay Zeka, Matematik\nDiğer E-posta: mehmetnuri.ogut@gmail.com",
     profilePhoto: profilePhoto,
   });
+
+  // Handle profile update callback
+  const handleProfileUpdate = useCallback((updatedProfile) => {
+    setUserProfile(updatedProfile);
+  }, []);
 
   // Get current section from URL
   const getCurrentSection = () => {
@@ -206,7 +213,20 @@ const MainPortal = () => {
             <Route path="/yoklama" element={<Yoklama />} />
             <Route
               path="/profilim"
-              element={<Profilim userProfile={userProfile} />}
+              element={
+                <Profilim 
+                  userProfile={userProfile} 
+                  onProfileUpdate={handleProfileUpdate}
+                />
+              }
+            />
+            <Route
+              path="/profile-test"
+              element={<ProfileTest />}
+            />
+            <Route
+              path="/session-debug"
+              element={<SessionDebug />}
             />
             <Route
               path="*"

@@ -1,153 +1,78 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   Box,
-  Button,
   Avatar,
-  Typography,
-  Alert,
   IconButton,
-  Paper
+  Button,
+  Typography,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Alert
 } from '@mui/material';
 import {
-  CloudUpload,
+  PhotoCamera,
   Delete,
-  PhotoCamera
+  Edit
 } from '@mui/icons-material';
-import { useLocalization } from '../utils/localization';
-import { compressImage, createThumbnail, revokeObjectURL } from '../utils/imageCompression';
 
 const ProfilePhotoUpload = ({
   currentPhoto,
   onPhotoChange,
   onPhotoRemove,
   disabled = false,
-  maxSize = 5, // MB
-  acceptedFormats = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif']
+  size = 80
 }) => {
-  const { t } = useLocalization();
-  const [dragOver, setDragOver] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState(currentPhoto);
+  const [showDialog, setShowDialog] = useState(false);
   const [error, setError] = useState('');
-  const [preview, setPreview] = useState(currentPhoto || '');
   const fileInputRef = useRef(null);
 
-  const validateFile = (file) => {
-    // Check file type
-    if (!acceptedFormats.includes(file.type)) {
-      return t('invalidFileType');
-    }
+  // Handle file selection
+  const handleFileSelect = (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
 
-    // Check file size (convert MB to bytes)
-    const maxSizeBytes = maxSize * 1024 * 1024;
-    if (file.size > maxSizeBytes) {
-      return t('fileTooLarge');
-    }
-
-    return null;
-  };
-
-  // Clean up object URLs when component unmounts
-  useEffect(() => {
-    return () => {
-      if (preview && preview !== currentPhoto) {
-        revokeObjectURL(preview);
-      }
-    };
-  }, [preview, currentPhoto]);
-
-  // Memoize the file validation function to prevent recreation on each render
-  const validateFileMemoized = React.useCallback(validateFile, [acceptedFormats, maxSize, t]);
-  
-  const handleFileSelect = async (file) => {
-    setError('');
-    
-    const validationError = validateFileMemoized(file);
-    if (validationError) {
-      setError(validationError);
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      setError('Lütfen geçerli bir resim dosyası seçin.');
       return;
     }
 
-    try {
-      // Use a web worker for image compression if available
-      const compressionPromise = compressImage(file, {
-        maxWidth: 1200,
-        maxHeight: 1200,
-        quality: 0.7,
-        useWebWorker: true
-      });
-      
-      // Start thumbnail creation in parallel
-      const thumbnailPromise = createThumbnail(file);
-      
-      // Wait for both operations to complete
-      const [compressedFile, thumbnailUrl] = await Promise.all([
-        compressionPromise,
-        thumbnailPromise
-      ]);
-      
-      // Convert compressed blob to File object
-      const optimizedFile = new File(
-        [compressedFile], 
-        file.name, 
-        { type: file.type }
-      );
-      
-      setPreview(thumbnailUrl);
-      
-      // Call parent callback with optimized file
-      onPhotoChange(optimizedFile, thumbnailUrl);
-    } catch (error) {
-      console.error('Image processing error:', error);
-      setError(t('uploadFailed'));
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      setError('Dosya boyutu 5MB\'dan küçük olmalıdır.');
+      return;
     }
-  };
 
-  const handleFileInputChange = (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      handleFileSelect(file);
-    }
-  };
-
-  const handleDragOver = (event) => {
-    event.preventDefault();
-    if (!disabled) {
-      setDragOver(true);
-    }
-  };
-
-  const handleDragLeave = (event) => {
-    event.preventDefault();
-    setDragOver(false);
-  };
-
-  const handleDrop = (event) => {
-    event.preventDefault();
-    setDragOver(false);
-    
-    if (disabled) return;
-
-    const files = event.dataTransfer.files;
-    if (files.length > 0) {
-      handleFileSelect(files[0]);
-    }
-  };
-
-  const handleRemovePhoto = () => {
-    // Revoke object URL if it's not the original photo
-    if (preview && preview !== currentPhoto) {
-      revokeObjectURL(preview);
-    }
-    
-    setPreview('');
+    // Create preview URL
+    const url = URL.createObjectURL(file);
+    setPreviewUrl(url);
     setError('');
-    onPhotoRemove();
-    
-    // Clear file input
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
+
+    // Call parent callback
+    if (onPhotoChange) {
+      onPhotoChange(file, url);
     }
+
+    // Close dialog
+    setShowDialog(false);
   };
 
+  // Handle photo removal
+  const handleRemovePhoto = () => {
+    setPreviewUrl(null);
+    setError('');
+    
+    if (onPhotoRemove) {
+      onPhotoRemove();
+    }
+    
+    setShowDialog(false);
+  };
+
+  // Open file dialog
   const handleUploadClick = () => {
     if (fileInputRef.current) {
       fileInputRef.current.click();
@@ -155,121 +80,126 @@ const ProfilePhotoUpload = ({
   };
 
   return (
-    <Box sx={{ width: '100%' }}>
-      {/* Current Photo Display */}
-      <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
+    <>
+      <Box sx={{ position: 'relative', display: 'inline-block' }}>
         <Avatar
-          src={preview}
+          src={previewUrl}
+          alt="Profil fotoğrafı"
           sx={{
-            width: 120,
-            height: 120,
-            fontSize: '3rem',
-            bgcolor: '#1a237e'
+            width: size,
+            height: size,
+            fontSize: `${size / 3}rem`,
+            bgcolor: '#1a237e',
+            cursor: disabled ? 'default' : 'pointer'
           }}
-          alt={t('profilePhoto')}
-          role="img"
-          aria-label={preview ? t('currentProfilePhoto') : t('noProfilePhoto')}
+          onClick={disabled ? undefined : () => setShowDialog(true)}
         >
-          {!preview && <PhotoCamera sx={{ fontSize: '3rem' }} aria-hidden="true" />}
+          {!previewUrl && 'A'}
         </Avatar>
-      </Box>
-
-      {/* Upload Area */}
-      <Paper
-        elevation={dragOver ? 4 : 1}
-        sx={{
-          p: { xs: 2, sm: 3 },
-          textAlign: 'center',
-          border: dragOver ? '2px dashed #1a237e' : '2px dashed #e0e0e0',
-          backgroundColor: dragOver ? '#f3f4f6' : 'transparent',
-          cursor: disabled ? 'not-allowed' : 'pointer',
-          transition: 'all 0.3s ease',
-          opacity: disabled ? 0.6 : 1,
-          minHeight: { xs: '100px', sm: '120px' },
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'center',
-          alignItems: 'center'
-        }}
-        onDragOver={handleDragOver}
-        onDragLeave={handleDragLeave}
-        onDrop={handleDrop}
-        onClick={!disabled ? handleUploadClick : undefined}
-        role="button"
-        tabIndex={disabled ? -1 : 0}
-        aria-label={t('dragDropText')}
-        onKeyDown={(e) => {
-          if ((e.key === 'Enter' || e.key === ' ') && !disabled) {
-            e.preventDefault();
-            handleUploadClick();
-          }
-        }}
-      >
-        <CloudUpload 
-          sx={{ 
-            fontSize: '3rem', 
-            color: dragOver ? '#1a237e' : '#9e9e9e',
-            mb: 1
-          }} 
-        />
-        <Typography variant="body1" sx={{ mb: 1 }}>
-          {t('dragDropText')}
-        </Typography>
-        <Typography variant="caption" color="text.secondary">
-          {t('fileTypeInfo')}
-        </Typography>
-      </Paper>
-
-      {/* Hidden File Input */}
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept={acceptedFormats.join(',')}
-        onChange={handleFileInputChange}
-        style={{ display: 'none' }}
-        disabled={disabled}
-        aria-hidden="true"
-        aria-label={t('uploadPhoto')}
-      />
-
-      {/* Action Buttons */}
-      <Box sx={{ mt: 2, display: 'flex', gap: 1, justifyContent: 'center' }}>
-        <Button
-          variant="outlined"
-          startIcon={<CloudUpload />}
-          onClick={handleUploadClick}
-          disabled={disabled}
-          size="small"
-          aria-label={preview ? t('changePhoto') : t('uploadPhoto')}
-        >
-          {preview ? t('changePhoto') : t('uploadPhoto')}
-        </Button>
         
-        {preview && (
+        {!disabled && (
           <IconButton
-            color="error"
-            onClick={handleRemovePhoto}
-            disabled={disabled}
             size="small"
-            aria-label={t('removePhoto')}
+            sx={{
+              position: 'absolute',
+              bottom: -4,
+              right: -4,
+              bgcolor: '#1a237e',
+              color: 'white',
+              width: 28,
+              height: 28,
+              '&:hover': {
+                bgcolor: '#0d1b5e'
+              }
+            }}
+            onClick={() => setShowDialog(true)}
           >
-            <Delete />
+            <Edit fontSize="small" />
           </IconButton>
         )}
       </Box>
 
-      {/* Error Display */}
-      {error && (
-        <Alert 
-          severity="error" 
-          sx={{ mt: 2 }}
-          role="alert"
-          aria-live="assertive"
-        >
-          {error}
-        </Alert>
-      )}
-    </Box>
+      {/* Photo Management Dialog */}
+      <Dialog
+        open={showDialog}
+        onClose={() => setShowDialog(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>
+          Profil Fotoğrafı
+        </DialogTitle>
+        
+        <DialogContent>
+          <Box sx={{ textAlign: 'center', py: 2 }}>
+            <Avatar
+              src={previewUrl}
+              alt="Profil fotoğrafı önizleme"
+              sx={{
+                width: 120,
+                height: 120,
+                mx: 'auto',
+                mb: 2,
+                fontSize: '2rem',
+                bgcolor: '#1a237e'
+              }}
+            >
+              {!previewUrl && 'A'}
+            </Avatar>
+
+            {error && (
+              <Alert severity="error" sx={{ mb: 2 }}>
+                {error}
+              </Alert>
+            )}
+
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+              JPG, PNG veya GIF formatında, maksimum 5MB boyutunda fotoğraf yükleyebilirsiniz.
+            </Typography>
+
+            <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
+              <Button
+                variant="contained"
+                startIcon={<PhotoCamera />}
+                onClick={handleUploadClick}
+                sx={{
+                  bgcolor: '#1a237e',
+                  '&:hover': { bgcolor: '#0d1b5e' }
+                }}
+              >
+                Fotoğraf Seç
+              </Button>
+
+              {previewUrl && (
+                <Button
+                  variant="outlined"
+                  startIcon={<Delete />}
+                  onClick={handleRemovePhoto}
+                  color="error"
+                >
+                  Kaldır
+                </Button>
+              )}
+            </Box>
+          </Box>
+        </DialogContent>
+
+        <DialogActions>
+          <Button onClick={() => setShowDialog(false)}>
+            Kapat
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Hidden file input */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        style={{ display: 'none' }}
+        onChange={handleFileSelect}
+      />
+    </>
   );
 };
 

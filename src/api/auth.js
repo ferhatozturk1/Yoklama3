@@ -178,7 +178,24 @@ export const loginLecturer = async (formData) => {
 
   const result = await response.json();
   console.log("Login başarılı, API yanıtı:", result); // Debug için
-  return result;  // access + refresh token
+  
+  // Store user data and token in session storage
+  if (result.access || result.token) {
+    sessionStorage.setItem("token", result.access || result.token);
+  }
+  
+  if (result.refresh) {
+    sessionStorage.setItem("refreshToken", result.refresh);
+  }
+  
+  // Store lecturer data if available
+  if (result.lecturer) {
+    sessionStorage.setItem("user", JSON.stringify(result.lecturer));
+  } else if (result.user) {
+    sessionStorage.setItem("user", JSON.stringify(result.user));
+  }
+  
+  return result;  // access + refresh token + lecturer data
 };
 
 // kayıt işlemi

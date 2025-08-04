@@ -1,41 +1,30 @@
-/**
- * Creates a debounced function that delays invoking func until after wait milliseconds
- * have elapsed since the last time the debounced function was invoked.
- * 
- * @param {Function} func - The function to debounce
- * @param {number} wait - The number of milliseconds to delay
- * @returns {Function} - The debounced function
- */
-export const debounce = (func, wait) => {
-  let timeout;
+// Debounce utility function
+export const debounce = (func, delay) => {
+  let timeoutId;
   
-  return function executedFunction(...args) {
-    const later = () => {
-      clearTimeout(timeout);
-      func(...args);
-    };
+  return function (...args) {
+    // Clear the previous timeout
+    clearTimeout(timeoutId);
     
-    clearTimeout(timeout);
-    timeout = setTimeout(later, wait);
+    // Set a new timeout
+    timeoutId = setTimeout(() => {
+      func.apply(this, args);
+    }, delay);
   };
 };
 
-/**
- * Creates a throttled function that only invokes func at most once per every wait milliseconds.
- * 
- * @param {Function} func - The function to throttle
- * @param {number} wait - The number of milliseconds to throttle invocations to
- * @returns {Function} - The throttled function
- */
-export const throttle = (func, wait) => {
+// Throttle utility function
+export const throttle = (func, delay) => {
   let lastCall = 0;
   
-  return function executedFunction(...args) {
+  return function (...args) {
     const now = Date.now();
     
-    if (now - lastCall >= wait) {
-      func(...args);
+    if (now - lastCall >= delay) {
       lastCall = now;
+      func.apply(this, args);
     }
   };
 };
+
+export default { debounce, throttle };

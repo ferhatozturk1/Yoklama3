@@ -61,15 +61,8 @@ const GirisYap = () => {
       const response = await loginLecturer(formData);
       console.log("✅ Giriş başarılı:", response);
       
-      // Session'a kullanıcı bilgilerini kaydet
-      if (response.lecturer) {
-        sessionStorage.setItem("user", JSON.stringify(response.lecturer));
-      }
-      if (response.access || response.token) {
-        sessionStorage.setItem("token", response.access || response.token);
-      }
-      
-      // Portal ana sayfasına yönlendir
+      // loginLecturer function already handles session storage
+      // Just navigate to portal
       navigate("/portal/ana-sayfa");
     } catch (error) {
       console.error("❌ Giriş hatası:", error);
