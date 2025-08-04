@@ -128,9 +128,19 @@ const TopNavigation = ({
   };
 
   const handleLogout = () => {
-    navigate("/");
-    handleProfileMenuClose();
-  };
+  // Tokenları temizle
+  localStorage.removeItem("access_token");
+  localStorage.removeItem("refresh_token");
+
+  // Profil menüsünü kapat
+  handleProfileMenuClose();
+
+  // Giriş sayfasına yönlendir
+  navigate("/login");
+
+  // (İsteğe bağlı) Bildirim ver
+  alert("Çıkış yapıldı");
+};
 
   const isActive = (itemKey) => {
     return currentSection === itemKey;
