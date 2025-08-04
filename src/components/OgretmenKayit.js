@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-
+import { registerLecturer, getUniversities, getFaculties, getDepartments } from "../api/auth";
 import {
   TextField,
   Button,
@@ -17,6 +17,11 @@ import {
   Grow,
   Switch,
   FormControlLabel,
+  LinearProgress,
+  Chip,
+  Stepper,
+  Step,
+  StepLabel,
 } from "@mui/material";
 import {
   School,
@@ -29,15 +34,23 @@ import {
   VisibilityOff,
   DarkMode,
   LightMode,
+  ArrowForward,
+  LocationOn,
+  Business,
+  AccountBalance,
+  CheckCircle,
 } from "@mui/icons-material";
 
 const OgretmenKayit = () => {
+  const [currentStep, setCurrentStep] = useState(1);
   const [form, setForm] = useState({
     title: "",
     first_name: "",
     last_name: "",
+    university: "",
+    faculty: "",
+    department_id: "",
     email: "",
-    department: "",
     password: "",
     confirmPassword: "",
   });
@@ -48,15 +61,81 @@ const OgretmenKayit = () => {
   const [darkMode, setDarkMode] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [showContent, setShowContent] = useState(false);
+  
+  // Backend'den gelen veriler
+  const [universities, setUniversities] = useState([]);
+  const [faculties, setFaculties] = useState([]);
+  const [departments, setDepartments] = useState([]);
+  const [loadingData, setLoadingData] = useState(true);
+  
   const navigate = useNavigate();
 
-  // Fade-in animation on page load
+  // Backend'den veri çekme
   useEffect(() => {
     const timer = setTimeout(() => {
       setShowContent(true);
     }, 100);
+    
+    const fetchInitialData = async () => {
+      try {
+        setLoadingData(true);
+        console.log("🔄 Üniversite listesi yükleniyor...");
+        const univData = await getUniversities();
+        setUniversities(univData);
+        console.log("✅ Üniversiteler yüklendi:", univData);
+      } catch (error) {
+        console.error("❌ Üniversite listesi yüklenemedi:", error);
+        setError("Üniversite listesi yüklenemedi. Lütfen sayfayı yenileyin.");
+      } finally {
+        setLoadingData(false);
+      }
+    };
+    
+    fetchInitialData();
     return () => clearTimeout(timer);
   }, []);
+
+  // Üniversite değiştiğinde fakülteleri yükle
+  useEffect(() => {
+    if (form.university) {
+      const fetchFaculties = async () => {
+        try {
+          console.log("🔄 Fakülte listesi yükleniyor:", form.university);
+          const facultyData = await getFaculties(form.university);
+          setFaculties(facultyData);
+          console.log("✅ Fakülteler yüklendi:", facultyData);
+        } catch (error) {
+          console.error("❌ Fakülte listesi yüklenemedi:", error);
+          setFaculties([]);
+        }
+      };
+      fetchFaculties();
+    } else {
+      setFaculties([]);
+    }
+  }, [form.university]);
+
+  // Fakülte değiştiğinde departmanları yükle
+  useEffect(() => {
+    if (form.faculty) {
+      const fetchDepartments = async () => {
+        try {
+          console.log("🔄 Departman listesi yükleniyor:", form.faculty);
+          const deptData = await getDepartments(form.faculty);
+          setDepartments(deptData);
+          console.log("✅ Departmanlar yüklendi:", deptData);
+        } catch (error) {
+          console.error("❌ Departman listesi yüklenemedi:", error);
+          setDepartments([]);
+        }
+      };
+      fetchDepartments();
+    } else {
+      setDepartments([]);
+    }
+  }, [form.faculty]);
+
+  const steps = ['Kişisel Bilgiler', 'Kurumsal Seçim', 'Hesap Bilgileri'];
 
   const titleOptions = [
     "Prof. Dr.",
@@ -64,88 +143,843 @@ const OgretmenKayit = () => {
     "Dr. Öğr. Üyesi",
     "Öğr. Gör.",
     "Arş. Gör.",
-    
-  ];
-
-  const departments = [
-    { id: "uuid-1", name: "Bilgisayar Mühendisliği" },
-    { id: "uuid-2", name: "Elektrik-Elektronik Mühendisliği" },
-    { id: "uuid-3", name: "Makine Mühendisliği" },
-    { id: "uuid-4", name: "İnşaat Mühendisliği" },
-    { id: "uuid-5", name: "Endüstri Mühendisliği" }
   ];
 
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setForm(prev => {
+      const newForm = { ...prev, [name]: value };
+      
+      // Reset dependent fields
+      if (name === 'university') {
+        newForm.faculty = '';
+        newForm.department_id = '';
+        newForm.email = ''; // E-posta alanını da temizle
+      } else if (name === 'faculty') {
+        newForm.department_id = '';
+      }
+      
+      return newForm;
+    });
+    setError("");
+  };
+
+  const validateEmail = (email) => {
+    const selectedUniversity = universities.find(u => u.id === form.university);
+    if (!selectedUniversity) {
+      return "Lütfen önce üniversite seçin!";
+    }
+    
+    // ODTÜ için e-posta uzantısı
+    const requiredDomain = "@metu.edu.tr";
+    if (!email.endsWith(requiredDomain)) {
+      return `E-posta adresi ${requiredDomain} uzantısı ile bitmelidir!`;
+    }
+    
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return "Geçerli bir e-posta adresi girin!";
+    }
+    
+    return null;
+  };
+
+  const validateStep = (step) => {
+    switch (step) {
+      case 1:
+        if (!form.title || !form.first_name || !form.last_name) {
+          setError("Lütfen tüm kişisel bilgileri doldurun!");
+          return false;
+        }
+        break;
+      case 2:
+        if (!form.university || !form.faculty || !form.department_id) {
+          setError("Lütfen üniversite, fakülte ve departman seçin!");
+          return false;
+        }
+        
+        // Seçilen verilerin API'den geldiğinden emin ol
+        const selectedUniversity = universities.find(u => u.id === form.university);
+        const selectedFaculty = faculties.find(f => f.id === form.faculty);
+        const selectedDepartment = departments.find(d => d.id === form.department_id);
+        
+        if (!selectedUniversity || !selectedFaculty || !selectedDepartment) {
+          setError("Seçilen veriler geçersiz. Lütfen tekrar seçim yapın!");
+          return false;
+        }
+        break;
+      case 3:
+        if (!form.email || !form.password || !form.confirmPassword) {
+          setError("Lütfen tüm hesap bilgilerini doldurun!");
+          return false;
+        }
+        
+        const emailError = validateEmail(form.email);
+        if (emailError) {
+          setError(emailError);
+          return false;
+        }
+
+        if (form.password !== form.confirmPassword) {
+          setError("Şifreler eşleşmiyor!");
+          return false;
+        }
+
+        if (form.password.length < 6) {
+          setError("Şifre en az 6 karakter olmalıdır!");
+          return false;
+        }
+        break;
+      default:
+        return false;
+    }
+    return true;
+  };
+
+  const handleNext = () => {
+    if (validateStep(currentStep)) {
+      setCurrentStep(prev => prev + 1);
+      setError("");
+    }
+  };
+
+  const handleBack = () => {
+    setCurrentStep(prev => prev - 1);
     setError("");
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    if (!validateStep(3)) {
+      return;
+    }
+
+    // API verileri yüklenmemişse işlem yapma
+    if (!form.university || !form.faculty || !form.department_id) {
+      setError("Lütfen tüm alanları doldurun. Veriler yüklenene kadar bekleyin.");
+      return;
+    }
+
+    // Seçilen verilerin veritabanında gerçekten var olduğunu kontrol et
+    const selectedUniversity = universities.find(u => u.id === form.university);
+    const selectedFaculty = faculties.find(f => f.id === form.faculty);
+    const selectedDepartment = departments.find(d => d.id === form.department_id);
+
+    if (!selectedUniversity || !selectedFaculty || !selectedDepartment) {
+      setError("Seçilen veriler geçersiz. Lütfen tekrar seçim yapın.");
+      return;
+    }
+    
+    setIsLoading(true);
     setError("");
     setSuccess("");
-    setIsLoading(true);
-
-    // Validasyon
-    if (
-      !form.title ||
-      !form.first_name ||
-      !form.last_name ||
-      !form.email ||
-      !form.password ||
-      !form.confirmPassword ||
-      !form.department_id
-    ) {
-      setError("Zorunlu alanları doldurun!");
-      setIsLoading(false);
-      return;
-    }
-
-    // E-posta validasyonu
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(form.email)) {
-      setError("Geçerli bir e-posta adresi girin!");
-      setIsLoading(false);
-      return;
-    }
-
-    if (form.password !== form.confirmPassword) {
-      setError("Şifreler eşleşmiyor!");
-      setIsLoading(false);
-      return;
-    }
-
-    if (form.password.length < 6) {
-      setError("Şifre en az 6 karakter olmalıdır!");
-      setIsLoading(false);
-      return;
-    }
 
     try {
-      // API çağrısı
-      await registerLecturer(
-        form.title,
-        form.first_name,
-        form.last_name,
-        form.email,
-        form.department_id,
-        form.password
-      );
+      // Sadece veritabanından gelen gerçek verilerle form gönder
+      const formDataForAPI = {
+        email: form.email,
+        password: form.password,
+        first_name: form.first_name,
+        last_name: form.last_name,
+        department_id: form.department_id // Gerçek seçilen department_id
+      };
+
+      console.log("Gönderilen veri (seçilen department_id ile):", formDataForAPI);
+      console.log("Seçilen departman:", selectedDepartment);
+
+      // Kayıt API çağrısı
+      const response = await registerLecturer(formDataForAPI);
       
-      setSuccess("🎉 Kayıt başarılı! Giriş sayfasına yönlendiriliyorsunuz...");
+      console.log("API yanıtı:", response);
       
-      // Redirect to login after success
+      setSuccess("🎉 Kayıt başarılı! E-posta adresinizi doğrulayın. Giriş sayfasına yönlendiriliyorsunuz...");
+      
+      // Başarılı kayıt sonrası giriş sayfasına yönlendir
       setTimeout(() => {
         navigate("/giris");
       }, 3000);
       
     } catch (error) {
-      setError(error.message || "Kayıt başarısız!");
-      console.error("Register error:", error);
+      console.error("Kayıt hatası:", error);
+      setError(error.message || "Kayıt başarısız! Lütfen tekrar deneyin.");
     }
     
     setIsLoading(false);
   };
+
+  const getSelectedName = (type, id) => {
+    switch (type) {
+      case 'university':
+        return universities.find(u => u.id === id)?.name || '';
+      case 'faculty':
+        return faculties.find(f => f.id === id)?.name || '';
+      case 'department':
+        return departments.find(d => d.id === id)?.name || '';
+      default:
+        return '';
+    }
+  };
+
+  // Modern ve düzgün input styles
+  const inputStyles = {
+    "& .MuiOutlinedInput-root": {
+      borderRadius: "12px",
+      height: "48px",
+      background: darkMode
+        ? "rgba(255, 255, 255, 0.05)"
+        : "rgba(255, 255, 255, 0.95)",
+      backdropFilter: "blur(10px)",
+      border: darkMode
+        ? "1px solid rgba(255, 255, 255, 0.1)"
+        : "1px solid rgba(79, 70, 229, 0.15)",
+      transition: "all 0.2s ease-in-out",
+      "& fieldset": {
+        border: "none",
+      },
+      "&:hover": {
+        background: darkMode
+          ? "rgba(255, 255, 255, 0.08)"
+          : "rgba(255, 255, 255, 1)",
+        border: darkMode
+          ? "1px solid rgba(255, 255, 255, 0.2)"
+          : "1px solid rgba(79, 70, 229, 0.25)",
+        boxShadow: "0 4px 12px rgba(79, 70, 229, 0.08)",
+      },
+      "&.Mui-focused": {
+        background: darkMode
+          ? "rgba(255, 255, 255, 0.1)"
+          : "rgba(255, 255, 255, 1)",
+        border: "2px solid #4F46E5",
+        boxShadow: "0 0 0 3px rgba(79, 70, 229, 0.1)",
+      },
+    },
+    "& .MuiOutlinedInput-input": {
+      color: darkMode ? "#ffffff" : "#1e293b",
+      fontFamily: '"Inter", "Roboto", sans-serif',
+      fontWeight: 500,
+      fontSize: "15px",
+      padding: "14px 16px 14px 8px",
+      "&::placeholder": {
+        color: darkMode
+          ? "rgba(255, 255, 255, 0.5)"
+          : "rgba(30, 41, 59, 0.5)",
+        opacity: 1,
+      },
+    },
+    "& .MuiInputAdornment-root": {
+      marginLeft: "16px",
+      marginRight: "12px",
+    },
+    "& .MuiInputAdornment-positionStart": {
+      marginLeft: "14px",
+      marginRight: "12px",
+    },
+    "& .MuiInputAdornment-positionEnd": {
+      marginRight: "14px",
+      marginLeft: "8px",
+    },
+  };
+
+  const renderStep1 = () => (
+    <Box>
+      <Typography
+        variant="h5"
+        sx={{
+          fontFamily: '"Inter", "Roboto", sans-serif',
+          fontWeight: 600,
+          color: darkMode ? "#ffffff" : "#1e293b",
+          mb: 2,
+          textAlign: "center",
+          fontSize: { xs: "1.1rem", sm: "1.25rem" },
+        }}
+      >
+        Kişisel Bilgileriniz
+      </Typography>
+      
+      <Grid container spacing={2}>
+        {/* Ünvan */}
+        <Grid item xs={12}>
+          <Typography
+            variant="body2"
+            sx={{
+              color: darkMode
+                ? "rgba(255, 255, 255, 0.8)"
+                : "rgba(30, 41, 59, 0.8)",
+              fontFamily: '"Inter", "Roboto", sans-serif',
+              fontWeight: 500,
+              fontSize: "13px",
+              mb: 0.5,
+              ml: 0.5,
+            }}
+          >
+            Ünvan
+          </Typography>
+          <TextField
+            name="title"
+            select
+            fullWidth
+            value={form.title}
+            onChange={handleChange}
+            required
+            placeholder="Ünvanınızı seçin"
+            SelectProps={{
+              displayEmpty: true,
+            }}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <School
+                    sx={{
+                      color: "#4F46E5",
+                      fontSize: 20,
+                      opacity: 0.7,
+                    }}
+                  />
+                </InputAdornment>
+              ),
+            }}
+            sx={inputStyles}
+          >
+            <MenuItem value="" disabled>
+              Ünvanınızı seçin
+            </MenuItem>
+            {titleOptions.map((title) => (
+              <MenuItem key={title} value={title}>
+                {title}
+              </MenuItem>
+            ))}
+          </TextField>
+        </Grid>
+
+        {/* Ad */}
+        <Grid item xs={12} sm={6}>
+          <Typography
+            variant="body2"
+            sx={{
+              color: darkMode
+                ? "rgba(255, 255, 255, 0.8)"
+                : "rgba(30, 41, 59, 0.8)",
+              fontFamily: '"Inter", "Roboto", sans-serif',
+              fontWeight: 500,
+              fontSize: "13px",
+              mb: 0.5,
+              ml: 0.5,
+            }}
+          >
+            Ad
+          </Typography>
+          <TextField
+            name="first_name"
+            fullWidth
+            value={form.first_name}
+            onChange={handleChange}
+            required
+            placeholder="Adınız"
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <Person
+                    sx={{
+                      color: "#4F46E5",
+                      fontSize: 20,
+                      opacity: 0.7,
+                    }}
+                  />
+                </InputAdornment>
+              ),
+            }}
+            sx={inputStyles}
+          />
+        </Grid>
+
+        {/* Soyad */}
+        <Grid item xs={12} sm={6}>
+          <Typography
+            variant="body2"
+            sx={{
+              color: darkMode
+                ? "rgba(255, 255, 255, 0.8)"
+                : "rgba(30, 41, 59, 0.8)",
+              fontFamily: '"Inter", "Roboto", sans-serif',
+              fontWeight: 500,
+              fontSize: "13px",
+              mb: 0.5,
+              ml: 0.5,
+            }}
+          >
+            Soyad
+          </Typography>
+          <TextField
+            name="last_name"
+            fullWidth
+            value={form.last_name}
+            onChange={handleChange}
+            required
+            placeholder="Soyadınız"
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <Person
+                    sx={{
+                      color: "#4F46E5",
+                      fontSize: 20,
+                      opacity: 0.7,
+                    }}
+                  />
+                </InputAdornment>
+              ),
+            }}
+            sx={inputStyles}
+          />
+        </Grid>
+      </Grid>
+    </Box>
+  );
+
+  const renderStep2 = () => (
+    <Box>
+      <Typography
+        variant="h5"
+        sx={{
+          fontFamily: '"Inter", "Roboto", sans-serif',
+          fontWeight: 600,
+          color: darkMode ? "#ffffff" : "#1e293b",
+          mb: 2,
+          textAlign: "center",
+          fontSize: { xs: "1.1rem", sm: "1.25rem" },
+        }}
+      >
+        Kurumsal Bilgileriniz
+      </Typography>
+
+      <Grid container spacing={2}>
+        {/* Üniversite */}
+        <Grid item xs={12}>
+          <Typography
+            variant="body2"
+            sx={{
+              color: darkMode
+                ? "rgba(255, 255, 255, 0.8)"
+                : "rgba(30, 41, 59, 0.8)",
+              fontFamily: '"Inter", "Roboto", sans-serif',
+              fontWeight: 500,
+              fontSize: "13px",
+              mb: 0.5,
+              ml: 0.5,
+            }}
+          >
+            Üniversite
+          </Typography>
+          {form.university && (
+            <Chip
+              label={getSelectedName('university', form.university)}
+              sx={{
+                mb: 1,
+                backgroundColor: "#4F46E5",
+                color: "white",
+                fontWeight: 500,
+              }}
+            />
+          )}
+          <TextField
+            name="university"
+            select
+            fullWidth
+            value={form.university}
+            onChange={handleChange}
+            required
+            placeholder="Üniversite seçin"
+            SelectProps={{
+              displayEmpty: true,
+            }}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <AccountBalance
+                    sx={{
+                      color: "#4F46E5",
+                      fontSize: 20,
+                      opacity: 0.7,
+                    }}
+                  />
+                </InputAdornment>
+              ),
+            }}
+            sx={inputStyles}
+          >
+            <MenuItem value="" disabled>
+              {loadingData ? "Üniversiteler yükleniyor..." : "Üniversite seçin"}
+            </MenuItem>
+            {!loadingData && universities.length === 0 && (
+              <MenuItem value="" disabled>
+                Üniversite listesi yüklenemedi
+              </MenuItem>
+            )}
+            {universities.map((university) => (
+              <MenuItem key={university.id} value={university.id}>
+                {university.name}
+              </MenuItem>
+            ))}
+          </TextField>
+        </Grid>
+
+        {/* Fakülte */}
+        <Grid item xs={12}>
+          <Typography
+            variant="body2"
+            sx={{
+              color: darkMode
+                ? "rgba(255, 255, 255, 0.8)"
+                : "rgba(30, 41, 59, 0.8)",
+              fontFamily: '"Inter", "Roboto", sans-serif',
+              fontWeight: 500,
+              fontSize: "14px",
+              mb: 1,
+              ml: 0.5,
+            }}
+          >
+            Fakülte
+          </Typography>
+          {form.faculty && (
+            <Chip
+              label={getSelectedName('faculty', form.faculty)}
+              sx={{
+                mb: 1,
+                backgroundColor: "#4F46E5",
+                color: "white",
+                fontWeight: 500,
+              }}
+            />
+          )}
+          <TextField
+            name="faculty"
+            select
+            fullWidth
+            value={form.faculty}
+            onChange={handleChange}
+            required
+            disabled={!form.university}
+            placeholder="Fakülte seçin"
+            SelectProps={{
+              displayEmpty: true,
+            }}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <Business
+                    sx={{
+                      color: "#4F46E5",
+                      fontSize: 20,
+                      opacity: 0.7,
+                    }}
+                  />
+                </InputAdornment>
+              ),
+            }}
+            sx={inputStyles}
+          >
+            <MenuItem value="" disabled>
+              {loadingData ? "Fakülteler yükleniyor..." : "Fakülte seçin"}
+            </MenuItem>
+            {!loadingData && faculties.length === 0 && form.university && (
+              <MenuItem value="" disabled>
+                Fakülte listesi yüklenemedi
+              </MenuItem>
+            )}
+            {faculties.map((faculty) => (
+              <MenuItem key={faculty.id} value={faculty.id}>
+                {faculty.name}
+              </MenuItem>
+            ))}
+          </TextField>
+        </Grid>
+
+        {/* Departman */}
+        <Grid item xs={12}>
+          <Typography
+            variant="body2"
+            sx={{
+              color: darkMode
+                ? "rgba(255, 255, 255, 0.8)"
+                : "rgba(30, 41, 59, 0.8)",
+              fontFamily: '"Inter", "Roboto", sans-serif',
+              fontWeight: 500,
+              fontSize: "14px",
+              mb: 1,
+              ml: 0.5,
+            }}
+          >
+            Departman
+          </Typography>
+          {form.department_id && (
+            <Chip
+              label={getSelectedName('department', form.department_id)}
+              sx={{
+                mb: 1,
+                backgroundColor: "#4F46E5",
+                color: "white",
+                fontWeight: 500,
+              }}
+            />
+          )}
+          <TextField
+            name="department_id"
+            select
+            fullWidth
+            value={form.department_id}
+            onChange={handleChange}
+            required
+            disabled={!form.faculty}
+            placeholder="Departman seçin"
+            SelectProps={{
+              displayEmpty: true,
+            }}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <LocationOn
+                    sx={{
+                      color: "#4F46E5",
+                      fontSize: 20,
+                      opacity: 0.7,
+                    }}
+                  />
+                </InputAdornment>
+              ),
+            }}
+            sx={inputStyles}
+          >
+            <MenuItem value="" disabled>
+              {loadingData ? "Departmanlar yükleniyor..." : "Departman seçin"}
+            </MenuItem>
+            {!loadingData && departments.length === 0 && form.faculty && (
+              <MenuItem value="" disabled>
+                Departman listesi yüklenemedi
+              </MenuItem>
+            )}
+            {departments.map((department) => (
+              <MenuItem key={department.id} value={department.id}>
+                {department.name}
+              </MenuItem>
+            ))}
+          </TextField>
+        </Grid>
+      </Grid>
+    </Box>
+  );
+
+  const renderStep3 = () => (
+    <Box>
+      <Typography
+        variant="h5"
+        sx={{
+          fontFamily: '"Inter", "Roboto", sans-serif',
+          fontWeight: 600,
+          color: darkMode ? "#ffffff" : "#1e293b",
+          mb: 2,
+          textAlign: "center",
+          fontSize: { xs: "1.1rem", sm: "1.25rem" },
+        }}
+      >
+        Hesap Bilgileriniz
+      </Typography>
+
+      <Grid container spacing={2}>
+        {/* E-posta */}
+        <Grid item xs={12}>
+          <Typography
+            variant="body2"
+            sx={{
+              color: darkMode
+                ? "rgba(255, 255, 255, 0.8)"
+                : "rgba(30, 41, 59, 0.8)",
+              fontFamily: '"Inter", "Roboto", sans-serif',
+              fontWeight: 500,
+              fontSize: "13px",
+              mb: 0.5,
+              ml: 0.5,
+            }}
+          >
+            E-posta Adresi
+          </Typography>
+          {form.university && (
+            <Typography
+              variant="body2"
+              sx={{
+                color: "#4F46E5",
+                fontFamily: '"Inter", "Roboto", sans-serif',
+                fontWeight: 500,
+                fontSize: "12px",
+                mb: 1,
+                ml: 0.5,
+              }}
+            >
+              @metu.edu.tr uzantısı kullanınız
+            </Typography>
+          )}
+          <TextField
+            name="email"
+            type="email"
+            fullWidth
+            value={form.email}
+            onChange={handleChange}
+            required
+            placeholder={
+              form.university 
+                ? "ornek@metu.edu.tr"
+                : "Üniversite seçtikten sonra e-posta giriniz"
+            }
+            disabled={!form.university}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <Email
+                    sx={{
+                      color: "#4F46E5",
+                      fontSize: 20,
+                      opacity: 0.7,
+                    }}
+                  />
+                </InputAdornment>
+              ),
+            }}
+            sx={inputStyles}
+          />
+        </Grid>
+
+        {/* Şifre */}
+        <Grid item xs={12} sm={6}>
+          <Typography
+            variant="body2"
+            sx={{
+              color: darkMode
+                ? "rgba(255, 255, 255, 0.8)"
+                : "rgba(30, 41, 59, 0.8)",
+              fontFamily: '"Inter", "Roboto", sans-serif',
+              fontWeight: 500,
+              fontSize: "14px",
+              mb: 1,
+              ml: 0.5,
+            }}
+          >
+            Şifre
+          </Typography>
+          <TextField
+            name="password"
+            type={showPassword ? "text" : "password"}
+            fullWidth
+            value={form.password}
+            onChange={handleChange}
+            required
+            placeholder="Şifrenizi girin"
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <Lock
+                    sx={{
+                      color: "#4F46E5",
+                      fontSize: 20,
+                      opacity: 0.7,
+                    }}
+                  />
+                </InputAdornment>
+              ),
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton
+                    onClick={() => setShowPassword(!showPassword)}
+                    edge="end"
+                    size="medium"
+                    sx={{
+                      color: "#4F46E5",
+                      opacity: 0.6,
+                      "&:hover": {
+                        backgroundColor: "rgba(79, 70, 229, 0.08)",
+                        opacity: 1,
+                      },
+                    }}
+                  >
+                    {showPassword ? (
+                      <VisibilityOff fontSize="small" />
+                    ) : (
+                      <Visibility fontSize="small" />
+                    )}
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }}
+            sx={inputStyles}
+          />
+        </Grid>
+
+        {/* Şifre Tekrar */}
+        <Grid item xs={12} sm={6}>
+          <Typography
+            variant="body2"
+            sx={{
+              color: darkMode
+                ? "rgba(255, 255, 255, 0.8)"
+                : "rgba(30, 41, 59, 0.8)",
+              fontFamily: '"Inter", "Roboto", sans-serif',
+              fontWeight: 500,
+              fontSize: "14px",
+              mb: 1,
+              ml: 0.5,
+            }}
+          >
+            Şifre Tekrar
+          </Typography>
+          <TextField
+            name="confirmPassword"
+            type={showPasswordConfirm ? "text" : "password"}
+            fullWidth
+            value={form.confirmPassword}
+            onChange={handleChange}
+            required
+            placeholder="Şifrenizi tekrar girin"
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <Lock
+                    sx={{
+                      color: "#4F46E5",
+                      fontSize: 20,
+                      opacity: 0.7,
+                    }}
+                  />
+                </InputAdornment>
+              ),
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton
+                    onClick={() => setShowPasswordConfirm(!showPasswordConfirm)}
+                    edge="end"
+                    size="medium"
+                    sx={{
+                      color: "#4F46E5",
+                      opacity: 0.6,
+                      "&:hover": {
+                        backgroundColor: "rgba(79, 70, 229, 0.08)",
+                        opacity: 1,
+                      },
+                    }}
+                  >
+                    {showPasswordConfirm ? (
+                      <VisibilityOff fontSize="small" />
+                    ) : (
+                      <Visibility fontSize="small" />
+                    )}
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }}
+            sx={inputStyles}
+          />
+        </Grid>
+      </Grid>
+    </Box>
+  );
 
   return (
     <Box
@@ -154,158 +988,76 @@ const OgretmenKayit = () => {
         background: darkMode
           ? "linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%)"
           : "linear-gradient(135deg, #1a237e 0%, #283593 25%, #3949ab 50%, #5e35b1 75%, #7e57c2 100%)",
-        backgroundImage: darkMode
-          ? 'url("data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%23ffffff" fill-opacity="0.02"%3E%3Ccircle cx="30" cy="30" r="2"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")'
-          : 'url("data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%23ffffff" fill-opacity="0.08"%3E%3Ccircle cx="30" cy="30" r="2"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")',
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        py: 4,
+        py: 2,
         px: 2,
         position: "relative",
-        overflow: "hidden",
-        "&::before": {
-          content: '""',
-          position: "absolute",
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: darkMode
-            ? "radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.1) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.1) 0%, transparent 50%)"
-            : "radial-gradient(ellipse at top left, rgba(79, 70, 229, 0.15) 0%, transparent 50%), radial-gradient(ellipse at bottom right, rgba(124, 58, 237, 0.15) 0%, transparent 50%), radial-gradient(ellipse at center, rgba(59, 130, 246, 0.1) 0%, transparent 70%)",
-          pointerEvents: "none",
-        },
-        "&::after": {
-          content: '""',
-          position: "absolute",
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: darkMode
-            ? "none"
-            : "linear-gradient(45deg, rgba(255, 255, 255, 0.05) 0%, transparent 50%), linear-gradient(-45deg, rgba(255, 255, 255, 0.03) 0%, transparent 50%)",
-          pointerEvents: "none",
-        },
       }}
     >
       {/* Dark Mode Toggle */}
-      <Box
-        sx={{
-          position: "absolute",
-          top: 24,
-          right: 24,
-          zIndex: 10,
-        }}
-      >
-        <Fade in={showContent} timeout={800}>
-          <FormControlLabel
-            control={
-              <Switch
-                checked={darkMode}
-                onChange={(e) => setDarkMode(e.target.checked)}
-                icon={<LightMode sx={{ fontSize: 16 }} />}
-                checkedIcon={<DarkMode sx={{ fontSize: 16 }} />}
-                sx={{
-                  "& .MuiSwitch-switchBase.Mui-checked": {
-                    color: "#4F46E5",
-                  },
-                  "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": {
-                    backgroundColor: "#4F46E5",
-                  },
-                }}
-              />
-            }
-            label=""
-            sx={{
-              m: 0,
-              "& .MuiFormControlLabel-label": { display: "none" },
-            }}
-          />
-        </Fade>
+      <Box sx={{ position: "absolute", top: 20, right: 20, zIndex: 10 }}>
+        <Switch
+          checked={darkMode}
+          onChange={(e) => setDarkMode(e.target.checked)}
+          icon={<LightMode sx={{ fontSize: 16 }} />}
+          checkedIcon={<DarkMode sx={{ fontSize: 16 }} />}
+          sx={{
+            "& .MuiSwitch-switchBase.Mui-checked": { color: "#4F46E5" },
+            "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": { backgroundColor: "#4F46E5" },
+          }}
+        />
       </Box>
 
       {/* Back Button */}
-      <Box
-        sx={{
-          position: "absolute",
-          top: 24,
-          left: 24,
-          zIndex: 10,
-        }}
-      >
-        <Fade in={showContent} timeout={800}>
-          <Button
-            startIcon={<ArrowBack />}
-            onClick={() => navigate("/")}
-            sx={{
-              color: darkMode
-                ? "rgba(255, 255, 255, 0.8)"
-                : "rgba(255, 255, 255, 0.9)",
-              fontWeight: 600,
-              fontFamily: '"Inter", "Roboto", sans-serif',
-              "&:hover": {
-                backgroundColor: darkMode
-                  ? "rgba(255, 255, 255, 0.1)"
-                  : "rgba(255, 255, 255, 0.1)",
-              },
-            }}
-          >
-            Giriş Sayfasına Dön
-          </Button>
-        </Fade>
+      <Box sx={{ position: "absolute", top: 20, left: 20, zIndex: 10 }}>
+        <Button
+          startIcon={<ArrowBack />}
+          onClick={() => navigate("/giris")}
+          sx={{
+            color: "rgba(255, 255, 255, 0.9)",
+            fontWeight: 600,
+            fontSize: "14px",
+            "&:hover": { backgroundColor: "rgba(255, 255, 255, 0.1)" },
+          }}
+        >
+          Geri
+        </Button>
       </Box>
 
-      <Container maxWidth="md" sx={{ position: "relative", zIndex: 1 }}>
+      <Container maxWidth="sm" sx={{ position: "relative", zIndex: 1 }}>
         <Fade in={showContent} timeout={1000}>
           <Box>
-            {/* Main Title */}
-            <Box sx={{ textAlign: "center", mb: 4 }}>
+            {/* Main Title - Çok Kompakt */}
+            <Box sx={{ textAlign: "center", mb: 1 }}>
               <Typography
-                variant="h3"
+                variant="h4"
                 sx={{
                   fontFamily: '"Inter", "Roboto", sans-serif',
-                  fontWeight: 800,
-                  fontSize: { xs: "2rem", sm: "2.5rem", md: "3rem" },
+                  fontWeight: 700,
+                  fontSize: { xs: "1.1rem", sm: "1.3rem" },
                   background: darkMode
                     ? "linear-gradient(135deg, #ffffff 0%, #e2e8f0 100%)"
                     : "linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)",
                   backgroundClip: "text",
                   WebkitBackgroundClip: "text",
                   WebkitTextFillColor: "transparent",
-                  textShadow: darkMode
-                    ? "0 4px 20px rgba(255, 255, 255, 0.1)"
-                    : "0 4px 20px rgba(0, 0, 0, 0.1)",
-                  mb: 1,
-                  letterSpacing: "-0.02em",
+                  mb: 0,
+                  letterSpacing: "-0.01em",
                 }}
               >
-                Akademik Personel
-              </Typography>
-              <Typography
-                variant="h5"
-                sx={{
-                  fontFamily: '"Inter", "Roboto", sans-serif',
-                  fontWeight: 400,
-                  fontSize: { xs: "1.25rem", sm: "1.5rem" },
-                  color: darkMode
-                    ? "rgba(255, 255, 255, 0.8)"
-                    : "rgba(255, 255, 255, 0.9)",
-                  letterSpacing: "0.02em",
-                }}
-              >
-                Kayıt Sistemi
+                Akademik Personel Kayıt
               </Typography>
             </Box>
 
-            {/* Registration Card */}
+            {/* Registration Card - Ultra Kompakt */}
             <Grow in={showContent} timeout={1200}>
               <Paper
                 elevation={0}
                 sx={{
-                  p: { xs: 2.5, sm: 3.5, md: 4 },
-                  borderRadius: "24px",
+                  p: { xs: 1.5, sm: 2 },  // Minimal padding
+                  borderRadius: "16px",
                   background: darkMode
                     ? "rgba(30, 41, 59, 0.4)"
                     : "rgba(255, 255, 255, 0.25)",
@@ -314,908 +1066,272 @@ const OgretmenKayit = () => {
                     ? "1px solid rgba(255, 255, 255, 0.1)"
                     : "1px solid rgba(255, 255, 255, 0.2)",
                   boxShadow: darkMode
-                    ? "0 25px 50px -12px rgba(0, 0, 0, 0.5)"
-                    : "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
+                    ? "0 20px 40px -12px rgba(0, 0, 0, 0.5)"
+                    : "0 20px 40px -12px rgba(0, 0, 0, 0.25)",
                   position: "relative",
                   overflow: "hidden",
-                  "&::before": {
-                    content: '""',
-                    position: "absolute",
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    height: "1px",
-                    background: darkMode
-                      ? "linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent)"
-                      : "linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent)",
-                  },
                 }}
               >
-                {/* Header */}
-                <Box sx={{ textAlign: "center", mb: 4 }}>
+                {/* Header - Minimal */}
+                <Box sx={{ textAlign: "center", mb: 1.5 }}>
                   <Box
                     sx={{
                       display: "inline-flex",
-                      p: 3,
-                      borderRadius: "20px",
+                      p: 1,
+                      borderRadius: "10px",
                       background:
                         "linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%)",
-                      mb: 3,
-                      boxShadow: "0 10px 30px rgba(79, 70, 229, 0.3)",
+                      mb: 1,
+                      boxShadow: "0 4px 15px rgba(79, 70, 229, 0.3)",
                     }}
                   >
-                    <PersonAdd sx={{ fontSize: 32, color: "white" }} />
+                    <PersonAdd sx={{ fontSize: 20, color: "white" }} />
                   </Box>
                   <Typography
-                    variant="h4"
+                    variant="h5"
                     sx={{
                       fontFamily: '"Inter", "Roboto", sans-serif',
-                      fontWeight: 700,
-                      fontSize: { xs: "1.75rem", sm: "2rem", md: "2.25rem" },
+                      fontWeight: 600,
+                      fontSize: { xs: "1rem", sm: "1.1rem" },
                       color: darkMode ? "#ffffff" : "#1e293b",
-                      mb: 1,
-                      letterSpacing: "-0.01em",
+                      mb: 0.5,
                     }}
                   >
                     Kayıt Ol
                   </Typography>
-                  <Typography
-                    variant="body1"
-                    sx={{
-                      color: darkMode
-                        ? "rgba(255, 255, 255, 0.7)"
-                        : "rgba(30, 41, 59, 0.7)",
-                      fontFamily: '"Inter", "Roboto", sans-serif',
-                    }}
-                  >
-                    Akademik personel hesabınızı oluşturmak için bilgilerinizi
-                    girin
-                  </Typography>
+
+                  {/* Progress - Kompakt */}
+                  <Box sx={{ mb: 1 }}>
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        color: darkMode
+                          ? "rgba(255, 255, 255, 0.6)"
+                          : "rgba(30, 41, 59, 0.6)",
+                        fontFamily: '"Inter", "Roboto", sans-serif',
+                        mb: 0.5,
+                        fontSize: "11px",
+                      }}
+                    >
+                      Adım {currentStep} / 3
+                    </Typography>
+                    <Box sx={{ width: "100%", mb: 0.5 }}>
+                      <LinearProgress
+                        variant="determinate"
+                        value={(currentStep / 3) * 100}
+                        sx={{
+                          height: 3,
+                          borderRadius: 2,
+                          backgroundColor: darkMode
+                            ? "rgba(255, 255, 255, 0.1)"
+                            : "rgba(0, 0, 0, 0.1)",
+                          "& .MuiLinearProgress-bar": {
+                            backgroundColor: "#4F46E5",
+                            borderRadius: 2,
+                          },
+                        }}
+                      />
+                    </Box>
+                    <Stepper
+                      activeStep={currentStep - 1}
+                      alternativeLabel
+                      sx={{
+                        "& .MuiStep-root": {
+                          padding: 0,
+                        },
+                        "& .MuiStepLabel-label": {
+                          color: darkMode
+                            ? "rgba(255, 255, 255, 0.5)"
+                            : "rgba(30, 41, 59, 0.5)",
+                          fontFamily: '"Inter", "Roboto", sans-serif',
+                          fontSize: "10px",
+                          fontWeight: 500,
+                          mt: 0.5,
+                          "&.Mui-active": {
+                            color: "#4F46E5",
+                            fontWeight: 600,
+                          },
+                          "&.Mui-completed": {
+                            color: "#4F46E5",
+                            fontWeight: 600,
+                          },
+                        },
+                        "& .MuiStepIcon-root": {
+                          color: darkMode
+                            ? "rgba(255, 255, 255, 0.2)"
+                            : "rgba(0, 0, 0, 0.2)",
+                          fontSize: "1rem",
+                          "&.Mui-active": {
+                            color: "#4F46E5",
+                          },
+                          "&.Mui-completed": {
+                            color: "#10B981",
+                          },
+                        },
+                        "& .MuiStepIcon-text": {
+                          fontFamily: '"Inter", "Roboto", sans-serif',
+                          fontWeight: 600,
+                          fontSize: "0.65rem",
+                        },
+                      }}
+                    >
+                      {steps.map((label, index) => (
+                        <Step key={label}>
+                          <StepLabel>{label}</StepLabel>
+                        </Step>
+                      ))}
+                    </Stepper>
+                  </Box>
                 </Box>
 
-                {/* Form */}
-                <form onSubmit={handleSubmit}>
-                  <Grid container spacing={3}>
-                    {/* Ünvan */}
-                    <Grid item xs={12} sm={6}>
-                      <Typography
-                        variant="body2"
-                        sx={{
-                          color: darkMode
-                            ? "rgba(255, 255, 255, 0.8)"
-                            : "rgba(30, 41, 59, 0.8)",
-                          fontFamily: '"Inter", "Roboto", sans-serif',
-                          fontWeight: 500,
-                          fontSize: "14px",
-                          mb: 1,
-                          ml: 0.5,
-                        }}
-                      >
-                        Ünvan
-                      </Typography>
-                      <TextField
-                        name="title"
-                        select
-                        fullWidth
-                        value={form.title}
-                        onChange={handleChange}
-                        required
-                        placeholder="Ünvanınızı seçin"
-                        InputProps={{
-                          startAdornment: (
-                            <InputAdornment position="start">
-                              <School
-                                sx={{
-                                  color: "#4F46E5",
-                                  fontSize: 20,
-                                  opacity: 0.7,
-                                }}
-                              />
-                            </InputAdornment>
-                          ),
-                        }}
-                        sx={{
-                          "& .MuiOutlinedInput-root": {
-                            borderRadius: "12px",
-                            height: "56px",
-                            background: darkMode
-                              ? "rgba(255, 255, 255, 0.05)"
-                              : "rgba(255, 255, 255, 0.95)",
-                            backdropFilter: "blur(10px)",
-                            border: darkMode
-                              ? "1px solid rgba(255, 255, 255, 0.1)"
-                              : "1px solid rgba(79, 70, 229, 0.15)",
-                            transition: "all 0.2s ease-in-out",
-                            "& fieldset": {
-                              border: "none",
-                            },
-                            "&:hover": {
-                              background: darkMode
-                                ? "rgba(255, 255, 255, 0.08)"
-                                : "rgba(255, 255, 255, 1)",
-                              border: darkMode
-                                ? "1px solid rgba(255, 255, 255, 0.2)"
-                                : "1px solid rgba(79, 70, 229, 0.25)",
-                              boxShadow: "0 4px 12px rgba(79, 70, 229, 0.08)",
-                            },
-                            "&.Mui-focused": {
-                              background: darkMode
-                                ? "rgba(255, 255, 255, 0.1)"
-                                : "rgba(255, 255, 255, 1)",
-                              border: "2px solid #4F46E5",
-                              boxShadow: "0 0 0 3px rgba(79, 70, 229, 0.1)",
-                            },
-                          },
-                          "& .MuiOutlinedInput-input": {
-                            color: darkMode ? "#ffffff" : "#1e293b",
-                            fontFamily: '"Inter", "Roboto", sans-serif',
-                            fontWeight: 500,
-                            fontSize: "16px",
-                            padding: "16px 16px 16px 8px",
-                            "&::placeholder": {
-                              color: darkMode
-                                ? "rgba(255, 255, 255, 0.5)"
-                                : "rgba(30, 41, 59, 0.5)",
-                              opacity: 1,
-                            },
-                          },
-                          "& .MuiInputAdornment-root": {
-                            marginLeft: "14px",
-                            marginRight: "12px",
-                          },
-                        }}
-                      >
-                        {titleOptions.map((title) => (
-                          <MenuItem key={title} value={title}>
-                            {title}
-                          </MenuItem>
-                        ))}
-                      </TextField>
-                    </Grid>
+                {/* Form Content - Sabit Yükseklik */}
+                <Box sx={{ minHeight: "220px" }}>
+                  {currentStep === 1 && renderStep1()}
+                  {currentStep === 2 && renderStep2()}
+                  {currentStep === 3 && renderStep3()}
+                </Box>
 
-                    {/* Ad */}
-                    <Grid item xs={12} sm={6}>
-                      <Typography
-                        variant="body2"
-                        sx={{
-                          color: darkMode
-                            ? "rgba(255, 255, 255, 0.8)"
-                            : "rgba(30, 41, 59, 0.8)",
+                {/* Error/Success Messages */}
+                {error && (
+                  <Fade in={!!error}>
+                    <Alert
+                      severity="error"
+                      sx={{
+                        mb: 3,
+                        borderRadius: "12px",
+                        background: darkMode
+                          ? "rgba(239, 68, 68, 0.1)"
+                          : "rgba(239, 68, 68, 0.05)",
+                        border: "1px solid rgba(239, 68, 68, 0.2)",
+                        "& .MuiAlert-message": {
                           fontFamily: '"Inter", "Roboto", sans-serif',
-                          fontWeight: 500,
-                          fontSize: "14px",
-                          mb: 1,
-                          ml: 0.5,
-                        }}
-                      >
-                        Ad
-                      </Typography>
-                      <TextField
-                        name="first_name"
-                        fullWidth
-                        value={form.first_name}
-                        onChange={handleChange}
-                        required
-                        placeholder="Adınızı girin"
-                        InputProps={{
-                          startAdornment: (
-                            <InputAdornment position="start">
-                              <Person
-                                sx={{
-                                  color: "#4F46E5",
-                                  fontSize: 20,
-                                  opacity: 0.7,
-                                }}
-                              />
-                            </InputAdornment>
-                          ),
-                        }}
-                        sx={{
-                          "& .MuiOutlinedInput-root": {
-                            borderRadius: "12px",
-                            height: "56px",
-                            background: darkMode
-                              ? "rgba(255, 255, 255, 0.05)"
-                              : "rgba(255, 255, 255, 0.95)",
-                            backdropFilter: "blur(10px)",
-                            border: darkMode
-                              ? "1px solid rgba(255, 255, 255, 0.1)"
-                              : "1px solid rgba(79, 70, 229, 0.15)",
-                            transition: "all 0.2s ease-in-out",
-                            "& fieldset": {
-                              border: "none",
-                            },
-                            "&:hover": {
-                              background: darkMode
-                                ? "rgba(255, 255, 255, 0.08)"
-                                : "rgba(255, 255, 255, 1)",
-                              border: darkMode
-                                ? "1px solid rgba(255, 255, 255, 0.2)"
-                                : "1px solid rgba(79, 70, 229, 0.25)",
-                              boxShadow: "0 4px 12px rgba(79, 70, 229, 0.08)",
-                            },
-                            "&.Mui-focused": {
-                              background: darkMode
-                                ? "rgba(255, 255, 255, 0.1)"
-                                : "rgba(255, 255, 255, 1)",
-                              border: "2px solid #4F46E5",
-                              boxShadow: "0 0 0 3px rgba(79, 70, 229, 0.1)",
-                            },
-                          },
-                          "& .MuiOutlinedInput-input": {
-                            color: darkMode ? "#ffffff" : "#1e293b",
-                            fontFamily: '"Inter", "Roboto", sans-serif',
-                            fontWeight: 500,
-                            fontSize: "16px",
-                            padding: "16px 16px 16px 8px",
-                            "&::placeholder": {
-                              color: darkMode
-                                ? "rgba(255, 255, 255, 0.5)"
-                                : "rgba(30, 41, 59, 0.5)",
-                              opacity: 1,
-                            },
-                          },
-                          "& .MuiInputAdornment-root": {
-                            marginLeft: "14px",
-                            marginRight: "12px",
-                          },
-                        }}
-                      />
-                    </Grid>
+                        },
+                      }}
+                    >
+                      {error}
+                    </Alert>
+                  </Fade>
+                )}
 
-                    {/* Soyad */}
-                    <Grid item xs={12} sm={6}>
-                      <Typography
-                        variant="body2"
-                        sx={{
-                          color: darkMode
-                            ? "rgba(255, 255, 255, 0.8)"
-                            : "rgba(30, 41, 59, 0.8)",
+                {success && (
+                  <Fade in={!!success}>
+                    <Alert
+                      severity="success"
+                      sx={{
+                        mb: 3,
+                        borderRadius: "12px",
+                        background: darkMode
+                          ? "rgba(16, 185, 129, 0.1)"
+                          : "rgba(16, 185, 129, 0.05)",
+                        border: "1px solid rgba(16, 185, 129, 0.2)",
+                        "& .MuiAlert-message": {
                           fontFamily: '"Inter", "Roboto", sans-serif',
-                          fontWeight: 500,
-                          fontSize: "14px",
-                          mb: 1,
-                          ml: 0.5,
-                        }}
-                      >
-                        Soyad
-                      </Typography>
-                      <TextField
-                        name="last_name"
-                        fullWidth
-                        value={form.last_name}
-                        onChange={handleChange}
-                        required
-                        placeholder="Soyadınızı girin"
-                        InputProps={{
-                          startAdornment: (
-                            <InputAdornment position="start">
-                              <Person
-                                sx={{
-                                  color: "#4F46E5",
-                                  fontSize: 20,
-                                  opacity: 0.7,
-                                }}
-                              />
-                            </InputAdornment>
-                          ),
-                        }}
-                        sx={{
-                          "& .MuiOutlinedInput-root": {
-                            borderRadius: "12px",
-                            height: "56px",
-                            background: darkMode
-                              ? "rgba(255, 255, 255, 0.05)"
-                              : "rgba(255, 255, 255, 0.95)",
-                            backdropFilter: "blur(10px)",
-                            border: darkMode
-                              ? "1px solid rgba(255, 255, 255, 0.1)"
-                              : "1px solid rgba(79, 70, 229, 0.15)",
-                            transition: "all 0.2s ease-in-out",
-                            "& fieldset": {
-                              border: "none",
-                            },
-                            "&:hover": {
-                              background: darkMode
-                                ? "rgba(255, 255, 255, 0.08)"
-                                : "rgba(255, 255, 255, 1)",
-                              border: darkMode
-                                ? "1px solid rgba(255, 255, 255, 0.2)"
-                                : "1px solid rgba(79, 70, 229, 0.25)",
-                              boxShadow: "0 4px 12px rgba(79, 70, 229, 0.08)",
-                            },
-                            "&.Mui-focused": {
-                              background: darkMode
-                                ? "rgba(255, 255, 255, 0.1)"
-                                : "rgba(255, 255, 255, 1)",
-                              border: "2px solid #4F46E5",
-                              boxShadow: "0 0 0 3px rgba(79, 70, 229, 0.1)",
-                            },
-                          },
-                          "& .MuiOutlinedInput-input": {
-                            color: darkMode ? "#ffffff" : "#1e293b",
-                            fontFamily: '"Inter", "Roboto", sans-serif',
-                            fontWeight: 500,
-                            fontSize: "16px",
-                            padding: "16px 16px 16px 8px",
-                            "&::placeholder": {
-                              color: darkMode
-                                ? "rgba(255, 255, 255, 0.5)"
-                                : "rgba(30, 41, 59, 0.5)",
-                              opacity: 1,
-                            },
-                          },
-                          "& .MuiInputAdornment-root": {
-                            marginLeft: "14px",
-                            marginRight: "12px",
-                          },
-                        }}
-                      />
-                    </Grid>
+                        },
+                      }}
+                    >
+                      {success}
+                    </Alert>
+                  </Fade>
+                )}
 
-                    {/* Bölüm */}
-                    <Grid item xs={12} sm={6}>
-                      <Typography
-                        variant="body2"
-                        sx={{
-                          color: darkMode
-                            ? "rgba(255, 255, 255, 0.8)"
-                            : "rgba(30, 41, 59, 0.8)",
-                          fontFamily: '"Inter", "Roboto", sans-serif',
-                          fontWeight: 500,
-                          fontSize: "14px",
-                          mb: 1,
-                          ml: 0.5,
-                        }}
-                      >
-                        Fakülte
-                      </Typography>
-                      <TextField
-                        name="department_id"
-                        select
-                        fullWidth
-                        value={form.department_id}
-                        onChange={handleChange}
-                        required
-                        placeholder="Bölümünüzü seçin"
-                        InputProps={{
-                          startAdornment: (
-                            <InputAdornment position="start">
-                              <School
-                                sx={{
-                                  color: "#4F46E5",
-                                  fontSize: 20,
-                                  opacity: 0.7,
-                                }}
-                              />
-                            </InputAdornment>
-                          ),
-                        }}
-                        sx={{
-                          "& .MuiOutlinedInput-root": {
-                            borderRadius: "12px",
-                            height: "56px",
-                            background: darkMode
-                              ? "rgba(255, 255, 255, 0.05)"
-                              : "rgba(255, 255, 255, 0.95)",
-                            backdropFilter: "blur(10px)",
-                            border: darkMode
-                              ? "1px solid rgba(255, 255, 255, 0.1)"
-                              : "1px solid rgba(79, 70, 229, 0.15)",
-                            transition: "all 0.2s ease-in-out",
-                            "& fieldset": {
-                              border: "none",
-                            },
-                            "&:hover": {
-                              background: darkMode
-                                ? "rgba(255, 255, 255, 0.08)"
-                                : "rgba(255, 255, 255, 1)",
-                              border: darkMode
-                                ? "1px solid rgba(255, 255, 255, 0.2)"
-                                : "1px solid rgba(79, 70, 229, 0.25)",
-                              boxShadow: "0 4px 12px rgba(79, 70, 229, 0.08)",
-                            },
-                            "&.Mui-focused": {
-                              background: darkMode
-                                ? "rgba(255, 255, 255, 0.1)"
-                                : "rgba(255, 255, 255, 1)",
-                              border: "2px solid #4F46E5",
-                              boxShadow: "0 0 0 3px rgba(79, 70, 229, 0.1)",
-                            },
-                          },
-                          "& .MuiOutlinedInput-input": {
-                            color: darkMode ? "#ffffff" : "#1e293b",
-                            fontFamily: '"Inter", "Roboto", sans-serif',
-                            fontWeight: 500,
-                            fontSize: "16px",
-                            padding: "16px 16px 16px 8px",
-                            "&::placeholder": {
-                              color: darkMode
-                                ? "rgba(255, 255, 255, 0.5)"
-                                : "rgba(30, 41, 59, 0.5)",
-                              opacity: 1,
-                            },
-                          },
-                          "& .MuiInputAdornment-root": {
-                            marginLeft: "14px",
-                            marginRight: "12px",
-                          },
-                        }}
-                      >
-                        {departments.map((dept) => (
-                          <MenuItem key={dept.id} value={dept.id}>
-                            {dept.name}
-                          </MenuItem>
-                        ))}
-                      </TextField>
-                    </Grid>
-
-                    {/* E-posta */}
-                    <Grid item xs={12} sm={6}>
-                      <Typography
-                        variant="body2"
-                        sx={{
-                          color: darkMode
-                            ? "rgba(255, 255, 255, 0.8)"
-                            : "rgba(30, 41, 59, 0.8)",
-                          fontFamily: '"Inter", "Roboto", sans-serif',
-                          fontWeight: 500,
-                          fontSize: "14px",
-                          mb: 1,
-                          ml: 0.5,
-                        }}
-                      >
-                        E-posta Adresi
-                      </Typography>
-                      <TextField
-                        name="email"
-                        type="email"
-                        fullWidth
-                        value={form.email}
-                        onChange={handleChange}
-                        required
-                        placeholder="ornek@cbu.edu.tr"
-                        InputProps={{
-                          startAdornment: (
-                            <InputAdornment position="start">
-                              <Email
-                                sx={{
-                                  color: "#4F46E5",
-                                  fontSize: 20,
-                                  opacity: 0.7,
-                                }}
-                              />
-                            </InputAdornment>
-                          ),
-                        }}
-                        sx={{
-                          "& .MuiOutlinedInput-root": {
-                            borderRadius: "16px",
-                            height: "56px",
-                            background: darkMode
-                              ? "rgba(255, 255, 255, 0.08)"
-                              : "rgba(255, 255, 255, 0.9)",
-                            backdropFilter: "blur(20px)",
-                            border: darkMode
-                              ? "1px solid rgba(255, 255, 255, 0.1)"
-                              : "1px solid rgba(79, 70, 229, 0.1)",
-                            transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-                            "& fieldset": {
-                              border: "none",
-                            },
-                            "&:hover": {
-                              background: darkMode
-                                ? "rgba(255, 255, 255, 0.12)"
-                                : "rgba(255, 255, 255, 1)",
-                              border: darkMode
-                                ? "1px solid rgba(255, 255, 255, 0.2)"
-                                : "1px solid rgba(79, 70, 229, 0.2)",
-                              transform: "translateY(-1px)",
-                              boxShadow: "0 8px 25px rgba(79, 70, 229, 0.1)",
-                            },
-                            "&.Mui-focused": {
-                              background: darkMode
-                                ? "rgba(255, 255, 255, 0.15)"
-                                : "rgba(255, 255, 255, 1)",
-                              border: "2px solid #4F46E5",
-                              transform: "translateY(-2px)",
-                              boxShadow: "0 12px 30px rgba(79, 70, 229, 0.2)",
-                            },
-                          },
-                          "& .MuiInputLabel-root": {
-                            color: darkMode
-                              ? "rgba(255, 255, 255, 0.8)"
-                              : "rgba(30, 41, 59, 0.8)",
-                            fontFamily: '"Inter", "Roboto", sans-serif',
-                            fontWeight: 500,
-                            "&.Mui-focused": {
-                              color: "#4F46E5",
-                              fontWeight: 600,
-                            },
-                          },
-                          "& .MuiOutlinedInput-input": {
-                            color: darkMode ? "#ffffff" : "#1e293b",
-                            fontFamily: '"Inter", "Roboto", sans-serif',
-                            fontWeight: 500,
-                            fontSize: "16px",
-                            padding: "16px 14px 16px 8px",
-                          },
-                          "& .MuiInputAdornment-root": {
-                            marginRight: "12px",
-                          },
-                          "& .MuiFormHelperText-root": {
-                            color: darkMode
-                              ? "rgba(255, 255, 255, 0.6)"
-                              : "rgba(30, 41, 59, 0.6)",
-                            fontFamily: '"Inter", "Roboto", sans-serif',
-                            fontSize: "12px",
-                          },
-                        }}
-                      />
-                      <Typography
-                        variant="caption"
-                        sx={{
-                          color: darkMode
-                            ? "rgba(255, 255, 255, 0.6)"
-                            : "rgba(30, 41, 59, 0.6)",
-                          fontFamily: '"Inter", "Roboto", sans-serif',
-                          fontSize: "12px",
-                          mt: 0.5,
-                          ml: 0.5,
-                          display: "block",
-                        }}
-                      >
-                        Sadece .edu.tr uzantılı kurumsal e-posta adresleri kabul
-                        edilir
-                      </Typography>
-                    </Grid>
-
-                    {/* Şifre */}
-                    <Grid item xs={12} sm={6}>
-                      <Typography
-                        variant="body2"
-                        sx={{
-                          color: darkMode
-                            ? "rgba(255, 255, 255, 0.8)"
-                            : "rgba(30, 41, 59, 0.8)",
-                          fontFamily: '"Inter", "Roboto", sans-serif',
-                          fontWeight: 500,
-                          fontSize: "14px",
-                          mb: 1,
-                          ml: 0.5,
-                        }}
-                      >
-                        Şifre
-                      </Typography>
-                      <TextField
-                        name="password"
-                        type={showPassword ? "text" : "password"}
-                        fullWidth
-                        value={form.password}
-                        onChange={handleChange}
-                        required
-                        placeholder="Şifrenizi girin"
-                        InputProps={{
-                          startAdornment: (
-                            <InputAdornment position="start">
-                              <Lock
-                                sx={{
-                                  color: "#4F46E5",
-                                  fontSize: 20,
-                                  opacity: 0.7,
-                                }}
-                              />
-                            </InputAdornment>
-                          ),
-                          endAdornment: (
-                            <InputAdornment position="end">
-                              <IconButton
-                                onClick={() => setShowPassword(!showPassword)}
-                                edge="end"
-                                size="medium"
-                                sx={{
-                                  color: "#4F46E5",
-                                  opacity: 0.6,
-                                  "&:hover": {
-                                    backgroundColor: "rgba(79, 70, 229, 0.08)",
-                                    opacity: 1,
-                                  },
-                                }}
-                              >
-                                {showPassword ? (
-                                  <VisibilityOff fontSize="small" />
-                                ) : (
-                                  <Visibility fontSize="small" />
-                                )}
-                              </IconButton>
-                            </InputAdornment>
-                          ),
-                        }}
-                        sx={{
-                          "& .MuiOutlinedInput-root": {
-                            borderRadius: "16px",
-                            height: "56px",
-                            background: darkMode
-                              ? "rgba(255, 255, 255, 0.08)"
-                              : "rgba(255, 255, 255, 0.9)",
-                            backdropFilter: "blur(20px)",
-                            border: darkMode
-                              ? "1px solid rgba(255, 255, 255, 0.1)"
-                              : "1px solid rgba(79, 70, 229, 0.1)",
-                            transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-                            "& fieldset": {
-                              border: "none",
-                            },
-                            "&:hover": {
-                              background: darkMode
-                                ? "rgba(255, 255, 255, 0.12)"
-                                : "rgba(255, 255, 255, 1)",
-                              border: darkMode
-                                ? "1px solid rgba(255, 255, 255, 0.2)"
-                                : "1px solid rgba(79, 70, 229, 0.2)",
-                              transform: "translateY(-1px)",
-                              boxShadow: "0 8px 25px rgba(79, 70, 229, 0.1)",
-                            },
-                            "&.Mui-focused": {
-                              background: darkMode
-                                ? "rgba(255, 255, 255, 0.15)"
-                                : "rgba(255, 255, 255, 1)",
-                              border: "2px solid #4F46E5",
-                              transform: "translateY(-2px)",
-                              boxShadow: "0 12px 30px rgba(79, 70, 229, 0.2)",
-                            },
-                          },
-                          "& .MuiInputLabel-root": {
-                            color: darkMode
-                              ? "rgba(255, 255, 255, 0.8)"
-                              : "rgba(30, 41, 59, 0.8)",
-                            fontFamily: '"Inter", "Roboto", sans-serif',
-                            fontWeight: 500,
-                            "&.Mui-focused": {
-                              color: "#4F46E5",
-                              fontWeight: 600,
-                            },
-                          },
-                          "& .MuiOutlinedInput-input": {
-                            color: darkMode ? "#ffffff" : "#1e293b",
-                            fontFamily: '"Inter", "Roboto", sans-serif',
-                            fontWeight: 500,
-                            fontSize: "16px",
-                            padding: "16px 8px 16px 8px",
-                          },
-                          "& .MuiInputAdornment-positionStart": {
-                            marginRight: "12px",
-                          },
-                          "& .MuiInputAdornment-positionEnd": {
-                            marginLeft: "8px",
-                          },
-                        }}
-                      />
-                    </Grid>
-
-                    {/* Şifre Tekrar */}
-                    <Grid item xs={12} sm={6}>
-                      <Typography
-                        variant="body2"
-                        sx={{
-                          color: darkMode
-                            ? "rgba(255, 255, 255, 0.8)"
-                            : "rgba(30, 41, 59, 0.8)",
-                          fontFamily: '"Inter", "Roboto", sans-serif',
-                          fontWeight: 500,
-                          fontSize: "14px",
-                          mb: 1,
-                          ml: 0.5,
-                        }}
-                      >
-                        Şifre Tekrar
-                      </Typography>
-                      <TextField
-                        name="confirmPassword"
-                        type={showPasswordConfirm ? "text" : "password"}
-                        fullWidth
-                        value={form.confirmPassword}
-                        onChange={handleChange}
-                        required
-                        placeholder="Şifrenizi tekrar girin"
-                        InputProps={{
-                          startAdornment: (
-                            <InputAdornment position="start">
-                              <Lock
-                                sx={{
-                                  color: "#4F46E5",
-                                  fontSize: 20,
-                                  opacity: 0.7,
-                                }}
-                              />
-                            </InputAdornment>
-                          ),
-                          endAdornment: (
-                            <InputAdornment position="end">
-                              <IconButton
-                                onClick={() =>
-                                  setShowPasswordConfirm(!showPasswordConfirm)
-                                }
-                                edge="end"
-                                size="medium"
-                                sx={{
-                                  color: "#4F46E5",
-                                  opacity: 0.6,
-                                  "&:hover": {
-                                    backgroundColor: "rgba(79, 70, 229, 0.1)",
-                                    opacity: 1,
-                                  },
-                                }}
-                              >
-                                {showPasswordConfirm ? (
-                                  <VisibilityOff fontSize="small" />
-                                ) : (
-                                  <Visibility fontSize="small" />
-                                )}
-                              </IconButton>
-                            </InputAdornment>
-                          ),
-                        }}
-                        sx={{
-                          "& .MuiOutlinedInput-root": {
-                            borderRadius: "16px",
-                            height: "56px",
-                            background: darkMode
-                              ? "rgba(255, 255, 255, 0.08)"
-                              : "rgba(255, 255, 255, 0.9)",
-                            backdropFilter: "blur(20px)",
-                            border: darkMode
-                              ? "1px solid rgba(255, 255, 255, 0.1)"
-                              : "1px solid rgba(79, 70, 229, 0.1)",
-                            transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-                            "& fieldset": {
-                              border: "none",
-                            },
-                            "&:hover": {
-                              background: darkMode
-                                ? "rgba(255, 255, 255, 0.12)"
-                                : "rgba(255, 255, 255, 1)",
-                              border: darkMode
-                                ? "1px solid rgba(255, 255, 255, 0.2)"
-                                : "1px solid rgba(79, 70, 229, 0.2)",
-                              transform: "translateY(-1px)",
-                              boxShadow: "0 8px 25px rgba(79, 70, 229, 0.1)",
-                            },
-                            "&.Mui-focused": {
-                              background: darkMode
-                                ? "rgba(255, 255, 255, 0.15)"
-                                : "rgba(255, 255, 255, 1)",
-                              border: "2px solid #4F46E5",
-                              transform: "translateY(-2px)",
-                              boxShadow: "0 12px 30px rgba(79, 70, 229, 0.2)",
-                            },
-                          },
-                          "& .MuiInputLabel-root": {
-                            color: darkMode
-                              ? "rgba(255, 255, 255, 0.8)"
-                              : "rgba(30, 41, 59, 0.8)",
-                            fontFamily: '"Inter", "Roboto", sans-serif',
-                            fontWeight: 500,
-                            "&.Mui-focused": {
-                              color: "#4F46E5",
-                              fontWeight: 600,
-                            },
-                          },
-                          "& .MuiOutlinedInput-input": {
-                            color: darkMode ? "#ffffff" : "#1e293b",
-                            fontFamily: '"Inter", "Roboto", sans-serif',
-                            fontWeight: 500,
-                            fontSize: "16px",
-                            padding: "16px 8px 16px 8px",
-                          },
-                          "& .MuiInputAdornment-positionStart": {
-                            marginRight: "12px",
-                          },
-                          "& .MuiInputAdornment-positionEnd": {
-                            marginLeft: "8px",
-                          },
-                        }}
-                      />
-                    </Grid>
-                  </Grid>
-
-                  {/* Error and Success Messages */}
-                  {error && (
-                    <Fade in={!!error}>
-                      <Alert
-                        severity="error"
-                        sx={{
-                          mt: 3,
-                          borderRadius: "16px",
-                          background: darkMode
-                            ? "rgba(239, 68, 68, 0.1)"
-                            : "rgba(239, 68, 68, 0.05)",
-                          border: "1px solid rgba(239, 68, 68, 0.2)",
-                          "& .MuiAlert-message": {
-                            fontFamily: '"Inter", "Roboto", sans-serif',
-                            fontWeight: 500,
-                          },
-                        }}
-                      >
-                        {error}
-                      </Alert>
-                    </Fade>
+                {/* Navigation Buttons - Kompakt */}
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    mt: 1.5,  // Daha az margin
+                  }}
+                >
+                  {currentStep > 1 ? (
+                    <Button
+                      variant="outlined"
+                      onClick={handleBack}
+                      startIcon={<ArrowBack />}
+                      sx={{
+                        borderRadius: "8px",  // Daha küçük
+                        fontFamily: '"Inter", "Roboto", sans-serif',
+                        fontWeight: 600,
+                        px: 2,  // Daha küçük padding
+                        py: 1,
+                        "&:hover": {
+                          borderColor: "#4F46E5",
+                          backgroundColor: darkMode
+                            ? "rgba(79, 70, 229, 0.1)"
+                            : "rgba(79, 70, 229, 0.05)",
+                        },
+                      }}
+                    >
+                      Geri
+                    </Button>
+                  ) : (
+                    <Box />
                   )}
 
-                  {success && (
-                    <Fade in={!!success}>
-                      <Alert
-                        severity="success"
-                        sx={{
-                          mt: 3,
-                          borderRadius: "16px",
-                          background: darkMode
-                            ? "rgba(34, 197, 94, 0.1)"
-                            : "rgba(34, 197, 94, 0.05)",
-                          border: "1px solid rgba(34, 197, 94, 0.2)",
-                          "& .MuiAlert-message": {
-                            fontFamily: '"Inter", "Roboto", sans-serif',
-                            fontWeight: 500,
-                          },
-                        }}
-                      >
-                        {success}
-                      </Alert>
-                    </Fade>
+                  {currentStep < 3 ? (
+                    <Button
+                      variant="contained"
+                      onClick={handleNext}
+                      disabled={
+                        (currentStep === 2 && (!form.university || !form.faculty || !form.department_id)) ||
+                        loadingData
+                      }
+                      endIcon={<ArrowForward />}
+                      sx={{
+                        borderRadius: "12px",
+                        background: "linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%)",
+                        fontFamily: '"Inter", "Roboto", sans-serif',
+                        fontWeight: 600,
+                        px: 4,
+                        py: 1.5,
+                        boxShadow: "0 8px 25px rgba(79, 70, 229, 0.3)",
+                        "&:hover": {
+                          background: "linear-gradient(135deg, #4338CA 0%, #6D28D9 100%)",
+                          transform: "translateY(-2px)",
+                          boxShadow: "0 12px 35px rgba(79, 70, 229, 0.4)",
+                        },
+                        "&.Mui-disabled": {
+                          background: "rgba(79, 70, 229, 0.4)",
+                          color: "rgba(255, 255, 255, 0.6)",
+                        },
+                        transition: "all 0.3s ease",
+                      }}
+                    >
+                      {loadingData && currentStep === 2 ? "Veriler Yükleniyor..." : "Devam Et"}
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="contained"
+                      onClick={handleSubmit}
+                      disabled={isLoading || loadingData || !form.university || !form.faculty || !form.department_id}
+                      startIcon={isLoading ? null : <CheckCircle />}
+                      sx={{
+                        borderRadius: "12px",
+                        background: "linear-gradient(135deg, #10B981 0%, #059669 100%)",
+                        fontFamily: '"Inter", "Roboto", sans-serif',
+                        fontWeight: 600,
+                        px: 4,
+                        py: 1.5,
+                        boxShadow: "0 8px 25px rgba(16, 185, 129, 0.3)",
+                        "&:hover": {
+                          background: "linear-gradient(135deg, #059669 0%, #047857 100%)",
+                          transform: "translateY(-2px)",
+                          boxShadow: "0 12px 35px rgba(16, 185, 129, 0.4)",
+                        },
+                        "&.Mui-disabled": {
+                          background: "rgba(79, 70, 229, 0.4)",
+                          color: "rgba(255, 255, 255, 0.6)",
+                        },
+                        transition: "all 0.3s ease",
+                      }}
+                    >
+                      {isLoading ? "Kaydediliyor..." : loadingData ? "Veriler Yükleniyor..." : "Kaydol"}
+                    </Button>
                   )}
-
-                  {/* Submit Button */}
-                  <Button
-                    type="submit"
-                    variant="contained"
-                    fullWidth
-                    disabled={isLoading}
-                    startIcon={
-                      isLoading ? null : <PersonAdd sx={{ fontSize: 20 }} />
-                    }
-                    sx={{
-                      mt: 4,
-                      height: "56px",
-                      fontWeight: 600,
-                      fontFamily: '"Inter", "Roboto", sans-serif',
-                      fontSize: "16px",
-                      borderRadius: "16px",
-                      background:
-                        "linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%)",
-                      boxShadow: "0 12px 35px rgba(79, 70, 229, 0.3)",
-                      textTransform: "none",
-                      letterSpacing: "0.5px",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      gap: 1.5,
-                      "&:hover": {
-                        background:
-                          "linear-gradient(135deg, #4338CA 0%, #6D28D9 100%)",
-                        transform: "translateY(-3px)",
-                        boxShadow: "0 18px 40px rgba(79, 70, 229, 0.4)",
-                      },
-                      "&:active": {
-                        transform: "translateY(-1px)",
-                        boxShadow: "0 8px 20px rgba(79, 70, 229, 0.3)",
-                      },
-                      transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-                      "&.Mui-disabled": {
-                        background: "rgba(79, 70, 229, 0.4)",
-                        color: "rgba(255, 255, 255, 0.6)",
-                        transform: "none",
-                        boxShadow: "0 8px 20px rgba(79, 70, 229, 0.2)",
-                      },
-                    }}
-                  >
-                    {isLoading
-                      ? "Kayıt yapılıyor..."
-                      : "Akademik Personel Olarak Kayıt Ol"}
-                  </Button>
-                </form>
+                </Box>
 
                 {/* Login Link */}
-                <Box sx={{ textAlign: "center", mt: 4 }}>
+                <Box sx={{ textAlign: "center", mt: 2 }}>
                   <Typography
                     variant="body2"
                     sx={{
@@ -1223,6 +1339,7 @@ const OgretmenKayit = () => {
                         ? "rgba(255, 255, 255, 0.7)"
                         : "rgba(30, 41, 59, 0.7)",
                       fontFamily: '"Inter", "Roboto", sans-serif',
+                      fontSize: "14px",
                     }}
                   >
                     Zaten hesabınız var mı?{" "}
@@ -1232,13 +1349,6 @@ const OgretmenKayit = () => {
                         color: "#4F46E5",
                         textDecoration: "none",
                         fontWeight: 600,
-                        transition: "all 0.3s ease",
-                      }}
-                      onMouseEnter={(e) => {
-                        e.target.style.textDecoration = "underline";
-                      }}
-                      onMouseLeave={(e) => {
-                        e.target.style.textDecoration = "none";
                       }}
                     >
                       Giriş Yap

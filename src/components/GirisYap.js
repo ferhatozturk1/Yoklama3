@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-
+import { loginLecturer } from "../api/auth";
 import {
   TextField,
   Button,
@@ -13,7 +13,6 @@ import {
   InputAdornment,
   Fade,
   Grow,
-  Tooltip,
   Switch,
   FormControlLabel,
 } from "@mui/material";
@@ -24,7 +23,6 @@ import {
   VisibilityOff,
   Email,
   Lock,
-  ContentCopy,
   DarkMode,
   LightMode,
 } from "@mui/icons-material";
@@ -49,47 +47,36 @@ const GirisYap = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
     setIsLoading(true);
-
-    if (!email || !password) {
-      setError("Lütfen tüm alanları doldurun!");
-      setIsLoading(false);
-      return;
-    }
+    setError("");
 
     try {
-      // Basit demo giriş kontrolü
-      if (email === "mehmetnuri.ogut@cbu.edu.tr" && password === "1234") {
-        // Başarılı giriş - demo kullanıcı bilgileri
-        localStorage.setItem('user', JSON.stringify({
-          email: email,
-          name: "Mehmet Nuri Öğüt",
-          title: "Dr. Öğr. Üyesi"
-        }));
-        
-        // Panel sayfasına yönlendir
-        navigate('/panel');
-      } else {
-        setError("Geçersiz e-posta veya şifre!");
+      console.log("🔐 Giriş denemesi:", { email, password: "***" });
+      
+      const formData = {
+        username: email,
+        password: password,
+      };
+      
+      const response = await loginLecturer(formData);
+      console.log("✅ Giriş başarılı:", response);
+      
+      // Session'a kullanıcı bilgilerini kaydet
+      if (response.lecturer) {
+        sessionStorage.setItem("user", JSON.stringify(response.lecturer));
+      }
+      if (response.access || response.token) {
+        sessionStorage.setItem("token", response.access || response.token);
       }
       
+      // Portal ana sayfasına yönlendir
+      navigate("/portal/ana-sayfa");
     } catch (error) {
-      setError("Giriş başarısız!");
-      console.error("Login error:", error);
+      console.error("❌ Giriş hatası:", error);
+      setError(error.message || "Giriş başarısız! E-posta veya şifre kontrol edin.");
     }
     
     setIsLoading(false);
-  };
-
-  const copyDemoCredentials = () => {
-    const credentials = "E-posta: mehmetnuri.ogut@cbu.edu.tr\nŞifre: 1234";
-    navigator.clipboard.writeText(credentials).then(() => {
-      // Başarılı kopyalama için küçük bir bildirim gösterebiliriz
-      console.log("Demo credentials copied to clipboard");
-    }).catch(err => {
-      console.error("Failed to copy: ", err);
-    });
   };
 
   return (
@@ -99,51 +86,16 @@ const GirisYap = () => {
         background: darkMode
           ? "linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%)"
           : "linear-gradient(135deg, #1a237e 0%, #283593 25%, #3949ab 50%, #5e35b1 75%, #7e57c2 100%)",
-        backgroundImage: darkMode
-          ? 'url("data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%23ffffff" fill-opacity="0.02"%3E%3Ccircle cx="30" cy="30" r="2"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")'
-          : 'url("data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%23ffffff" fill-opacity="0.08"%3E%3Ccircle cx="30" cy="30" r="2"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")',
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        py: 4,
+        py: 2,
         px: 2,
         position: "relative",
-        overflow: "hidden",
-        "&::before": {
-          content: '""',
-          position: "absolute",
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: darkMode
-            ? "radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.1) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.1) 0%, transparent 50%)"
-            : "radial-gradient(ellipse at top left, rgba(79, 70, 229, 0.15) 0%, transparent 50%), radial-gradient(ellipse at bottom right, rgba(124, 58, 237, 0.15) 0%, transparent 50%), radial-gradient(ellipse at center, rgba(59, 130, 246, 0.1) 0%, transparent 70%)",
-          pointerEvents: "none",
-        },
-        "&::after": {
-          content: '""',
-          position: "absolute",
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: darkMode
-            ? "none"
-            : "linear-gradient(45deg, rgba(255, 255, 255, 0.05) 0%, transparent 50%), linear-gradient(-45deg, rgba(255, 255, 255, 0.03) 0%, transparent 50%)",
-          pointerEvents: "none",
-        },
       }}
     >
       {/* Dark Mode Toggle */}
-      <Box
-        sx={{
-          position: "absolute",
-          top: 24,
-          right: 24,
-          zIndex: 10,
-        }}
-      >
+      <Box sx={{ position: "absolute", top: 20, right: 20, zIndex: 10 }}>
         <Fade in={showContent} timeout={800}>
           <FormControlLabel
             control={
@@ -174,54 +126,36 @@ const GirisYap = () => {
       <Container maxWidth="sm" sx={{ position: "relative", zIndex: 1 }}>
         <Fade in={showContent} timeout={1000}>
           <Box>
-            {/* Main Title */}
-            <Box sx={{ textAlign: "center", mb: 4 }}>
+            {/* Main Title - Kompakt */}
+            <Box sx={{ textAlign: "center", mb: 2 }}>
               <Typography
-                variant="h3"
+                variant="h4"
                 sx={{
                   fontFamily: '"Inter", "Roboto", sans-serif',
-                  fontWeight: 800,
-                  fontSize: { xs: "1.6rem", sm: "2.2rem", md: "2.8rem" },
+                  fontWeight: 700,
+                  fontSize: { xs: "1.1rem", sm: "1.3rem" },
                   background: darkMode
                     ? "linear-gradient(135deg, #ffffff 0%, #e2e8f0 100%)"
                     : "linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)",
                   backgroundClip: "text",
                   WebkitBackgroundClip: "text",
                   WebkitTextFillColor: "transparent",
-                  textShadow: darkMode
-                    ? "0 4px 20px rgba(255, 255, 255, 0.1)"
-                    : "0 4px 20px rgba(0, 0, 0, 0.1)",
-                  mb: 1,
-                  letterSpacing: "-0.02em",
+                  mb: 0.5,
+                  letterSpacing: "-0.01em",
                   textAlign: "center",
                 }}
               >
-                Akademik Personel
-              </Typography>
-              <Typography
-                variant="h5"
-                sx={{
-                  fontFamily: '"Inter", "Roboto", sans-serif',
-                  fontWeight: 400,
-                  fontSize: { xs: "1rem", sm: "1.3rem" },
-                  color: darkMode
-                    ? "rgba(255, 255, 255, 0.8)"
-                    : "rgba(255, 255, 255, 0.9)",
-                  letterSpacing: "0.02em",
-                  textAlign: "center",
-                }}
-              >
-                Yoklama Sistemi
+                Akademik Personel Yoklama
               </Typography>
             </Box>
 
-            {/* Login Card */}
+            {/* Login Card - Kompakt */}
             <Grow in={showContent} timeout={1200}>
               <Paper
                 elevation={0}
                 sx={{
-                  p: { xs: 2.5, sm: 3.5, md: 4 },
-                  borderRadius: "24px",
+                  p: { xs: 1.5, sm: 2 },  // Daha küçük padding
+                  borderRadius: "16px",
                   background: darkMode
                     ? "rgba(30, 41, 59, 0.4)"
                     : "rgba(255, 255, 255, 0.25)",
@@ -230,68 +164,57 @@ const GirisYap = () => {
                     ? "1px solid rgba(255, 255, 255, 0.1)"
                     : "1px solid rgba(255, 255, 255, 0.2)",
                   boxShadow: darkMode
-                    ? "0 25px 50px -12px rgba(0, 0, 0, 0.5)"
-                    : "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
+                    ? "0 20px 40px -12px rgba(0, 0, 0, 0.5)"
+                    : "0 20px 40px -12px rgba(0, 0, 0, 0.25)",
                   position: "relative",
                   overflow: "hidden",
-                  "&::before": {
-                    content: '""',
-                    position: "absolute",
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    height: "1px",
-                    background: darkMode
-                      ? "linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent)"
-                      : "linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent)",
-                  },
                 }}
               >
-                {/* Header */}
-                <Box sx={{ textAlign: "center", mb: 4 }}>
+                {/* Header - Kompakt */}
+                <Box sx={{ textAlign: "center", mb: 1.5 }}>
                   <Box
                     sx={{
                       display: "inline-flex",
-                      p: 3,
-                      borderRadius: "20px",
+                      p: 1,
+                      borderRadius: "10px",
                       background:
                         "linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%)",
-                      mb: 3,
-                      boxShadow: "0 10px 30px rgba(79, 70, 229, 0.3)",
+                      mb: 1,
+                      boxShadow: "0 4px 15px rgba(79, 70, 229, 0.3)",
                     }}
                   >
-                    <School sx={{ fontSize: 32, color: "white" }} />
+                    <School sx={{ fontSize: 20, color: "white" }} />
                   </Box>
                   <Typography
-                    variant="h4"
+                    variant="h5"
                     sx={{
                       fontFamily: '"Inter", "Roboto", sans-serif',
-                      fontWeight: 700,
-                      fontSize: { xs: "1.4rem", sm: "1.8rem", md: "2rem" },
+                      fontWeight: 600,
+                      fontSize: { xs: "1rem", sm: "1.1rem" },
                       color: darkMode ? "#ffffff" : "#1e293b",
-                      mb: 1,
+                      mb: 0.5,
                       letterSpacing: "-0.01em",
                     }}
                   >
                     Giriş Yap
                   </Typography>
                   <Typography
-                    variant="body1"
+                    variant="body2"
                     sx={{
-                      fontSize: { xs: "0.9rem", sm: "1rem" },
+                      fontSize: { xs: "0.8rem", sm: "0.85rem" },
                       color: darkMode
                         ? "rgba(255, 255, 255, 0.7)"
                         : "rgba(30, 41, 59, 0.7)",
                       fontFamily: '"Inter", "Roboto", sans-serif',
                     }}
                   >
-                    Hesabınıza giriş yaparak devam edin
+                    Hesabınıza giriş yapın
                   </Typography>
                 </Box>
 
-                {/* Form */}
+                {/* Form - Kompakt */}
                 <form onSubmit={handleSubmit}>
-                  <Box sx={{ mb: 3 }}>
+                  <Box sx={{ mb: 2 }}>
                     <Typography
                       variant="body2"
                       sx={{
@@ -300,8 +223,8 @@ const GirisYap = () => {
                           : "rgba(30, 41, 59, 0.8)",
                         fontFamily: '"Inter", "Roboto", sans-serif',
                         fontWeight: 500,
-                        fontSize: "14px",
-                        mb: 1,
+                        fontSize: "13px",
+                        mb: 0.5,
                         ml: 0.5,
                       }}
                     >
@@ -330,7 +253,7 @@ const GirisYap = () => {
                       sx={{
                         "& .MuiOutlinedInput-root": {
                           borderRadius: "12px",
-                          height: "56px",
+                          height: "48px",  // Daha küçük
                           background: darkMode
                             ? "rgba(255, 255, 255, 0.05)"
                             : "rgba(255, 255, 255, 0.95)",
@@ -363,8 +286,8 @@ const GirisYap = () => {
                           color: darkMode ? "#ffffff" : "#1e293b",
                           fontFamily: '"Inter", "Roboto", sans-serif',
                           fontWeight: 500,
-                          fontSize: "16px",
-                          padding: "16px 16px 16px 8px",
+                          fontSize: "15px",  // Daha küçük
+                          padding: "14px 16px 14px 8px",  // Daha küçük padding
                           "&::placeholder": {
                             color: darkMode
                               ? "rgba(255, 255, 255, 0.5)"
@@ -380,7 +303,7 @@ const GirisYap = () => {
                     />
                   </Box>
 
-                  <Box sx={{ mb: 4 }}>
+                  <Box sx={{ mb: 2 }}>
                     <Typography
                       variant="body2"
                       sx={{
@@ -389,8 +312,8 @@ const GirisYap = () => {
                           : "rgba(30, 41, 59, 0.8)",
                         fontFamily: '"Inter", "Roboto", sans-serif',
                         fontWeight: 500,
-                        fontSize: "14px",
-                        mb: 1,
+                        fontSize: "13px",
+                        mb: 0.5,
                         ml: 0.5,
                       }}
                     >
@@ -442,7 +365,7 @@ const GirisYap = () => {
                       sx={{
                         "& .MuiOutlinedInput-root": {
                           borderRadius: "12px",
-                          height: "56px",
+                          height: "48px",  // Daha küçük
                           background: darkMode
                             ? "rgba(255, 255, 255, 0.05)"
                             : "rgba(255, 255, 255, 0.95)",
@@ -475,8 +398,8 @@ const GirisYap = () => {
                           color: darkMode ? "#ffffff" : "#1e293b",
                           fontFamily: '"Inter", "Roboto", sans-serif',
                           fontWeight: 500,
-                          fontSize: "16px",
-                          padding: "16px 8px 16px 8px",
+                          fontSize: "15px",  // Daha küçük
+                          padding: "14px 16px 14px 8px",  // Daha küçük padding
                           "&::placeholder": {
                             color: darkMode
                               ? "rgba(255, 255, 255, 0.5)"
@@ -484,7 +407,7 @@ const GirisYap = () => {
                             opacity: 1,
                           },
                         },
-                        "& .MuiInputAdornment-positionStart": {
+                        "& .MuiInputAdornment-root": {
                           marginLeft: "14px",
                           marginRight: "12px",
                         },
@@ -496,12 +419,13 @@ const GirisYap = () => {
                     />
                   </Box>
 
+                  {/* Error Message */}
                   {error && (
                     <Fade in={!!error}>
                       <Alert
                         severity="error"
                         sx={{
-                          mb: 3,
+                          mb: 2,
                           borderRadius: "12px",
                           background: darkMode
                             ? "rgba(239, 68, 68, 0.1)"
@@ -509,6 +433,7 @@ const GirisYap = () => {
                           border: "1px solid rgba(239, 68, 68, 0.2)",
                           "& .MuiAlert-message": {
                             fontFamily: '"Inter", "Roboto", sans-serif',
+                            fontSize: "13px",
                           },
                         }}
                       >
@@ -517,139 +442,37 @@ const GirisYap = () => {
                     </Fade>
                   )}
 
+                  {/* Login Button - Kompakt */}
                   <Button
                     type="submit"
-                    variant="contained"
                     fullWidth
+                    variant="contained"
                     disabled={isLoading}
-                    startIcon={
-                      isLoading ? null : <Login sx={{ fontSize: 20 }} />
-                    }
+                    startIcon={isLoading ? null : <Login />}
                     sx={{
-                      height: { xs: "50px", sm: "56px" },
-                      fontWeight: 600,
+                      mb: 2,
+                      height: "48px",  // Daha küçük
+                      borderRadius: "12px",
+                      background: "linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%)",
                       fontFamily: '"Inter", "Roboto", sans-serif',
-                      fontSize: { xs: "14px", sm: "16px" },
-                      borderRadius: "16px",
-                      background:
-                        "linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%)",
-                      boxShadow: "0 12px 35px rgba(79, 70, 229, 0.3)",
-                      textTransform: "none",
-                      letterSpacing: "0.5px",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      gap: 1.5,
-                      mb: 4,
+                      fontWeight: 600,
+                      fontSize: "15px",
+                      boxShadow: "0 8px 25px rgba(79, 70, 229, 0.3)",
                       "&:hover": {
-                        background:
-                          "linear-gradient(135deg, #4338CA 0%, #6D28D9 100%)",
-                        transform: "translateY(-3px)",
-                        boxShadow: "0 18px 40px rgba(79, 70, 229, 0.4)",
+                        background: "linear-gradient(135deg, #4338CA 0%, #6D28D9 100%)",
+                        transform: "translateY(-2px)",
+                        boxShadow: "0 12px 35px rgba(79, 70, 229, 0.4)",
                       },
-                      "&:active": {
-                        transform: "translateY(-1px)",
-                        boxShadow: "0 8px 20px rgba(79, 70, 229, 0.3)",
-                      },
-                      transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
                       "&.Mui-disabled": {
                         background: "rgba(79, 70, 229, 0.4)",
                         color: "rgba(255, 255, 255, 0.6)",
-                        transform: "none",
-                        boxShadow: "0 8px 20px rgba(79, 70, 229, 0.2)",
                       },
+                      transition: "all 0.3s ease",
                     }}
                   >
                     {isLoading ? "Giriş yapılıyor..." : "Giriş Yap"}
                   </Button>
                 </form>
-
-                {/* Demo Credentials Card - Less Prominent */}
-                <Box
-                  sx={{
-                    background: darkMode
-                      ? "rgba(255, 255, 255, 0.03)"
-                      : "rgba(0, 0, 0, 0.02)",
-                    border: darkMode
-                      ? "1px solid rgba(255, 255, 255, 0.08)"
-                      : "1px solid rgba(0, 0, 0, 0.05)",
-                    borderRadius: "12px",
-                    p: 2.5,
-                    mb: 4,
-                    position: "relative",
-                    overflow: "hidden",
-                    opacity: 0.8,
-                    transition: "all 0.3s ease",
-                    "&:hover": {
-                      opacity: 1,
-                      background: darkMode
-                        ? "rgba(255, 255, 255, 0.05)"
-                        : "rgba(0, 0, 0, 0.03)",
-                    },
-                  }}
-                >
-                  <Box
-                    sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      mb: 1.5,
-                    }}
-                  >
-                    <Typography
-                      variant="body2"
-                      sx={{
-                        fontWeight: 500,
-                        color: darkMode
-                          ? "rgba(255, 255, 255, 0.6)"
-                          : "rgba(30, 41, 59, 0.6)",
-                        fontFamily: '"Inter", "Roboto", sans-serif',
-                        fontSize: "14px",
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 1,
-                      }}
-                    >
-                      📝 Demo Giriş Bilgileri
-                    </Typography>
-                    <Tooltip title="Bilgileri kopyala" arrow>
-                      <IconButton
-                        onClick={copyDemoCredentials}
-                        size="small"
-                        sx={{
-                          color: darkMode
-                            ? "rgba(255, 255, 255, 0.5)"
-                            : "rgba(30, 41, 59, 0.5)",
-                          "&:hover": {
-                            color: darkMode
-                              ? "rgba(255, 255, 255, 0.8)"
-                              : "rgba(30, 41, 59, 0.8)",
-                            backgroundColor: darkMode
-                              ? "rgba(255, 255, 255, 0.05)"
-                              : "rgba(0, 0, 0, 0.05)",
-                          },
-                        }}
-                      >
-                        <ContentCopy fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
-                  </Box>
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      color: darkMode
-                        ? "rgba(255, 255, 255, 0.7)"
-                        : "rgba(30, 41, 59, 0.7)",
-                      fontFamily: '"Inter", "Roboto", sans-serif',
-                      fontSize: "13px",
-                      lineHeight: 1.5,
-                    }}
-                  >
-                    <strong>E-posta:</strong> mehmetnuri.ogut@cbu.edu.tr
-                    <br />
-                    <strong>Şifre:</strong> 1234
-                  </Typography>
-                </Box>
 
                 {/* Register Link */}
                 <Box sx={{ textAlign: "center" }}>
@@ -660,6 +483,7 @@ const GirisYap = () => {
                         ? "rgba(255, 255, 255, 0.7)"
                         : "rgba(30, 41, 59, 0.7)",
                       fontFamily: '"Inter", "Roboto", sans-serif',
+                      fontSize: "13px",
                     }}
                   >
                     Hesabınız yok mu?{" "}
