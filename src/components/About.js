@@ -189,10 +189,10 @@ function About() {
           </p>
           <div className="flex flex-col sm:flex-row gap-6 justify-center">
             <Link
-              to="/contact"
+              to="/kayit"
               className="group bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-10 py-5 rounded-2xl hover:from-purple-700 hover:to-indigo-700 font-bold transition-all duration-300 shadow-2xl hover:shadow-purple-500/25 transform hover:-translate-y-2 inline-flex items-center justify-center text-lg"
             >
-              İletişime Geçin
+              Kayıt Ol
             </Link>
             <Link
               to="/services"

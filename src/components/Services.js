@@ -213,10 +213,10 @@ function Services() {
               Sisteme Giriş Yap
             </Link>
             <Link
-              to="/contact"
+              to="/kayit"
               className="group border-2 border-white/30 text-white px-10 py-5 rounded-2xl hover:bg-white/10 font-bold transition-all duration-300 backdrop-blur-sm hover:border-white/50 transform hover:-translate-y-1 inline-flex items-center justify-center text-lg"
             >
-              İletişime Geç
+              Kayıt Ol
             </Link>
           </div>
         </div>

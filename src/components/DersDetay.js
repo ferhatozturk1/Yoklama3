@@ -25,6 +25,14 @@ import {
   Badge,
   TextField,
   Divider,
+  Radio,
+  RadioGroup,
+  FormControlLabel,
+  FormControl,
+  FormLabel,
+  MenuItem,
+  Select,
+  InputLabel,
 } from "@mui/material";
 import {
   ArrowBack,
@@ -44,6 +52,8 @@ import {
   Visibility,
   Add,
   Schedule,
+  Group,
+  Person,
 } from "@mui/icons-material";
 import ÖğrenciDetay from "./ÖğrenciDetay";
 
@@ -53,6 +63,23 @@ const DersDetay = ({ ders, onBack }) => {
   const [openFileDialog, setOpenFileDialog] = useState(false);
   const [openReportDialog, setOpenReportDialog] = useState(false);
   const [openYoklamaYenileDialog, setOpenYoklamaYenileDialog] = useState(false);
+
+  // Report states
+  const [reportType, setReportType] = useState('');
+  const [selectedReportClass, setSelectedReportClass] = useState('');
+  const [selectedReportStudent, setSelectedReportStudent] = useState('');
+  const [availableClasses] = useState([
+    'MATH113/1 - A Sınıfı',
+    'MATH113/2 - B Sınıfı', 
+    'MATH113/3 - C Sınıfı'
+  ]);
+  const [availableStudents] = useState([
+    { id: '2021001', name: 'Ahmet Yılmaz', class: 'MATH113/1' },
+    { id: '2021002', name: 'Ayşe Kaya', class: 'MATH113/1' },
+    { id: '2021003', name: 'Mehmet Demir', class: 'MATH113/2' },
+    { id: '2021004', name: 'Fatma Şahin', class: 'MATH113/2' },
+    { id: '2021005', name: 'Ali Özkan', class: 'MATH113/3' }
+  ]);
 
   // Student list states
   const [sortOrder, setSortOrder] = useState("asc");
@@ -135,7 +162,62 @@ const DersDetay = ({ ders, onBack }) => {
   };
 
   const handleGenerateReport = () => {
+    setReportType('');
+    setSelectedReportClass('');
+    setSelectedReportStudent('');
     setOpenReportDialog(true);
+  };
+
+  // Rapor türü seçimi
+  const handleReportTypeSelect = (type) => {
+    setReportType(type);
+    if (type === 'class') {
+      setSelectedReportStudent(''); // Öğrenci seçimini sıfırla
+    } else if (type === 'student') {
+      setSelectedReportClass(''); // Sınıf seçimini sıfırla
+    }
+  };
+
+  // Rapor oluşturma işlemi
+  const handleCreateReport = () => {
+    if (reportType === 'class' && !selectedReportClass) {
+      alert('Lütfen bir sınıf seçin!');
+      return;
+    }
+    if (reportType === 'student' && !selectedReportStudent) {
+      alert('Lütfen bir öğrenci seçin!');
+      return;
+    }
+
+    // Rapor verilerini hazırla
+    const reportData = {
+      type: reportType,
+      course: ders?.name || 'Seçili Ders',
+      dateRange: `${new Date().toLocaleDateString('tr-TR')} - ${new Date().toLocaleDateString('tr-TR')}`,
+      class: reportType === 'class' ? selectedReportClass : availableStudents.find(s => s.id === selectedReportStudent)?.class,
+      student: reportType === 'student' ? availableStudents.find(s => s.id === selectedReportStudent) : null,
+      attendanceData: generateMockAttendanceData()
+    };
+
+    console.log('Rapor oluşturuluyor:', reportData);
+    
+    // Burada rapor oluşturma işlemi yapılacak
+    // PDF oluşturma, Excel export vb.
+    
+    setOpenReportDialog(false);
+    alert(`${reportType === 'class' ? 'Sınıf' : 'Öğrenci'} bazlı rapor başarıyla oluşturuldu!`);
+  };
+
+  // Mock yoklama verisi oluştur
+  const generateMockAttendanceData = () => {
+    const weeks = Array.from({length: 8}, (_, i) => i + 1);
+    return weeks.map(week => ({
+      week,
+      date: new Date(2024, 2, week * 7).toLocaleDateString('tr-TR'),
+      present: Math.floor(Math.random() * 25) + 15,
+      absent: Math.floor(Math.random() * 10) + 2,
+      rate: Math.floor(Math.random() * 30) + 70
+    }));
   };
 
   const getAttendanceStatusColor = (status) => {
@@ -633,7 +715,7 @@ const DersDetay = ({ ders, onBack }) => {
                     py: 1,
                   }}
                 >
-                  Yoklamayı Yenile
+                  Yoklama Al
                 </Button>
 
                 <Button
@@ -984,6 +1066,239 @@ const DersDetay = ({ ders, onBack }) => {
         </DialogActions>
       </Dialog>
 
+      {/* Report Dialog */}
+      <Dialog
+        open={openReportDialog}
+        onClose={() => setOpenReportDialog(false)}
+        maxWidth="md"
+        fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: "16px",
+            minHeight: "500px",
+          },
+        }}
+      >
+        <DialogTitle>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <Assessment sx={{ color: "#9c27b0", fontSize: 28 }} />
+            <Typography variant="h6" sx={{ fontWeight: 600, color: "#1e293b" }}>
+              Rapor Oluştur
+            </Typography>
+          </Box>
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+            {ders?.name || 'Seçili Ders'} - Yoklama Raporu
+          </Typography>
+        </DialogTitle>
+
+        <DialogContent>
+          <Box sx={{ mb: 3 }}>
+            <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
+              Rapor Türü Seçin
+            </Typography>
+            
+            <Grid container spacing={2}>
+              <Grid item xs={12} sm={6}>
+                <Card
+                  sx={{
+                    p: 2,
+                    cursor: "pointer",
+                    border: reportType === 'class' ? "2px solid #4F46E5" : "1px solid #e2e8f0",
+                    bgcolor: reportType === 'class' ? "#f0f9ff" : "white",
+                    transition: "all 0.2s ease",
+                    height: 200,
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "center",
+                    "&:hover": {
+                      boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                      transform: "translateY(-2px)"
+                    }
+                  }}
+                  onClick={() => handleReportTypeSelect('class')}
+                >
+                  <Box sx={{ textAlign: "center" }}>
+                    <Group
+                      sx={{
+                        fontSize: 40,
+                        color: reportType === 'class' ? "#4F46E5" : "#64748b",
+                        mb: 1
+                      }}
+                    />
+                    <Typography
+                      variant="h6"
+                      sx={{
+                        fontWeight: 600,
+                        color: reportType === 'class' ? "#4F46E5" : "#1e293b",
+                        mb: 1
+                      }}
+                    >
+                      Sınıf Bazlı Rapor
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      Seçili sınıfın tüm öğrencilerinin yoklama durumunu görüntüleyin
+                    </Typography>
+                  </Box>
+                </Card>
+              </Grid>
+
+
+              <Grid item xs={12} sm={6}>
+                <Card
+                  sx={{
+                    p: 2,
+                    cursor: "pointer",
+                    border: reportType === 'student' ? "2px solid #10B981" : "1px solid #e2e8f0",
+                    bgcolor: reportType === 'student' ? "#f0fdf4" : "white",
+                    transition: "all 0.2s ease",
+                    height: 200,
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "center",
+                    "&:hover": {
+                      boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                      transform: "translateY(-2px)"
+                    }
+                  }}
+                  onClick={() => handleReportTypeSelect('student')}
+                >
+                  <Box sx={{ textAlign: "center" }}>
+                    <Person
+                      sx={{
+                        fontSize: 40,
+                        color: reportType === 'student' ? "#10B981" : "#64748b",
+                        mb: 1
+                      }}
+                    />
+                    <Typography
+                      variant="h6"
+                      sx={{
+                        fontWeight: 600,
+                        color: reportType === 'student' ? "#10B981" : "#1e293b",
+                        mb: 1
+                      }}
+                    >
+                      Öğrenci Bazlı Rapor
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      Belirli bir öğrencinin detaylı yoklama geçmişini inceleyin
+                    </Typography>
+                  </Box>
+                </Card>
+              </Grid>
+            </Grid>
+          </Box>
+
+          {/* Sınıf Seçimi */}
+          {reportType === 'class' && (
+            <Box sx={{ mb: 3 }}>
+              <FormControl fullWidth>
+                <InputLabel>Sınıf Seçin</InputLabel>
+                <Select
+                  value={selectedReportClass}
+                  onChange={(e) => setSelectedReportClass(e.target.value)}
+                  label="Sınıf Seçin"
+                >
+                  {availableClasses.map((className) => (
+                    <MenuItem key={className} value={className}>
+                      {className}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Box>
+          )}
+
+          {/* Öğrenci Seçimi */}
+          {reportType === 'student' && (
+            <Box sx={{ mb: 3 }}>
+              <FormControl fullWidth>
+                <InputLabel>Öğrenci Seçin</InputLabel>
+                <Select
+                  value={selectedReportStudent}
+                  onChange={(e) => setSelectedReportStudent(e.target.value)}
+                  label="Öğrenci Seçin"
+                >
+                  {availableStudents.map((student) => (
+                    <MenuItem key={student.id} value={student.id}>
+                      {student.name} - {student.id} ({student.class})
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Box>
+          )}
+
+          {/* Rapor Önizleme */}
+          {reportType && (reportType === 'class' ? selectedReportClass : selectedReportStudent) && (
+            <Box sx={{ 
+              p: 2, 
+              bgcolor: "#f8fafc", 
+              borderRadius: "8px", 
+              border: "1px solid #e2e8f0",
+              mb: 2
+            }}>
+              <Typography variant="h6" sx={{ mb: 1, fontWeight: 600, color: "#1e293b" }}>
+                📊 Rapor Önizleme
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                <strong>Ders:</strong> {ders?.name || 'Seçili Ders'}
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                <strong>Rapor Türü:</strong> {reportType === 'class' ? 'Sınıf Bazlı' : 'Öğrenci Bazlı'}
+              </Typography>
+              {reportType === 'class' && (
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                  <strong>Seçili Sınıf:</strong> {selectedReportClass}
+                </Typography>
+              )}
+              {reportType === 'student' && (
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                  <strong>Seçili Öğrenci:</strong> {availableStudents.find(s => s.id === selectedReportStudent)?.name}
+                </Typography>
+              )}
+              <Typography variant="body2" color="text.secondary">
+                <strong>Tarih Aralığı:</strong> Son 8 hafta
+              </Typography>
+            </Box>
+          )}
+        </DialogContent>
+
+        <DialogActions sx={{ p: 3, bgcolor: "#f8fafc" }}>
+          <Button
+            onClick={() => setOpenReportDialog(false)}
+            variant="outlined"
+            sx={{
+              borderColor: "#64748b",
+              color: "#64748b",
+              "&:hover": {
+                bgcolor: "#f1f5f9",
+              },
+            }}
+          >
+            İptal
+          </Button>
+          <Button
+            onClick={handleCreateReport}
+            variant="contained"
+            disabled={!reportType || (reportType === 'class' && !selectedReportClass) || (reportType === 'student' && !selectedReportStudent)}
+            startIcon={<Assessment />}
+            sx={{
+              bgcolor: "#9c27b0",
+              "&:hover": {
+                bgcolor: "#7b1fa2",
+              },
+              "&:disabled": {
+                bgcolor: "#e5e7eb",
+                color: "#9ca3af"
+              }
+            }}
+          >
+            Rapor Oluştur
+          </Button>
+        </DialogActions>
+      </Dialog>
+
       {/* Confirmation Dialog - Compact */}
       <Dialog
         open={openYoklamaYenileDialog}
@@ -995,7 +1310,7 @@ const DersDetay = ({ ders, onBack }) => {
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
             <Refresh sx={{ color: "#ff9800", fontSize: 20 }} />
             <Typography variant="h6" sx={{ fontWeight: 600, color: "#1a237e" }}>
-              Yoklamayı Yenile
+              Yoklama Al
             </Typography>
           </Box>
         </DialogTitle>
@@ -1006,8 +1321,7 @@ const DersDetay = ({ ders, onBack }) => {
             bilgilerini sıfırlayacaktır.
           </Typography>
           <Typography variant="body2" color="error" sx={{ mb: 1.5 }}>
-            ⚠️ <strong>Dikkat:</strong> Bu ders için diğer yoklama bilgileriniz
-            silinecektir ve bu işlem geri alınamaz.
+            ⚠️ <strong>Dikkat:</strong> Bu ders için başka bir yoklama alınması durumunda, mevcut yoklama verileri silinecek ve bu işlem geri alınamaz.
           </Typography>
           <Typography variant="body2" color="text.secondary">
             Devam etmek istediğinizden emin misiniz?

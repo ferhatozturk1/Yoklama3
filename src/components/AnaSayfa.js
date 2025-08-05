@@ -1137,8 +1137,8 @@ const AnaSayfa = ({
           size="small"
           label="Özel Gün ve Tatil"
           sx={{
-            bgcolor: "#FFFDE7",
-            color: "#F57F17",
+            bgcolor: "	#FFECB3",
+            color: "#1565C0",
             border: "1px solid #FFEB3B",
           }}
         />
