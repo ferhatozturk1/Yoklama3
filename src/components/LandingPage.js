@@ -17,6 +17,7 @@ import ScrollAnimations from "./ScrollAnimations";
 
 function LandingPage() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [showContact, setShowContact] = useState(false);
 
   useEffect(() => {
     // Hero section elementlerini hemen göster
@@ -129,20 +130,6 @@ function LandingPage() {
               >
                 Özellikler
               </button>
-              <button
-                onClick={() => scrollToSection("contact")}
-                style={{
-                  background: "none",
-                  border: "none",
-                  color: "rgba(255,255,255,0.8)",
-                  cursor: "pointer",
-                  fontSize: "16px",
-                  fontWeight: "500",
-                  transition: "all 0.3s",
-                }}
-              >
-                İletişim
-              </button>
             </div>
 
             {/* Auth Buttons */}
@@ -251,21 +238,6 @@ function LandingPage() {
                   }}
                 >
                   Özellikler
-                </button>
-                <button
-                  onClick={() => scrollToSection("contact")}
-                  style={{
-                    background: "none",
-                    border: "none",
-                    color: "rgba(255,255,255,0.8)",
-                    cursor: "pointer",
-                    padding: "12px 16px",
-                    textAlign: "left",
-                    borderRadius: "8px",
-                    transition: "all 0.3s",
-                  }}
-                >
-                  İletişim
                 </button>
 
                 <div style={{ display: "flex", gap: "12px", padding: "16px 16px 0 16px" }}>
@@ -409,15 +381,15 @@ function LandingPage() {
               marginBottom: "64px",
             }}
           >
-            <Link
-              to="/kayit"
+            <button
+              onClick={() => setShowContact(true)}
               className="hover-lift"
               style={{
-                background: "white",
-                color: "#8b5cf6",
+                background: "#3b82f6",
+                color: "#030202ff",
                 padding: "20px 40px",
                 borderRadius: "16px",
-                textDecoration: "none",
+                border: "none",
                 fontWeight: "bold",
                 fontSize: "18px",
                 display: "inline-flex",
@@ -425,18 +397,20 @@ function LandingPage() {
                 justifyContent: "center",
                 transition: "all 0.3s",
                 boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
+                cursor: "pointer",
               }}
             >
               <FaArrowRight style={{ marginRight: "12px" }} />
               Denemeye Başlayın
-            </Link> 
+            </button> 
           </div>
 
           {/* Stats */}
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
+              gridTemplateColumns: "repeat(2, 1fr)",
+              gridTemplateRows: "repeat(2, 1fr)",
               gap: "32px",
               maxWidth: "800px",
               margin: "0 auto",
@@ -486,6 +460,21 @@ function LandingPage() {
                 99.9%
               </div>
               <div style={{ color: "#6b7280" }}>Güvenilirlik</div>
+            </div>
+            <div
+              className="scroll-animate-stagger delay-800 hover-lift"
+              style={{
+                background: "#f8fafc",
+                borderRadius: "16px",
+                padding: "24px",
+                border: "1px solid #e2e8f0",
+                boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
+              }}
+            >
+              <div style={{ fontSize: "2.5rem", fontWeight: "bold", color: "#3b82f6", marginBottom: "8px" }}>
+                98%
+              </div>
+              <div style={{ color: "#6b7280" }}>Kullanıcı Memnuniyeti</div>
             </div>
           </div>
         </div>
@@ -808,19 +797,19 @@ function LandingPage() {
             <div
               className="scroll-animate hover-lift"
               style={{
-                background: "rgba(255,255,255,0.1)",
+                background: "#f8fafc",
                 padding: "32px",
                 borderRadius: "16px",
-                backdropFilter: "blur(10px)",
-                border: "1px solid rgba(255,255,255,0.2)",
+                border: "1px solid #e2e8f0",
+                boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
                 transition: "all 0.3s",
               }}
             >
               <div
-                style={{
+               style={{
                   width: "64px",
                   height: "64px",
-                  background: "linear-gradient(135deg, #8b5cf6, #7c3aed)",
+                  background: "linear-gradient(135deg, #10b981, #059669)",
                   borderRadius: "16px",
                   display: "flex",
                   alignItems: "center",
@@ -830,30 +819,30 @@ function LandingPage() {
               >
                 <FaUsers style={{ fontSize: "24px", color: "white" }} />
               </div>
-              <h3 style={{ fontSize: "1.5rem", fontWeight: "bold", color: "white", marginBottom: "16px", margin: "0 0 16px 0" }}>
+              <h3 style={{ fontSize: "1.5rem", fontWeight: "bold", color: "#1f2937", marginBottom: "16px", margin: "0 0 16px 0" }}>
                 Kolay Kullanım
               </h3>
-              <p style={{ color: "rgba(255,255,255,0.8)", lineHeight: "1.6", margin: 0 }}>
+              <p style={{ color: "#6b7280", lineHeight: "1.6", margin: 0 }}>
                 Kullanıcı dostu arayüz ile herkes kolayca kullanabilir. Teknik bilgi gerektirmez. Türkçe dil desteği ve sesli yönlendirme. 5 dakikada öğrenebilir, hemen kullanmaya başlayabilirsiniz.
               </p>
             </div>
 
             <div
-              className="scroll-animate-right hover-lift"
+              className="scroll-animate hover-lift"
               style={{
-                background: "rgba(255,255,255,0.1)",
+                background: "#f8fafc",
                 padding: "32px",
                 borderRadius: "16px",
-                backdropFilter: "blur(10px)",
-                border: "1px solid rgba(255,255,255,0.2)",
+                border: "1px solid #e2e8f0",
+                boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
                 transition: "all 0.3s",
               }}
             >
               <div
-                style={{
+               style={{
                   width: "64px",
                   height: "64px",
-                  background: "linear-gradient(135deg, #06b6d4, #0891b2)",
+                  background: "linear-gradient(135deg, #10b981, #059669)",
                   borderRadius: "16px",
                   display: "flex",
                   alignItems: "center",
@@ -863,71 +852,116 @@ function LandingPage() {
               >
                 <FaPhone style={{ fontSize: "24px", color: "white" }} />
               </div>
-              <h3 style={{ fontSize: "1.5rem", fontWeight: "bold", color: "white", marginBottom: "16px", margin: "0 0 16px 0" }}>
+              <h3 style={{ fontSize: "1.5rem", fontWeight: "bold", color: "#1f2937", marginBottom: "16px", margin: "0 0 16px 0" }}>
                 Mobil Uyumlu
               </h3>
-              <p style={{ color: "rgba(255,255,255,0.8)", lineHeight: "1.6", margin: 0 }}>
+              <p style={{ color: "#6b7280", lineHeight: "1.6", margin: 0 }}>
                 Tüm akıllı telefon, tablet ve bilgisayarlarda sorunsuz çalışır. Android, iOS ve web tarayıcı desteği. Offline çalışma özelliği ile internet bağlantısı olmadan da kullanım.
               </p>
             </div>
           </div>
         </div>
       </section> 
-     {/* Contact Section */}
-      <section id="contact" style={{ padding: "80px 0", position: "relative" }}>
-        <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "0 20px" }}>
-          <div className="scroll-animate" style={{ textAlign: "center", marginBottom: "64px" }}>
-            <h2
-              className="scroll-animate-fade"
-              style={{
-                fontSize: "3rem",
-                fontWeight: "bold",
-                color: "white",
-                marginBottom: "24px",
-                margin: "0 0 24px 0",
-              }}
-            >
-              İletişim
-            </h2>
-            <p
-              className="scroll-animate delay-200"
-              style={{
-                fontSize: "1.25rem",
-                color: "rgba(255,255,255,0.8)",
-                maxWidth: "800px",
-                margin: "0 auto",
-                lineHeight: "1.6",
-              }}
-            >
-              QR Yoklama Sistemi hakkında merak ettiklerinizi öğrenin. Teknik destek ve satış danışmanlığı için 7/24 hizmetinizdeyiz.
-            </p>
-          </div>
 
+      {/* Contact Modal */}
+      {showContact && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: "rgba(0, 0, 0, 0.8)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 1000,
+            padding: "20px",
+          }}
+          onClick={() => setShowContact(false)}
+        >
           <div
             style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
-              gap: "48px",
+              background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+              borderRadius: "20px",
+              padding: "40px",
+              maxWidth: "900px",
+              width: "100%",
+              maxHeight: "90vh",
+              overflowY: "auto",
+              position: "relative",
             }}
+            onClick={(e) => e.stopPropagation()}
           >
-            <div
-              className="scroll-animate-left"
+            {/* Close Button */}
+            <button
+              onClick={() => setShowContact(false)}
               style={{
-                background: "rgba(255,255,255,0.1)",
-                borderRadius: "16px",
-                padding: "32px",
-                backdropFilter: "blur(10px)",
-                border: "1px solid rgba(255,255,255,0.2)",
+                position: "absolute",
+                top: "20px",
+                right: "20px",
+                background: "rgba(255, 255, 255, 0.2)",
+                border: "none",
+                borderRadius: "50%",
+                width: "40px",
+                height: "40px",
+                color: "white",
+                fontSize: "20px",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
               }}
             >
-              <h3 style={{ fontSize: "1.5rem", fontWeight: "bold", color: "white", marginBottom: "24px", margin: "0 0 24px 0" }}>
+              ×
+            </button>
+
+            <div style={{ textAlign: "center", marginBottom: "40px" }}>
+              <h2 style={{ 
+                fontSize: "2.5rem", 
+                fontWeight: "bold", 
+                color: "white", 
+                marginBottom: "16px",
+                margin: "0 0 16px 0"
+              }}>
                 İletişim Bilgileri
-              </h3>
-              
-              <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-                  <div
-                    style={{
+              </h2>
+              <p style={{ 
+                fontSize: "1.1rem", 
+                color: "rgba(255,255,255,0.8)", 
+                lineHeight: "1.6" 
+              }}>
+                QR Yoklama Sistemi hakkında merak ettiklerinizi öğrenin. Teknik destek ve satış danışmanlığı için 7/24 hizmetinizdeyiz.
+              </p>
+            </div>
+
+            <div style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+              gap: "30px",
+            }}>
+              {/* Contact Info */}
+              <div style={{
+                background: "rgba(255,255,255,0.1)",
+                borderRadius: "16px",
+                padding: "30px",
+                backdropFilter: "blur(10px)",
+                border: "1px solid rgba(255,255,255,0.2)",
+              }}>
+                <h3 style={{ 
+                  fontSize: "1.4rem", 
+                  fontWeight: "bold", 
+                  color: "white", 
+                  marginBottom: "24px",
+                  margin: "0 0 24px 0"
+                }}>
+                  İletişim Bilgileri
+                </h3>
+                
+                <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+                    <div style={{
                       width: "48px",
                       height: "48px",
                       background: "linear-gradient(135deg, #3b82f6, #6366f1)",
@@ -935,23 +969,21 @@ function LandingPage() {
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
-                    }}
-                  >
-                    <FaEnvelope style={{ fontSize: "18px", color: "white" }} />
+                    }}>
+                      <FaEnvelope style={{ fontSize: "18px", color: "white" }} />
+                    </div>
+                    <div>
+                      <p style={{ color: "rgba(255,255,255,0.6)", fontSize: "14px", margin: "0 0 4px 0" }}>
+                        E-posta
+                      </p>
+                      <p style={{ color: "white", fontSize: "16px", margin: 0 }}>
+                        info@motivexintelligence.com
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <p style={{ color: "rgba(255,255,255,0.6)", fontSize: "14px", margin: "0 0 4px 0" }}>
-                      E-posta
-                    </p>
-                    <p style={{ color: "white", fontSize: "16px", margin: 0 }}>
-                    info@motivexintelligence.com
-                    </p>
-                  </div>
-                </div>
 
-                <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-                  <div
-                    style={{
+                  <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+                    <div style={{
                       width: "48px",
                       height: "48px",
                       background: "linear-gradient(135deg, #10b981, #059669)",
@@ -959,23 +991,21 @@ function LandingPage() {
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
-                    }}
-                  >
-                    <FaPhone style={{ fontSize: "18px", color: "white" }} />
+                    }}>
+                      <FaPhone style={{ fontSize: "18px", color: "white" }} />
+                    </div>
+                    <div>
+                      <p style={{ color: "rgba(255,255,255,0.6)", fontSize: "14px", margin: "0 0 4px 0" }}>
+                        Telefon
+                      </p>
+                      <p style={{ color: "white", fontSize: "16px", margin: 0 }}>
+                        +90 546 515 27 45
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <p style={{ color: "rgba(255,255,255,0.6)", fontSize: "14px", margin: "0 0 4px 0" }}>
-                      Telefon
-                    </p>
-                    <p style={{ color: "white", fontSize: "16px", margin: 0 }}>
-                    +90 546 515 27 45
-                    </p>
-                  </div>
-                </div>
 
-                <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-                  <div
-                    style={{
+                  <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+                    <div style={{
                       width: "48px",
                       height: "48px",
                       background: "linear-gradient(135deg, #ec4899, #a855f7)",
@@ -983,109 +1013,138 @@ function LandingPage() {
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
-                    }}
-                  >
-                    <FaMapMarkerAlt style={{ fontSize: "18px", color: "white" }} />
-                  </div>
-                  <div>
-                    <p style={{ color: "rgba(255,255,255,0.6)", fontSize: "14px", margin: "0 0 4px 0" }}>
-                      Adres
-                    </p>
-                    <p style={{ color: "white", fontSize: "16px", margin: 0 }}>
-                    Manisa Celal Bayar Üniversitesi
-Teknoloji Geliştirme Bölgesi Z-15
-Yunusemre/MANİSA
-                    </p>
+                    }}>
+                      <FaMapMarkerAlt style={{ fontSize: "18px", color: "white" }} />
+                    </div>
+                    <div>
+                      <p style={{ color: "rgba(255,255,255,0.6)", fontSize: "14px", margin: "0 0 4px 0" }}>
+                        Adres
+                      </p>
+                      <p style={{ color: "white", fontSize: "16px", margin: 0 }}>
+                        Manisa Celal Bayar Üniversitesi
+                        <br />
+                        Teknoloji Geliştirme Bölgesi Z-15
+                        <br />
+                        Yunusemre/MANİSA
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
 
-            <div
-              className="scroll-animate-right"
-              style={{
+              {/* Contact Form */}
+              <div style={{
                 background: "rgba(255,255,255,0.1)",
                 borderRadius: "16px",
-                padding: "32px",
+                padding: "30px",
                 backdropFilter: "blur(10px)",
                 border: "1px solid rgba(255,255,255,0.2)",
-              }}
-            >
-              <h3 style={{ fontSize: "1.5rem", fontWeight: "bold", color: "white", marginBottom: "24px", margin: "0 0 24px 0" }}>
-                Mesaj Gönderin
-              </h3>
-              
-              <form style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-                <div>
-                  <input
-                    type="text"
-                    placeholder="Adınız Soyadınız"
+              }}>
+                <h3 style={{ 
+                  fontSize: "1.4rem", 
+                  fontWeight: "bold", 
+                  color: "white", 
+                  marginBottom: "24px",
+                  margin: "0 0 24px 0"
+                }}>
+                  Mesaj Gönderin
+                </h3>
+                
+                <form style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+                  <div>
+                    <input
+                      type="text"
+                      placeholder="Adınız Soyadınız"
+                      style={{
+                        width: "100%",
+                        padding: "12px 16px",
+                        background: "rgba(255,255,255,0.1)",
+                        border: "1px solid rgba(255,255,255,0.2)",
+                        borderRadius: "8px",
+                        color: "white",
+                        fontSize: "16px",
+                        outline: "none",
+                      }}
+                    />
+                  </div>
+                  <div>
+                    <input
+                      type="email"
+                      placeholder="E-posta Adresiniz"
+                      style={{
+                        width: "100%",
+                        padding: "12px 16px",
+                        background: "rgba(255,255,255,0.1)",
+                        border: "1px solid rgba(255,255,255,0.2)",
+                        borderRadius: "8px",
+                        color: "white",
+                        fontSize: "16px",
+                        outline: "none",
+                      }}
+                    />
+                  </div>
+                  <div>
+                    <textarea
+                      placeholder="Mesajınız"
+                      rows="4"
+                      style={{
+                        width: "100%",
+                        padding: "12px 16px",
+                        background: "rgba(255,255,255,0.1)",
+                        border: "1px solid rgba(255,255,255,0.2)",
+                        borderRadius: "8px",
+                        color: "white",
+                        fontSize: "16px",
+                        outline: "none",
+                        resize: "vertical",
+                      }}
+                    ></textarea>
+                  </div>
+                  <button
+                    type="submit"
                     style={{
-                      width: "100%",
-                      padding: "12px 16px",
-                      background: "rgba(255,255,255,0.1)",
-                      border: "1px solid rgba(255,255,255,0.2)",
-                      borderRadius: "8px",
+                      background: "linear-gradient(135deg, #3b82f6, #8b5cf6)",
                       color: "white",
-                      fontSize: "16px",
-                      outline: "none",
-                    }}
-                  />
-                </div>
-                <div>
-                  <input
-                    type="email"
-                    placeholder="E-posta Adresiniz"
-                    style={{
-                      width: "100%",
-                      padding: "12px 16px",
-                      background: "rgba(255,255,255,0.1)",
-                      border: "1px solid rgba(255,255,255,0.2)",
+                      padding: "12px 24px",
                       borderRadius: "8px",
-                      color: "white",
+                      border: "none",
                       fontSize: "16px",
-                      outline: "none",
+                      fontWeight: "600",
+                      cursor: "pointer",
+                      transition: "all 0.3s",
                     }}
-                  />
-                </div>
-                <div>
-                  <textarea
-                    placeholder="Mesajınız"
-                    rows="4"
-                    style={{
-                      width: "100%",
-                      padding: "12px 16px",
-                      background: "rgba(255,255,255,0.1)",
-                      border: "1px solid rgba(255,255,255,0.2)",
-                      borderRadius: "8px",
-                      color: "white",
-                      fontSize: "16px",
-                      outline: "none",
-                      resize: "vertical",
-                    }}
-                  ></textarea>
-                </div>
-                <button
-                  type="submit"
-                  style={{
-                    background: "linear-gradient(135deg, #3b82f6, #8b5cf6)",
-                    color: "white",
-                    padding: "12px 24px",
-                    borderRadius: "8px",
-                    border: "none",
-                    fontSize: "16px",
-                    fontWeight: "600",
-                    cursor: "pointer",
-                    transition: "all 0.3s",
-                  }}
-                >
-                  Mesaj Gönder
-                </button>
-              </form>
+                  >
+                    Mesaj Gönder
+                  </button>
+                </form>
+              </div>
+            </div>
+
+            <div style={{ textAlign: "center", marginTop: "30px" }}>
+              <Link
+                to="/kayit"
+                style={{
+                  background: "linear-gradient(135deg, #10b981, #059669)",
+                  color: "white",
+                  padding: "15px 30px",
+                  borderRadius: "12px",
+                  textDecoration: "none",
+                  fontWeight: "bold",
+                  fontSize: "16px",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  transition: "all 0.3s",
+                  boxShadow: "0 10px 25px rgba(16, 185, 129, 0.3)",
+                }}
+              >
+                <FaArrowRight style={{ marginRight: "8px" }} />
+                Sisteme Kayıt Ol
+              </Link>
             </div>
           </div>
         </div>
-      </section>
+      )}
 
       {/* Footer */}
       <footer style={{ background: "rgba(0,0,0,0.3)", padding: "40px 0", borderTop: "1px solid rgba(255,255,255,0.1)" }}>
@@ -1171,21 +1230,6 @@ Yunusemre/MANİSA
                   }}
                 >
                   Özellikler
-                </button>
-                <button
-                  onClick={() => scrollToSection("contact")}
-                  style={{
-                    background: "none",
-                    border: "none",
-                    color: "rgba(255,255,255,0.7)",
-                    cursor: "pointer",
-                    textAlign: "left",
-                    fontSize: "14px",
-                    padding: "4px 0",
-                    transition: "all 0.3s",
-                  }}
-                >
-                  İletişim
                 </button>
               </div>
             </div>

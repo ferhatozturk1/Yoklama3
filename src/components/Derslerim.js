@@ -698,7 +698,7 @@ const Derslerim = () => {
                 <Box sx={{ mt: "auto" }}>
                   <Button
                     variant="contained"
-                    startIcon={<Edit sx={{ fontSize: 18 }} />}
+                    
                     fullWidth
                     sx={{
                       bgcolor: "#1a237e",

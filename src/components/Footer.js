@@ -119,29 +119,6 @@ function Footer() {
                 </li>
               </ul>
             </div>
-
-            {/* Contact Info */}
-            <div>
-              <h4 className="text-lg font-bold text-white mb-4">İletişim</h4>
-              <ul className="space-y-3">
-                <li className="flex items-center text-white/70">
-                  <FaEnvelope className="mr-3 text-sm" />
-                  <span className="text-sm">info@qryoklama.com</span>
-                </li>
-                <li className="flex items-center text-white/70">
-                  <FaPhone className="mr-3 text-sm" />
-                  <span className="text-sm">+90 546 515 27 45</span>
-                </li>
-                <li className="flex items-start text-white/70">
-                  <FaMapMarkerAlt className="mr-3 text-sm mt-1" />
-                  <span className="text-sm">
-                    MCBÜ Teknokent
-                    <br />
-                    Yunusemre/MANİSA
-                  </span>
-                </li>
-              </ul>
-            </div>
           </div>
 
           {/* Bottom Bar */}
