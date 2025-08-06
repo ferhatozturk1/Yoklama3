@@ -6,7 +6,7 @@ import {
   useLocation,
   useNavigate,
 } from "react-router-dom";
-import profilePhoto from "../assets/mno.jpg";
+
 import { Box, useTheme, useMediaQuery } from "@mui/material";
 import { useAuth } from "../contexts/AuthContext";
 import TopNavigation from "./TopNavigation";
@@ -34,6 +34,24 @@ const MainPortal = () => {
   // AuthContext'ten gerçek kullanıcı verilerini al
   const { user } = useAuth();
   
+  // Profile photo URL helper function
+  const getProfilePhotoUrl = (photoPath) => {
+    console.log('📸 MainPortal getProfilePhotoUrl çağrıldı:', photoPath);
+    if (!photoPath) {
+      console.log('❌ Photo path boş');
+      return null;
+    }
+    if (photoPath.startsWith('http')) {
+      console.log('✅ Zaten tam URL:', photoPath);
+      return photoPath;
+    }
+    
+    const fullUrl = `http://127.0.0.1:8000${photoPath}`;
+    console.log('🔧 MainPortal - Tam URL oluşturuldu:', fullUrl);
+    
+    return fullUrl;
+  };
+  
   // Kullanıcı profili - backend'den gelen veriler
   const userProfile = user ? {
     name: `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'Kullanıcı',
@@ -45,7 +63,7 @@ const MainPortal = () => {
     department: user.department || '',
     webUrl: user.web_url || user.webUrl || '',
     otherDetails: user.other_details || user.otherDetails || '',
-    profilePhoto: user.profile_photo || user.profilePhoto || profilePhoto,
+    profilePhoto: getProfilePhotoUrl(user.profile_photo || user.profilePhoto),
   } : {
     name: "Kullanıcı",
     email: "",
@@ -56,7 +74,7 @@ const MainPortal = () => {
     department: "",
     webUrl: "",
     otherDetails: "",
-    profilePhoto: profilePhoto,
+    profilePhoto: null,
   };
 
   console.log('🔍 MainPortal - User verisi:', user);

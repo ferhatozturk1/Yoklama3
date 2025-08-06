@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import profilePhoto from "../assets/mno.jpg";
+
 import { useAuth } from "../contexts/AuthContext";
 import {
   Container,
@@ -83,6 +83,40 @@ const AnaSayfa = ({
   const [isLoadingSchedule, setIsLoadingSchedule] = useState(true);
 
   const { user, accessToken } = useAuth();
+
+  // Profile photo URL'ini düzelt - Backend'den gelen relative path'i tam URL'e çevir
+  const getProfilePhotoUrl = (photoPath) => {
+    console.log('📸 getProfilePhotoUrl çağrıldı:', photoPath);
+    if (!photoPath) {
+      console.log('❌ Photo path boş');
+      return null;
+    }
+    if (photoPath.startsWith('http')) {
+      console.log('✅ Zaten tam URL:', photoPath);
+      return photoPath;
+    }
+    
+    const fullUrl = `http://127.0.0.1:8000${photoPath}`;
+    console.log('🔧 Tam URL oluşturuldu:', fullUrl);
+    
+    // URL'in yüklenip yüklenemediğini test et
+    const testImg = new Image();
+    testImg.onload = () => console.log('✅ URL başarıyla yüklendi:', fullUrl);
+    testImg.onerror = () => console.log('❌ URL yüklenemedi:', fullUrl);
+    testImg.src = fullUrl;
+    
+    return fullUrl;
+  };
+
+  // Debug: Backend'den gelen user bilgilerini kontrol et
+  console.log("🔍 === ANA SAYFA USER DEBUG ===");
+  console.log("👤 User:", user);
+  console.log("📸 Profile Photo:", user?.profile_photo);
+  console.log("� Profile Photo Type:", typeof user?.profile_photo);
+  console.log("🔸 Profile Photo Length:", user?.profile_photo?.length);
+  console.log("🔸 Profile Photo başlangıcı:", user?.profile_photo?.substring(0, 100));
+  console.log("�🔑 AccessToken:", accessToken ? "Mevcut" : "YOK");
+  console.log("🔍 === ANA SAYFA USER DEBUG BİTİŞ ===");
 
   // QR Code System States
   const [yoklamaDialog, setYoklamaDialog] = useState(false);
@@ -1525,14 +1559,42 @@ const AnaSayfa = ({
               justifyContent: "space-between",
             }}
           >
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-              <QrCodeIcon sx={{ color: "#4F46E5", fontSize: 28 }} />
-              <Typography
-                variant="h6"
-                sx={{ fontWeight: 600, color: "#1e293b" }}
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+              <Avatar
+                src={getProfilePhotoUrl(user?.profile_photo)}
+                alt={`${user?.title || ''} ${user?.first_name || ''} ${user?.last_name || ''}`}
+                sx={{
+                  width: 40,
+                  height: 40,
+                  bgcolor: "#4F46E5",
+                  fontSize: "1rem",
+                  fontWeight: 600,
+                }}
+                onError={(e) => {
+                  console.error('❌ AnaSayfa Dialog Avatar - Resim yüklenemedi:', {
+                    src: e.target.src,
+                    originalPath: user?.profile_photo,
+                    error: e
+                  });
+                }}
               >
-                Yoklama Alınıyor
-              </Typography>
+                {user?.first_name?.charAt(0)?.toUpperCase() || user?.title?.charAt(0)?.toUpperCase() || 'K'}
+              </Avatar>
+              <Box>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                  <QrCodeIcon sx={{ color: "#4F46E5", fontSize: 28 }} />
+                  <Typography
+                    variant="h6"
+                    sx={{ fontWeight: 600, color: "#1e293b" }}
+                  >
+                    Yoklama Alınıyor
+                  </Typography>
+                </Box>
+                <Typography variant="caption" sx={{ color: "#64748b", mt: 0.5 }}>
+                  {user?.title ? `${user.title} ${user.first_name || ''} ${user.last_name || ''}`.trim() : 
+                   `${user?.first_name || ''} ${user?.last_name || ''}`.trim() || 'Öğretim Görevlisi'}
+                </Typography>
+              </Box>
             </Box>
             <Button
               onClick={handleCloseYoklama}

@@ -49,6 +49,24 @@ export const AuthProvider = ({ children }) => {
     sessionStorage.removeItem('refreshToken');
   };
 
+  // Profile photo URL helper function
+  const getProfilePhotoUrl = (photoPath) => {
+    console.log('📸 AuthContext getProfilePhotoUrl çağrıldı:', photoPath);
+    if (!photoPath) {
+      console.log('❌ Photo path boş');
+      return null;
+    }
+    if (photoPath.startsWith('http')) {
+      console.log('✅ Zaten tam URL:', photoPath);
+      return photoPath;
+    }
+    
+    const fullUrl = `http://127.0.0.1:8000${photoPath}`;
+    console.log('🔧 AuthContext - Tam URL oluşturuldu:', fullUrl);
+    
+    return fullUrl;
+  };
+
   // Profil bilgilerini üniversite/fakülte/bölüm bilgileri ile genişlet
   const loadEnhancedProfile = async (profileData) => {
     try {
@@ -453,7 +471,7 @@ export const AuthProvider = ({ children }) => {
         email: profileData.email || '',
         phone: profileData.phone || '',
         department_id: profileData.department_id || '',
-        profilePhoto: profileData.profile_photo || null,
+        profilePhoto: getProfilePhotoUrl(profileData.profile_photo),
         created_at: profileData.created_at || '',
       };
       
@@ -525,6 +543,18 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // User bilgilerini güncelle (profil fotoğrafı güncellemesi için)
+  const updateUser = (updates) => {
+    console.log('🔄 AuthContext - User bilgileri güncelleniyor:', updates);
+    const updatedUser = {
+      ...user,
+      ...updates
+    };
+    setUser(updatedUser);
+    sessionStorage.setItem('user', JSON.stringify(updatedUser));
+    console.log('✅ AuthContext - User güncellendi:', updatedUser);
+  };
+
   // Context value
   const value = {
     user,
@@ -536,6 +566,7 @@ export const AuthProvider = ({ children }) => {
     loadUserProfile,
     refreshAccessToken,
     setUser, // Profil güncelleme sonrası kullanıcı bilgilerini güncelleme için
+    updateUser, // User bilgilerini güncelleme için
   };
 
   return (

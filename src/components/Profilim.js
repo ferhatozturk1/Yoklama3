@@ -32,7 +32,7 @@ const ProfilePhotoUpload = lazy(() => {
 import { useLocalization } from "../utils/localization";
 import { useFormValidation } from "../utils/validation";
 import { debounce } from "../utils/debounce";
-import { updateLecturerProfile } from "../api/auth";
+import { updateLecturerProfile, uploadProfilePhoto, deleteProfilePhoto } from "../api/auth";
 import { useAuth } from "../contexts/AuthContext";
 
 const Profilim = ({
@@ -40,12 +40,32 @@ const Profilim = ({
   onProfileUpdate,
 }) => {
   const { t } = useLocalization();
-  const { user, accessToken, loadUserProfile, setUser, isAuthenticated, isLoading: authLoading } = useAuth();
+  const { user, accessToken, loadUserProfile, setUser, isAuthenticated, isLoading: authLoading, updateUser } = useAuth();
+  
+  // Profile photo URL helper function
+  const getProfilePhotoUrl = (photoPath) => {
+    console.log('📸 Profilim getProfilePhotoUrl çağrıldı:', photoPath);
+    if (!photoPath) {
+      console.log('❌ Photo path boş');
+      return null;
+    }
+    if (photoPath.startsWith('http')) {
+      console.log('✅ Zaten tam URL:', photoPath);
+      return photoPath;
+    }
+    
+    const fullUrl = `http://127.0.0.1:8000${photoPath}`;
+    console.log('🔧 Profilim - Tam URL oluşturuldu:', fullUrl);
+    
+    return fullUrl;
+  };
+  
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [uploadedPhoto, setUploadedPhoto] = useState(null);
   const [photoPreview, setPhotoPreview] = useState(null);
+  const [isPhotoDeleted, setIsPhotoDeleted] = useState(false); // Fotoğraf silinme durumu
   const [saveMessage, setSaveMessage] = useState("");
   const [userProfile, setUserProfile] = useState(initialUserProfile || null);
   const [apiError, setApiError] = useState("");
@@ -123,14 +143,20 @@ const Profilim = ({
             email: profileData.email,
             phone: profileData.phone,
             department_id: profileData.department_id,
-            profilePhoto: profileData.profilePhoto,
+            profilePhoto: getProfilePhotoUrl(profileData.profilePhoto),
             created_at: profileData.created_at
           });
           
           console.log("🔍 TITLE DEBUG - API'den gelen title:", profileData.title);
           
-          setUserProfile(profileData);
-          console.log("✅ Profil state'e kaydedildi");
+          // ProfilePhoto URL'ini düzeltilmiş halde kaydet
+          const correctedProfileData = {
+            ...profileData,
+            profilePhoto: getProfilePhotoUrl(profileData.profilePhoto)
+          };
+          
+          setUserProfile(correctedProfileData);
+          console.log("✅ Profil state'e kaydedildi (düzeltilmiş URL ile):", correctedProfileData);
         } else {
           console.warn("⚠️ Profil bilgileri alınamadı - null/undefined döndü");
           setApiError("Profil bilgileri yüklenemedi");
@@ -144,7 +170,7 @@ const Profilim = ({
             title: user.title || '', // Title alanını ekle
             email: user.email || '',
             phone: user.phone || '',
-            profilePhoto: user.profile_photo || null,
+            profilePhoto: getProfilePhotoUrl(user.profile_photo),
             department_id: user.department_id || '',
             university: user.university || '',
             faculty: user.faculty || '',
@@ -169,7 +195,7 @@ const Profilim = ({
           title: user.title || '', // Title alanını ekle
           email: user.email || '',
           phone: user.phone || '',
-          profilePhoto: user.profile_photo || null,
+          profilePhoto: getProfilePhotoUrl(user.profile_photo),
           department_id: user.department_id || '',
           university: user.university || '',
           faculty: user.faculty || '',
@@ -205,7 +231,7 @@ const Profilim = ({
         department: user?.department || userProfile?.department || "",
         webUrl: user?.web_url || userProfile?.webUrl || "",
         otherDetails: user?.other_details || userProfile?.otherDetails || "",
-        profilePhoto: user?.profile_photo || userProfile?.profilePhoto || null,
+        profilePhoto: getProfilePhotoUrl(user?.profile_photo || userProfile?.profilePhoto),
       };
     },
     [user, userProfile]
@@ -285,11 +311,15 @@ const Profilim = ({
   const handlePhotoChange = useCallback((file, preview) => {
     setUploadedPhoto(file);
     setPhotoPreview(preview);
+    setIsPhotoDeleted(false); // Yeni fotoğraf seçildiğinde silme işaretini kaldır
+    console.log("📸 Yeni profil fotoğrafı seçildi:", file?.name);
   }, []);
 
   const handlePhotoRemove = useCallback(() => {
     setUploadedPhoto(null);
     setPhotoPreview(null);
+    setIsPhotoDeleted(true); // Fotoğrafın silineceğini işaretle
+    console.log("🗑️ Profil fotoğrafı silinmek üzere işaretlendi");
   }, []);
 
   const handleCloseApiError = useCallback(() => {
@@ -326,13 +356,27 @@ const Profilim = ({
 
       console.log("🔄 Profil güncelleme verisi (yeni şema):", profileUpdateData);
 
+      // Profil fotoğrafı silme işlemi (eğer işaretlenmişse ve yeni fotoğraf yok)
+      if (isPhotoDeleted && !uploadedPhoto) {
+        try {
+          console.log("🗑️ Profil fotoğrafı siliniyor...");
+          await deleteProfilePhoto(user.id, accessToken);
+          console.log("✅ Profil fotoğrafı başarıyla silindi");
+        } catch (photoError) {
+          console.error("❌ Profil fotoğrafı silme hatası:", photoError);
+          setApiError(photoError.message || "Profil fotoğrafı silinemedi");
+          setShowApiError(true);
+          return; // Hata durumunda işlemi durdur
+        }
+      }
+
       // Handle photo upload if there's a new photo
       if (uploadedPhoto) {
         try {
           console.log("� Fotoğraf yükleme işlemi başlatılıyor...");
-          // TODO: Fotoğraf upload API'si implement edilecek
-          // const photoUrl = await uploadProfilePhoto(uploadedPhoto);
-          // profileUpdateData.profile_photo = photoUrl;
+          // Profil fotoğrafı yükleme API'si
+          const photoResult = await uploadProfilePhoto(user.id, uploadedPhoto, accessToken);
+          console.log("✅ Profil fotoğrafı başarıyla yüklendi:", photoResult);
         } catch (photoError) {
           console.error("Fotoğraf yükleme hatası:", photoError);
           setApiError(photoError.message || "Fotoğraf yüklenemedi");
@@ -361,7 +405,9 @@ const Profilim = ({
         university: savedProfile.university || values.university || userProfile.university || "",
         faculty: savedProfile.faculty || values.faculty || userProfile.faculty || "",
         department: savedProfile.department || values.department || userProfile.department || "",
-        profilePhoto: savedProfile.profile_photo || null,
+        profilePhoto: isPhotoDeleted && !uploadedPhoto ? null : 
+                     uploadedPhoto ? getProfilePhotoUrl(savedProfile.profile_photo) :
+                     userProfile.profilePhoto, // Değişiklik yoksa mevcut fotoğrafı koru
         created_at: savedProfile.created_at || userProfile.created_at,
       };
       
@@ -369,7 +415,6 @@ const Profilim = ({
       
       // AuthContext'teki kullanıcı bilgilerini de güncelle
       const updatedUser = {
-        ...user,
         first_name: savedProfile.first_name || values.firstName,
         last_name: savedProfile.last_name || values.lastName,
         title: savedProfile.title || values.title || user.title,
@@ -378,10 +423,14 @@ const Profilim = ({
         university: savedProfile.university || values.university || user.university || "",
         faculty: savedProfile.faculty || values.faculty || user.faculty || "",
         department: savedProfile.department || values.department || user.department || "",
+        profile_photo: isPhotoDeleted ? null : (savedProfile.profile_photo || user.profile_photo),
       };
-      setUser(updatedUser);
+      
+      // updateUser fonksiyonunu kullan ki tüm component'lar güncellensin
+      updateUser(updatedUser);
       
       console.log("✅ Profil başarıyla güncellendi:", updatedUserProfile);
+      console.log("🔄 AuthContext user güncellendi:", updatedUser);
 
       // Call the onProfileUpdate callback if provided
       if (onProfileUpdate) {
@@ -390,6 +439,10 @@ const Profilim = ({
 
       setIsEditing(false);
       setSaveMessage("Profil başarıyla kaydedildi!");
+      
+      // Yüklenen fotoğraf ve preview'ı temizle
+      setUploadedPhoto(null);
+      setPhotoPreview(null);
 
       // Clear success message after 3 seconds
       setTimeout(() => setSaveMessage(""), 3000);
@@ -455,6 +508,15 @@ const Profilim = ({
       </Container>
     );
   }
+
+  // Debug: Profil fotoğrafı durumunu kontrol et
+  console.log("🔍 === PROFİLİM PROFIL FOTOĞRAFI DEBUG ===");
+  console.log("👤 UserProfile:", userProfile);
+  console.log("📸 Profile Photo:", userProfile?.profilePhoto);
+  console.log("🔸 Profile Photo Type:", typeof userProfile?.profilePhoto);
+  console.log("🔸 Profile Photo başlangıcı:", userProfile?.profilePhoto?.substring(0, 100));
+  console.log("🖼️ Photo Preview:", photoPreview);
+  console.log("🔍 === PROFİLİM DEBUG BİTİŞ ===");
 
   return (
           <Container maxWidth="lg" sx={{ py: { xs: 2, sm: 3, md: 4 } }}>
@@ -623,6 +685,13 @@ const Profilim = ({
                 aria-label={
                   "Profil fotoğrafı: " + (userProfile.name || "Kullanıcı")
                 }
+                onError={(e) => {
+                  console.error('❌ Profilim Avatar - Profil fotoğrafı yüklenemedi:', {
+                    src: e.target.src,
+                    originalPath: userProfile.profilePhoto,
+                    error: e
+                  });
+                }}
               >
                 {userProfile.name
                   ? userProfile.name.charAt(0).toUpperCase()

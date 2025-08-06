@@ -7,6 +7,7 @@ import {
   ListItemButton,
   Drawer,
   Typography,
+  Avatar,
 } from "@mui/material";
 import {
   Home as HomeIcon,
@@ -15,12 +16,14 @@ import {
   ManageAccounts as ManageAccountsIcon,
 } from "@mui/icons-material";
 import cbuLogo from "../theme/cbulogo.png";
-import profilePhoto from "../assets/mno.jpg";
+
 
 const Sidebar = ({ open, onToggle, isMobile, onNavigate, userProfile }) => {
   console.log("🔍 SIDEBAR DEBUG - UserProfile:", userProfile);
   console.log("🔍 SIDEBAR DEBUG - UserProfile title:", userProfile?.title);
   console.log("🔍 SIDEBAR DEBUG - UserProfile name:", userProfile?.name);
+  console.log("🔍 SIDEBAR DEBUG - ProfilePhoto:", userProfile?.profilePhoto);
+  console.log("🔍 SIDEBAR DEBUG - ProfilePhoto type:", typeof userProfile?.profilePhoto);
   // Navigation items
   const navigationItems = [
     {
@@ -152,15 +155,35 @@ const Sidebar = ({ open, onToggle, isMobile, onNavigate, userProfile }) => {
               justifyContent: "center",
             }}
           >
-            <img
-              src={userProfile?.profilePhoto || profilePhoto}
-              alt={`${userProfile?.title || ''} ${userProfile?.name || 'Kullanıcı'}`}
-              style={{
+            {userProfile?.profilePhoto ? (
+              <img
+                src={userProfile.profilePhoto}
+                alt={`${userProfile?.title || ''} ${userProfile?.name || 'Kullanıcı'}`}
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "cover",
+                }}
+                onLoad={() => console.log('✅ Sidebar - Profil fotoğrafı yüklendi:', userProfile.profilePhoto)}
+                onError={(e) => {
+                  console.error("❌ Sidebar - Profil fotoğrafı yükleme hatası:", userProfile.profilePhoto, e);
+                  e.target.style.display = 'none';
+                  e.target.nextSibling.style.display = 'flex';
+                }}
+              />
+            ) : null}
+            <Avatar
+              sx={{
                 width: "100%",
                 height: "100%",
-                objectFit: "cover",
+                bgcolor: "#1565C0",
+                display: userProfile?.profilePhoto ? 'none' : 'flex',
+                fontSize: "1.5rem",
+                fontWeight: 600,
               }}
-            />
+            >
+              {userProfile?.name ? userProfile.name.charAt(0).toUpperCase() : 'K'}
+            </Avatar>
           </Box>
           <Box sx={{ flex: 1 }}>
             <Typography
