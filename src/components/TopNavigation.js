@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
 import profilePhoto from "../assets/mno.jpg";
 import {
   AppBar,
@@ -48,6 +49,7 @@ const TopNavigation = ({
   const location = useLocation();
   const theme = useTheme();
   const isSmallScreen = useMediaQuery(theme.breakpoints.down("md"));
+  const { logout } = useAuth(); // AuthContext'ten logout fonksiyonunu al
 
   const [mobileMenuAnchor, setMobileMenuAnchor] = useState(null);
   const [profileMenuAnchor, setProfileMenuAnchor] = useState(null);
@@ -128,19 +130,38 @@ const TopNavigation = ({
   };
 
   const handleLogout = () => {
-  // Tokenları temizle
-  localStorage.removeItem("access_token");
-  localStorage.removeItem("refresh_token");
+    console.log("🚪 TopNavigation - Çıkış işlemi başlatılıyor");
+    
+    // Profil menüsünü kapat
+    handleProfileMenuClose();
+    
+    try {
+      // AuthContext üzerinden logout yap (sessionStorage ve tüm state'leri temizler)
+      logout();
+      
+      // Ek güvenlik için localStorage'ı da temizle
+      localStorage.clear();
+      console.log('🧹 TopNavigation - LocalStorage da temizlendi');
+      
+      // Tüm cookie'leri de temizle
+      document.cookie.split(";").forEach((c) => {
+        const eqPos = c.indexOf("=");
+        const name = eqPos > -1 ? c.substr(0, eqPos) : c;
+        document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
+      });
+      console.log('🧹 TopNavigation - Cookies temizlendi');
+      
+    } catch (error) {
+      console.error('❌ TopNavigation - Logout hatası:', error);
+    }
+    
+    // Giriş sayfasına yönlendir
+    navigate("/giris-yap");
+    
+    console.log("✅ TopNavigation - Çıkış işlemi tamamlandı");
+  };
 
-  // Profil menüsünü kapat
-  handleProfileMenuClose();
-
-  // Giriş sayfasına yönlendir
-  navigate("/login");
-
-  // (İsteğe bağlı) Bildirim ver
-  alert("Çıkış yapıldı");
-};
+ 
 
   const isActive = (itemKey) => {
     return currentSection === itemKey;

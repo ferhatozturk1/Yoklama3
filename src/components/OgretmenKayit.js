@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { registerLecturer, getUniversities, getFaculties, getDepartments } from "../api/auth";
+import { useAuth } from "../contexts/AuthContext";
 import {
   TextField,
   Button,
@@ -69,6 +70,16 @@ const OgretmenKayit = () => {
   const [loadingData, setLoadingData] = useState(true);
   
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
+
+  // Zaten login olduysa ana sayfaya yönlendir
+  useEffect(() => {
+    if (isAuthenticated) {
+      console.log("ℹ️ OgretmenKayit - Kullanıcı zaten giriş yapmış, ana sayfaya yönlendiriliyor");
+      navigate("/portal/ana-sayfa", { replace: true });
+      return;
+    }
+  }, [isAuthenticated, navigate]);
 
   // Backend'den veri çekme
   useEffect(() => {

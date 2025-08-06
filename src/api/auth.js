@@ -257,3 +257,121 @@ export const refreshToken = async (refreshToken) => {
 
   return await response.json(); // yeni access token gelir
 };
+
+// Öğretmen profil bilgilerini getir
+export const getLecturerProfile = async (lecturerId, accessToken) => {
+  try {
+    console.log(`🔄 Profil bilgileri getiriliyor - Lecturer ID: ${lecturerId}`);
+    
+    const response = await fetch(`${API_BASE_URL}/lecturer_data/lecturers/${lecturerId}/`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${accessToken}`
+      }
+    });
+
+    console.log("Profil API yanıt durumu:", response.status);
+
+    if (!response.ok) {
+      let errorData;
+      let textResponse;
+      
+      try {
+        textResponse = await response.text();
+        console.error("Profil API raw yanıtı:", textResponse);
+        
+        try {
+          errorData = JSON.parse(textResponse);
+          console.error("Profil API JSON hata detayı:", errorData);
+        } catch (parseError) {
+          console.error("Profil JSON parse edilemedi:", textResponse);
+          throw new Error(`Profil bilgileri alınamadı (${response.status}): Server hatası`);
+        }
+      } catch (textError) {
+        console.error("Profil response text alınamadı:", textError);
+        throw new Error(`Profil bilgileri alınamadı (${response.status}): Response okunamadı`);
+      }
+      
+      let errorMessage = "Profil bilgileri alınamadı";
+      if (errorData.detail) {
+        errorMessage = errorData.detail;
+      } else if (errorData.message) {
+        errorMessage = errorData.message;
+      }
+      
+      throw new Error(errorMessage);
+    }
+
+    const profileData = await response.json();
+    console.log("✅ Profil bilgileri başarıyla alındı:", profileData);
+    return profileData;
+  } catch (error) {
+    console.error("❌ Profil bilgileri alma hatası:", error);
+    throw error;
+  }
+};
+
+// Öğretmen profil bilgilerini güncelle
+export const updateLecturerProfile = async (lecturerId, profileData, accessToken) => {
+  try {
+    console.log(`🔄 Profil güncelleniyor - Lecturer ID: ${lecturerId}`, profileData);
+    
+    const response = await fetch(`${API_BASE_URL}/lecturer_data/lecturers/${lecturerId}/`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${accessToken}`
+      },
+      body: JSON.stringify(profileData)
+    });
+
+    console.log("Profil güncelleme API yanıt durumu:", response.status);
+
+    if (!response.ok) {
+      let errorData;
+      let textResponse;
+      
+      try {
+        textResponse = await response.text();
+        console.error("Profil güncelleme API raw yanıtı:", textResponse);
+        
+        try {
+          errorData = JSON.parse(textResponse);
+          console.error("Profil güncelleme API JSON hata detayı:", errorData);
+        } catch (parseError) {
+          console.error("Profil güncelleme JSON parse edilemedi:", textResponse);
+          throw new Error(`Profil güncellenemedi (${response.status}): Server hatası`);
+        }
+      } catch (textError) {
+        console.error("Profil güncelleme response text alınamadı:", textError);
+        throw new Error(`Profil güncellenemedi (${response.status}): Response okunamadı`);
+      }
+      
+      let errorMessage = "Profil güncellenemedi";
+      if (errorData.detail) {
+        errorMessage = errorData.detail;
+      } else if (errorData.message) {
+        errorMessage = errorData.message;
+      } else if (typeof errorData === 'object') {
+        // Field validation errors
+        const fieldErrors = Object.entries(errorData).map(([field, errors]) => {
+          if (Array.isArray(errors)) {
+            return `${field}: ${errors.join(', ')}`;
+          }
+          return `${field}: ${errors}`;
+        });
+        errorMessage = fieldErrors.join('; ');
+      }
+      
+      throw new Error(errorMessage);
+    }
+
+    const updatedProfile = await response.json();
+    console.log("✅ Profil başarıyla güncellendi:", updatedProfile);
+    return updatedProfile;
+  } catch (error) {
+    console.error("❌ Profil güncelleme hatası:", error);
+    throw error;
+  }
+};

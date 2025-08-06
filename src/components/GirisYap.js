@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { loginLecturer } from "../api/auth";
+import { useAuth } from "../contexts/AuthContext";
 import {
   TextField,
   Button,
@@ -36,6 +37,16 @@ const GirisYap = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [showContent, setShowContent] = useState(false);
   const navigate = useNavigate();
+  const { login, isAuthenticated } = useAuth();
+
+  // Zaten login olduysa ana sayfaya yönlendir
+  useEffect(() => {
+    if (isAuthenticated) {
+      console.log("ℹ️ GirisYap - Kullanıcı zaten giriş yapmış, ana sayfaya yönlendiriliyor");
+      navigate("/portal/ana-sayfa", { replace: true });
+      return;
+    }
+  }, [isAuthenticated, navigate]);
 
   // Fade-in animation on page load
   useEffect(() => {
@@ -59,18 +70,20 @@ const GirisYap = () => {
       };
       
       const response = await loginLecturer(formData);
-      console.log("✅ Giriş başarılı:", response);
+      console.log("✅ API'den gelen login yanıtı:", response);
       
-      // Session'a kullanıcı bilgilerini kaydet
-      if (response.lecturer) {
-        sessionStorage.setItem("user", JSON.stringify(response.lecturer));
-      }
-      if (response.access || response.token) {
-        sessionStorage.setItem("token", response.access || response.token);
-      }
+      // AuthContext üzerinden login işlemini gerçekleştir
+      await login(response);
       
-      // Portal ana sayfasına yönlendir
-      navigate("/portal/ana-sayfa");
+      // Kullanıcı daha önce başka bir sayfadaysa oraya yönlendir
+      const redirectPath = sessionStorage.getItem('redirectAfterLogin');
+      if (redirectPath && redirectPath !== '/giris-yap') {
+        sessionStorage.removeItem('redirectAfterLogin');
+        navigate(redirectPath);
+      } else {
+        // Default olarak portal ana sayfasına yönlendir
+        navigate("/portal/ana-sayfa");
+      }
     } catch (error) {
       console.error("❌ Giriş hatası:", error);
       setError(error.message || "Giriş başarısız! E-posta veya şifre kontrol edin.");

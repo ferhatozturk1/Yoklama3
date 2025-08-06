@@ -6,7 +6,6 @@ import React, {
   lazy,
   Suspense,
 } from "react";
-import profilePhoto from "../assets/mno.jpg";
 import {
   Typography,
   Box,
@@ -21,6 +20,7 @@ import {
   Snackbar,
 } from "@mui/material";
 import { Edit, Save, Cancel } from "@mui/icons-material";
+
 // Lazy load the ProfilePhotoUpload component with prefetching
 const ProfilePhotoUpload = lazy(() => {
   // Prefetch the component when idle
@@ -28,100 +28,99 @@ const ProfilePhotoUpload = lazy(() => {
   // Return the promise to React.lazy
   return prefetchPromise;
 });
+
 import { useLocalization } from "../utils/localization";
 import { useFormValidation } from "../utils/validation";
-import ApiService from "../utils/ApiService";
-import MockApiService from "../utils/MockApiService";
 import { debounce } from "../utils/debounce";
+import { updateLecturerProfile } from "../api/auth";
+import { useAuth } from "../contexts/AuthContext";
 
 const Profilim = ({
   userProfile: initialUserProfile,
   onProfileUpdate,
-  userId = "user123",
 }) => {
   const { t } = useLocalization();
+  const { user, accessToken, loadUserProfile, setUser } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [isLoading, setIsLoading] = useState(!initialUserProfile);
+  const [isLoading, setIsLoading] = useState(true);
   const [uploadedPhoto, setUploadedPhoto] = useState(null);
   const [photoPreview, setPhotoPreview] = useState(null);
   const [saveMessage, setSaveMessage] = useState("");
-  const [userProfile, setUserProfile] = useState(
-    initialUserProfile || {
-      name: "MEHMET NURİ ÖĞÜT",
-      firstName: "MEHMET NURİ",
-      lastName: "ÖĞÜT",
-      title: "Öğr. Gör.",
-      school: "MANİSA TEKNİK BİLİMLER MESLEK YÜKSEKOKULU",
-      university: "MANİSA TEKNİK BİLİMLER MESLEK YÜKSEKOKULU",
-      faculty: "MAKİNE VE METAL TEKNOLOJİLERİ",
-      department: "ENDÜSTRİYEL KALIPÇILIK",
-      email: "mehmetnuri.ogut@cbu.edu.tr",
-      phone: "+90 236 201 1163",
-      webUrl: "https://avesis.mcbu.edu.tr/mehmetnuri.ogut",
-      profilePhoto: profilePhoto,
-      otherDetails: "",
-    }
-  );
+  const [userProfile, setUserProfile] = useState(initialUserProfile || null);
   const [apiError, setApiError] = useState("");
   const [showApiError, setShowApiError] = useState(false);
 
-  // Determine which API service to use (real or mock)
-  const apiService =
-    process.env.REACT_APP_USE_MOCK_API === "true" ? MockApiService : ApiService;
+  console.log("Profilim component initialized with user:", user);
 
-  // Fetch user profile data on component mount
+  // Profil bilgilerini AuthContext'ten yükle
   useEffect(() => {
-    // Skip API call if profile was provided as prop
-    if (initialUserProfile) {
-      setIsLoading(false);
-      return;
-    }
-
     const fetchUserProfile = async () => {
-      setIsLoading(true);
-      setApiError("");
+      if (initialUserProfile) {
+        setUserProfile(initialUserProfile);
+        setIsLoading(false);
+        return;
+      }
+
+      if (!user || !accessToken) {
+        console.warn("⚠️ User veya accessToken bulunamadı");
+        setIsLoading(false);
+        return;
+      }
 
       try {
-        const profileData = await apiService.fetchUserProfile(userId);
-        setUserProfile(profileData);
+        setIsLoading(true);
+        setApiError("");
+        
+        console.log("📋 AuthContext üzerinden profil bilgileri yükleniyor...");
+        const profileData = await loadUserProfile();
+        
+        if (profileData) {
+          setUserProfile(profileData);
+          console.log("✅ Profil bilgileri başarıyla yüklendi:", profileData);
+        } else {
+          console.warn("⚠️ Profil bilgileri alınamadı");
+          setApiError("Profil bilgileri yüklenemedi");
+          setShowApiError(true);
+        }
       } catch (error) {
-        console.error("Error fetching profile:", error);
-        setApiError(error.message || t("serverError"));
+        console.error("❌ Profil yükleme hatası:", error);
+        setApiError(error.message || "Profil bilgileri yüklenemedi");
         setShowApiError(true);
-
-        // Use mock data as fallback
-        setUserProfile(
-          MockApiService.mockUserData[userId] || ApiService.getMockUserProfile()
-        );
+        
+        // Hata durumunda boş profil göster
+        setUserProfile({
+          name: "",
+          firstName: "",
+          lastName: "",
+          title: "",
+          email: "",
+          phone: "",
+          profilePhoto: null,
+        });
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchUserProfile();
-  }, [initialUserProfile, userId, t]);
+  }, [user, accessToken, initialUserProfile, loadUserProfile]);
 
   // Initialize form with user profile data - memoized to prevent recalculation
   const initialFormData = useMemo(
-    () =>
-      userProfile
-        ? {
-            firstName: userProfile.firstName || "MEHMET NURİ",
-            lastName: userProfile.lastName || "ÖĞÜT",
-            email: userProfile.email || "",
-            phone: userProfile.phone || "",
-            university:
-              userProfile.school ||
-              userProfile.university ||
-              "MANİSA TEKNİK BİLİMLER MESLEK YÜKSEKOKULU",
-            faculty: userProfile.faculty || "",
-            department: userProfile.department || "",
-            webUrl: userProfile.webUrl || "",
-            otherDetails: userProfile.otherDetails || "",
-            profilePhoto: userProfile.profilePhoto || profilePhoto,
-          }
-        : {},
+    () => ({
+      title: userProfile?.title || "",
+      firstName: userProfile?.firstName || "",
+      lastName: userProfile?.lastName || "",
+      email: userProfile?.email || "",
+      phone: userProfile?.phone || "",
+      university: userProfile?.school || userProfile?.university || "",
+      faculty: userProfile?.faculty || "",
+      department: userProfile?.department || "",
+      webUrl: userProfile?.webUrl || "",
+      otherDetails: userProfile?.otherDetails || "",
+      profilePhoto: userProfile?.profilePhoto || null,
+    }),
     [userProfile]
   );
 
@@ -135,6 +134,165 @@ const Profilim = ({
     resetForm,
   } = useFormValidation(initialFormData);
 
+  // All callbacks must be defined before early returns to follow Rules of Hooks
+  const handleEditClick = useCallback(() => {
+    setIsEditing(true);
+    setSaveMessage("");
+  }, []);
+
+  const handleCancelClick = useCallback(() => {
+    setIsEditing(false);
+    resetForm(initialFormData);
+    setUploadedPhoto(null);
+    setPhotoPreview(null);
+    setSaveMessage("");
+  }, [initialFormData, resetForm]);
+
+  const handlePhotoChange = useCallback((file, preview) => {
+    setUploadedPhoto(file);
+    setPhotoPreview(preview);
+  }, []);
+
+  const handlePhotoRemove = useCallback(() => {
+    setUploadedPhoto(null);
+    setPhotoPreview(null);
+  }, []);
+
+  const handleCloseApiError = useCallback(() => {
+    setShowApiError(false);
+  }, []);
+
+  // Define the save function
+  const saveProfile = async () => {
+    if (!validateAll()) {
+      return;
+    }
+
+    setIsSaving(true);
+    setApiError("");
+
+    try {
+      if (!user || !accessToken) {
+        throw new Error("Kullanıcı oturumu bulunamadı. Lütfen tekrar giriş yapın.");
+      }
+
+      // API'ye gönderilecek veriyi hazırla (yeni şemaya göre)
+      const profileUpdateData = {
+        title: values.title || userProfile.title || "",
+        first_name: values.firstName,
+        last_name: values.lastName,
+        email: values.email,
+        department_id: userProfile.department_id || "", // Departman ID'si
+        phone: values.phone || null,
+      };
+
+      console.log("🔄 Profil güncelleme verisi (yeni şema):", profileUpdateData);
+
+      // Handle photo upload if there's a new photo
+      if (uploadedPhoto) {
+        try {
+          console.log("� Fotoğraf yükleme işlemi başlatılıyor...");
+          // TODO: Fotoğraf upload API'si implement edilecek
+          // const photoUrl = await uploadProfilePhoto(uploadedPhoto);
+          // profileUpdateData.profile_photo = photoUrl;
+        } catch (photoError) {
+          console.error("Fotoğraf yükleme hatası:", photoError);
+          setApiError(photoError.message || "Fotoğraf yüklenemedi");
+          setShowApiError(true);
+        }
+      }
+
+      // Gerçek API kullanarak profili güncelle
+      const savedProfile = await updateLecturerProfile(
+        user.id, 
+        profileUpdateData, 
+        accessToken
+      );
+      
+      // Local state'i güncelle (yeni şemaya göre)
+      const updatedUserProfile = {
+        ...userProfile,
+        id: savedProfile.id,
+        name: `${savedProfile.first_name || values.firstName} ${savedProfile.last_name || values.lastName}`,
+        firstName: savedProfile.first_name || values.firstName,
+        lastName: savedProfile.last_name || values.lastName,
+        title: savedProfile.title || values.title || userProfile.title,
+        email: savedProfile.email || values.email,
+        phone: savedProfile.phone || values.phone,
+        department_id: savedProfile.department_id || userProfile.department_id,
+        profilePhoto: savedProfile.profile_photo || null,
+        created_at: savedProfile.created_at || userProfile.created_at,
+      };
+      
+      setUserProfile(updatedUserProfile);
+      
+      // AuthContext'teki kullanıcı bilgilerini de güncelle
+      const updatedUser = {
+        ...user,
+        first_name: savedProfile.first_name || values.firstName,
+        last_name: savedProfile.last_name || values.lastName,
+        title: savedProfile.title || values.title || user.title,
+        email: savedProfile.email || values.email,
+        phone: savedProfile.phone || values.phone,
+      };
+      setUser(updatedUser);
+      
+      console.log("✅ Profil başarıyla güncellendi:", updatedUserProfile);
+
+      // Call the onProfileUpdate callback if provided
+      if (onProfileUpdate) {
+        onProfileUpdate(updatedUserProfile);
+      }
+
+      setIsEditing(false);
+      setSaveMessage("Profil başarıyla kaydedildi!");
+
+      // Clear success message after 3 seconds
+      setTimeout(() => setSaveMessage(""), 3000);
+    } catch (error) {
+      console.error("❌ Profil kaydetme hatası:", error);
+      setApiError(error.message || t("serverError"));
+      setShowApiError(true);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  // Create a memoized saveProfile function to prevent unnecessary recreations
+  const memoizedSaveProfile = useCallback(saveProfile, [
+    values,
+    uploadedPhoto,
+    photoPreview,
+    userProfile,
+    user,
+    accessToken,
+    onProfileUpdate,
+    t,
+    validateAll,
+    setUser,
+  ]);
+
+  // Create a debounced version of the save function to prevent multiple rapid saves
+  const handleSaveClick = useCallback(
+    debounce(() => {
+      memoizedSaveProfile();
+    }, 300),
+    [memoizedSaveProfile]
+  );
+
+  // Create refs for focus management
+  const firstFieldRef = React.useRef(null);
+  const editButtonRef = React.useRef(null);
+
+  // Focus management for edit mode
+  React.useEffect(() => {
+    if (isEditing && firstFieldRef.current) {
+      // Focus the first field when entering edit mode
+      firstFieldRef.current.focus();
+    }
+  }, [isEditing]);
+
+  // Early return after all hooks are called
   if (!userProfile || isLoading) {
     return (
       <Container maxWidth="lg" sx={{ mt: 4, pb: 4 }}>
@@ -153,128 +311,6 @@ const Profilim = ({
       </Container>
     );
   }
-
-  const handleEditClick = useCallback(() => {
-    setIsEditing(true);
-    setSaveMessage("");
-  }, []);
-
-  const handleCancelClick = useCallback(() => {
-    setIsEditing(false);
-    resetForm(initialFormData);
-    setUploadedPhoto(null);
-    setPhotoPreview(null);
-    setSaveMessage("");
-  }, [initialFormData, resetForm]);
-
-  // Define the save function
-  const saveProfile = async () => {
-    if (!validateAll()) {
-      return;
-    }
-
-    setIsSaving(true);
-    setApiError("");
-
-    try {
-      // Create updated profile object
-      const updatedProfile = {
-        ...userProfile,
-        ...values,
-        name: `${values.firstName} ${values.lastName}`,
-        school: values.university,
-        university: values.university,
-      };
-
-      // Handle photo upload if there's a new photo
-      if (uploadedPhoto) {
-        try {
-          const photoUrl = await apiService.uploadProfilePhoto(uploadedPhoto);
-          updatedProfile.profilePhoto = photoUrl;
-        } catch (photoError) {
-          console.error("Error uploading photo:", photoError);
-          setApiError(photoError.message || t("uploadFailed"));
-          setShowApiError(true);
-          // Continue with profile update even if photo upload fails
-        }
-      } else if (photoPreview) {
-        // Use the preview URL if it was set but no new upload
-        updatedProfile.profilePhoto = photoPreview;
-      }
-
-      // Update profile via API
-      const savedProfile = await apiService.updateUserProfile(updatedProfile);
-
-      // Update local state with saved profile
-      setUserProfile(savedProfile);
-
-      // Call the onProfileUpdate callback if provided
-      if (onProfileUpdate) {
-        onProfileUpdate(savedProfile);
-      }
-
-      setIsEditing(false);
-      setSaveMessage("Profil başarıyla kaydedildi!");
-
-      // Clear success message after 3 seconds
-      setTimeout(() => setSaveMessage(""), 3000);
-    } catch (error) {
-      console.error("Error saving profile:", error);
-      setApiError(error.message || t("serverError"));
-      setShowApiError(true);
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  // Create a memoized saveProfile function to prevent unnecessary recreations
-  const memoizedSaveProfile = useCallback(saveProfile, [
-    values,
-    uploadedPhoto,
-    photoPreview,
-    userProfile,
-    onProfileUpdate,
-    t,
-    validateAll,
-  ]);
-
-  // Create a debounced version of the save function to prevent multiple rapid saves
-  const handleSaveClick = useCallback(
-    debounce(() => {
-      memoizedSaveProfile();
-    }, 300),
-    [memoizedSaveProfile]
-  );
-
-  // Use useCallback for event handlers to prevent unnecessary re-renders
-  const handlePhotoChange = useCallback((file, preview) => {
-    setUploadedPhoto(file);
-    setPhotoPreview(preview);
-  }, []);
-
-  const handlePhotoRemove = useCallback(() => {
-    setUploadedPhoto(null);
-    setPhotoPreview(null);
-  }, []);
-
-  // Handle closing the API error snackbar
-  const handleCloseApiError = useCallback(() => {
-    setShowApiError(false);
-  }, []);
-
-  // Create a ref for the first focusable element when entering edit mode
-  const firstFieldRef = React.useRef(null);
-
-  // Create a ref for the edit button to return focus after canceling
-  const editButtonRef = React.useRef(null);
-
-  // Focus management for edit mode
-  React.useEffect(() => {
-    if (isEditing && firstFieldRef.current) {
-      // Focus the first field when entering edit mode
-      firstFieldRef.current.focus();
-    }
-  }, [isEditing]);
 
   return (
     <Container maxWidth="lg" sx={{ mt: 2, pb: 2, position: "relative" }}>
@@ -376,7 +412,7 @@ const Profilim = ({
               </Suspense>
             ) : (
               <Avatar
-                src={photoPreview || userProfile.profilePhoto || profilePhoto}
+                src={photoPreview || userProfile.profilePhoto || null}
                 alt={"Profil fotoğrafı: " + (userProfile.name || "Kullanıcı")}
                 sx={{
                   width: 80,
@@ -391,7 +427,7 @@ const Profilim = ({
               >
                 {userProfile.name
                   ? userProfile.name.charAt(0).toUpperCase()
-                  : "A"}
+                  : "?"}
               </Avatar>
             )}
           </Box>
@@ -421,10 +457,8 @@ const Profilim = ({
               }}
             >
               {isEditing
-                ? `${values.firstName || "MEHMET NURİ"} ${
-                    values.lastName || "ÖĞÜT"
-                  }`
-                : userProfile.name || "MEHMET NURİ ÖĞÜT"}
+                ? `${values.firstName || ""} ${values.lastName || ""}`
+                : userProfile.name || "Kullanıcı"}
             </Typography>
             <Typography
               variant="body2"
@@ -435,7 +469,7 @@ const Profilim = ({
                 fontWeight: 500,
               }}
             >
-              {userProfile.title || "Öğr. Gör."}
+              {userProfile.title || ""}
             </Typography>
           </Box>
 
@@ -450,6 +484,8 @@ const Profilim = ({
             {!isEditing ? (
               <Button
                 variant="contained"
+                startIcon={<Edit />}
+                onClick={handleEditClick}
                 disabled={isSaving}
                 sx={{
                   background: "linear-gradient(135deg, #1a237e 0%, #283593 100%)",
@@ -468,9 +504,9 @@ const Profilim = ({
                   transition: "all 0.2s ease-in-out",
                 }}
                 ref={editButtonRef}
-                aria-label="Şifre Değiştir"
+                aria-label="Profil Düzenle"
               >
-                Şifre Değiştir
+                Düzenle
               </Button>
             ) : (
               <>
@@ -528,18 +564,19 @@ const Profilim = ({
 
         {/* Modern Form Fields */}
         <Grid container spacing={2.5}>
-          {/* Modern Personal Information Fields */}
+          {/* Ünvan Field */}
           <Grid item xs={12} sm={6}>
             <TextField
-              label="Ad"
-              value={values.firstName || ""}
-              onChange={(e) => handleChange("firstName", e.target.value)}
-              onBlur={() => handleBlur("firstName")}
+              label="Ünvan"
+              value={values.title || ""}
+              onChange={(e) => handleChange("title", e.target.value)}
+              onBlur={() => handleBlur("title")}
               fullWidth
               variant="outlined"
               size="medium"
-              error={touched.firstName && !!errors.firstName}
-              helperText={touched.firstName && errors.firstName}
+              disabled={!isEditing}
+              error={touched.title && !!errors.title}
+              helperText={touched.title && errors.title}
               InputProps={{
                 readOnly: !isEditing,
                 sx: {
@@ -572,6 +609,51 @@ const Profilim = ({
             />
           </Grid>
 
+          {/* Ad Field */}
+          <Grid item xs={12} sm={6}>
+            <TextField
+              label="Ad"
+              value={values.firstName || ""}
+              onChange={(e) => handleChange("firstName", e.target.value)}
+              onBlur={() => handleBlur("firstName")}
+              fullWidth
+              variant="outlined"
+              size="medium"
+              disabled={!isEditing}
+              error={touched.firstName && !!errors.firstName}
+              helperText={touched.firstName && errors.firstName}
+              InputProps={{
+                readOnly: !isEditing,
+                sx: {
+                  borderRadius: 2,
+                  fontFamily: '"Inter", "Roboto", system-ui, sans-serif',
+                  backgroundColor: isEditing ? "#ffffff" : "#f8fafc",
+                  "& .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#e2e8f0",
+                  },
+                  "&:hover .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#cbd5e1",
+                  },
+                  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#1a237e",
+                    borderWidth: 2,
+                  },
+                },
+              }}
+              InputLabelProps={{
+                sx: {
+                  fontFamily: '"Inter", "Roboto", system-ui, sans-serif',
+                  fontWeight: 500,
+                  color: "#64748b",
+                  "&.Mui-focused": {
+                    color: "#1a237e",
+                  },
+                },
+              }}
+            />
+          </Grid>
+
+          {/* Soyad Field */}
           <Grid item xs={12} sm={6}>
             <TextField
               label="Soyad"
@@ -581,6 +663,7 @@ const Profilim = ({
               fullWidth
               variant="outlined"
               size="medium"
+              disabled={!isEditing}
               error={touched.lastName && !!errors.lastName}
               helperText={touched.lastName && errors.lastName}
               InputProps={{
@@ -614,6 +697,7 @@ const Profilim = ({
             />
           </Grid>
 
+          {/* E-posta Field */}
           <Grid item xs={12} sm={6}>
             <TextField
               label="E-posta"
@@ -623,6 +707,7 @@ const Profilim = ({
               fullWidth
               variant="outlined"
               size="medium"
+              disabled={!isEditing}
               error={touched.email && !!errors.email}
               helperText={touched.email && errors.email}
               InputProps={{
@@ -659,6 +744,7 @@ const Profilim = ({
             />
           </Grid>
 
+          {/* Telefon Field */}
           <Grid item xs={12} sm={6}>
             <TextField
               label="Cep Telefonu"
@@ -668,6 +754,7 @@ const Profilim = ({
               fullWidth
               variant="outlined"
               size="medium"
+              disabled={!isEditing}
               error={touched.phone && !!errors.phone}
               helperText={touched.phone && errors.phone}
               InputProps={{
@@ -701,176 +788,6 @@ const Profilim = ({
             />
           </Grid>
 
-          <Grid item xs={12}>
-            <TextField
-              label="Kurum"
-              value={values.university || ""}
-              onChange={(e) => handleChange("university", e.target.value)}
-              onBlur={() => handleBlur("university")}
-              fullWidth
-              variant="outlined"
-              size="medium"
-              error={touched.university && !!errors.university}
-              helperText={touched.university && errors.university}
-              InputProps={{
-                readOnly: !isEditing,
-                sx: {
-                  borderRadius: 2,
-                  fontFamily: '"Inter", "Roboto", system-ui, sans-serif',
-                  backgroundColor: isEditing ? "#ffffff" : "#f8fafc",
-                  "& .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "#e2e8f0",
-                  },
-                  "&:hover .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "#cbd5e1",
-                  },
-                  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "#1a237e",
-                    borderWidth: 2,
-                  },
-                },
-              }}
-              InputLabelProps={{
-                sx: {
-                  fontFamily: '"Inter", "Roboto", system-ui, sans-serif',
-                  fontWeight: 500,
-                  color: "#64748b",
-                  "&.Mui-focused": {
-                    color: "#1a237e",
-                  },
-                },
-              }}
-            />
-          </Grid>
-
-          <Grid item xs={12} sm={6}>
-            <TextField
-              label="Fakülte/Yüksekokul"
-              value={values.faculty || ""}
-              onChange={(e) => handleChange("faculty", e.target.value)}
-              onBlur={() => handleBlur("faculty")}
-              fullWidth
-              variant="outlined"
-              size="medium"
-              error={touched.faculty && !!errors.faculty}
-              helperText={touched.faculty && errors.faculty}
-              InputProps={{
-                readOnly: !isEditing,
-                sx: {
-                  borderRadius: 2,
-                  fontFamily: '"Inter", "Roboto", system-ui, sans-serif',
-                  backgroundColor: isEditing ? "#ffffff" : "#f8fafc",
-                  "& .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "#e2e8f0",
-                  },
-                  "&:hover .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "#cbd5e1",
-                  },
-                  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "#1a237e",
-                    borderWidth: 2,
-                  },
-                },
-              }}
-              InputLabelProps={{
-                sx: {
-                  fontFamily: '"Inter", "Roboto", system-ui, sans-serif',
-                  fontWeight: 500,
-                  color: "#64748b",
-                  "&.Mui-focused": {
-                    color: "#1a237e",
-                  },
-                },
-              }}
-            />
-          </Grid>
-
-          <Grid item xs={12} sm={6}>
-            <TextField
-              label="Bölüm"
-              value={values.department || ""}
-              onChange={(e) => handleChange("department", e.target.value)}
-              onBlur={() => handleBlur("department")}
-              fullWidth
-              variant="outlined"
-              size="medium"
-              error={touched.department && !!errors.department}
-              helperText={touched.department && errors.department}
-              InputProps={{
-                readOnly: !isEditing,
-                sx: {
-                  borderRadius: 2,
-                  fontFamily: '"Inter", "Roboto", system-ui, sans-serif',
-                  backgroundColor: isEditing ? "#ffffff" : "#f8fafc",
-                  "& .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "#e2e8f0",
-                  },
-                  "&:hover .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "#cbd5e1",
-                  },
-                  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "#1a237e",
-                    borderWidth: 2,
-                  },
-                },
-              }}
-              InputLabelProps={{
-                sx: {
-                  fontFamily: '"Inter", "Roboto", system-ui, sans-serif',
-                  fontWeight: 500,
-                  color: "#64748b",
-                  "&.Mui-focused": {
-                    color: "#1a237e",
-                  },
-                },
-              }}
-            />
-          </Grid>
-
-          <Grid item xs={12}>
-            <TextField
-              label="Web Profili"
-              value={values.webUrl || ""}
-              onChange={(e) => handleChange("webUrl", e.target.value)}
-              onBlur={() => handleBlur("webUrl")}
-              fullWidth
-              variant="outlined"
-              size="medium"
-              error={touched.webUrl && !!errors.webUrl}
-              helperText={touched.webUrl && errors.webUrl}
-              InputProps={{
-                readOnly: !isEditing,
-                sx: {
-                  borderRadius: 2,
-                  fontFamily: '"Inter", "Roboto", system-ui, sans-serif',
-                  backgroundColor: isEditing ? "#ffffff" : "#f8fafc",
-                  "& .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "#e2e8f0",
-                  },
-                  "&:hover .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "#cbd5e1",
-                  },
-                  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "#1a237e",
-                    borderWidth: 2,
-                  },
-                },
-              }}
-              InputLabelProps={{
-                sx: {
-                  fontFamily: '"Inter", "Roboto", system-ui, sans-serif',
-                  fontWeight: 500,
-                  color: "#64748b",
-                  "&.Mui-focused": {
-                    color: "#1a237e",
-                  },
-                },
-              }}
-              inputProps={{
-                type: "url",
-              }}
-            />
-          </Grid>
         </Grid>
       </Paper>
     </Container>
