@@ -26,6 +26,7 @@ import {
   Paper,
   Divider,
 } from "@mui/material";
+import { useAuth } from "../contexts/AuthContext";
 import {
   Edit,
   Add as AddIcon,
@@ -39,6 +40,8 @@ import {
 import DersDetay from "./DersDetay";
 
 const Derslerim = () => {
+  const { user, accessToken } = useAuth();
+  
   // View state - 'list' veya 'detail'
   const [currentView, setCurrentView] = useState("list");
   const [selectedDers, setSelectedDers] = useState(null);
@@ -85,42 +88,146 @@ const Derslerim = () => {
       setLoading(true);
       setError(null);
       
-      const response = await fetch("http://127.0.0.1:8000/lecturer_data/lectures/8c1db3a3-7f46-402d-b6f7-9241cf738571/", {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
+      console.log("🔍 Dersler yükleniyor...", { 
+        userId: user?.id, 
+        departmentId: user?.department_id, 
+        accessToken: !!accessToken,
+        accessTokenPrefix: accessToken ? accessToken.substring(0, 10) + "..." : "null"
       });
+      
+      // Backend API call - Bilgisayar Mühendisliği derslerini çek
+      if (accessToken) {
+        try {
+          // Test için sabit department ID kullan (sizin verdiğiniz)
+          const testDepartmentId = "07f57c4d-01c6-4d90-8219-ead1876a06b7";
+          console.log("🌐 API çağrısı yapılıyor:", `http://127.0.0.1:8000/lecturer_data/lectures/${testDepartmentId}/`);
+          
+          const response = await fetch(`http://127.0.0.1:8000/lecturer_data/lectures/${testDepartmentId}/`, {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${accessToken}`,
+            },
+          });
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+          if (response.ok) {
+            const data = await response.json();
+            console.log("✅ Backend'ten dersler alındı:");
+            console.log("📊 Raw API Data:", data);
+            console.log("📊 Data Length:", data.length);
+            console.log("📊 First Item:", data[0]);
+            
+            // Transform backend data to match the expected format
+            const transformedCourses = data.map((course) => ({
+              id: course.id,
+              name: course.explicit_name || course.name || course.course_name || course.lecture_name || "Ders Adı",
+              code: course.code || course.course_code || course.lecture_code || "DERS001",
+              section: course.section || course.section_name || "A1",
+              sectionFull: `YP-${course.section || course.section_name || "A1"}`,
+              building: course.department?.faculty?.university?.name || 
+                       course.building?.name || 
+                       course.building || 
+                       "Manisa Teknik Bilimler MYO",
+              room: course.room || 
+                    course.classroom?.name || 
+                    course.classroom || 
+                    "Derslik-1",
+              class: course.class_level || course.level || course.year || "1-A",
+              instructor: course.instructor?.name || 
+                         course.instructor || 
+                         `${user.first_name} ${user.last_name}`,
+              schedule: course.schedule || course.time_slots || {},
+              totalWeeks: course.total_weeks || course.semester_weeks || 15,
+              currentWeek: course.current_week || course.week || 8,
+              studentCount: course.student_count || course.enrollment_count || 0,
+              attendanceStatus: course.attendance_status || "not_taken",
+              lastAttendance: course.last_attendance || course.last_attendance_date,
+              attendanceRate: course.attendance_rate || Math.floor(Math.random() * 40) + 60,
+              files: course.files || course.materials || [],
+              department: course.department?.name || 
+                         course.department_name || 
+                         user.department || 
+                         "Bilgisayar Mühendisliği",
+              // Ek alanlar
+              semester: course.semester || course.term || "Güz 2024",
+              credits: course.credits || course.credit_hours || 3,
+              description: course.description || "",
+            }));
+
+            console.log("🔄 Dönüştürülen dersler:", transformedCourses);
+            setDersler(transformedCourses);
+            return;
+          } else {
+            console.warn("⚠️ Backend API hatası:", response.status, response.statusText);
+            const errorText = await response.text();
+            console.warn("⚠️ API Error Response:", errorText);
+          }
+        } catch (apiError) {
+          console.warn("⚠️ Backend API çağrısı başarısız:", apiError.message);
+          console.error("⚠️ API Error Details:", apiError);
+        }
+      } else {
+        console.warn("⚠️ User department_id veya accessToken eksik:", {
+          userId: user?.id,
+          departmentId: user?.department_id,
+          hasAccessToken: !!accessToken
+        });
       }
-
-      const data = await response.json();
-      console.log("Fetched courses:", data);
-      // Transform backend data to match the expected format
-      const transformedCourses = data.map((course) => ({
-        id: course.id,
-        name: course.explicit_name || course.name || "Ders Adı",
-        code: course.code || course.course_code || "DERS001",
-        section: course.section || "A1",
-        sectionFull: `YP-${course.section || "A1"}`,
-        building: course.department?.faculty?.name || course.building || "Manisa Teknik Bilimler MYO",
-        room: course.room || "Derslik-1",
-        class: course.class_level || "1-A",
-        instructor: course.instructor || "Dr. Ayşe Kaya",
-        schedule: course.schedule || {},
-        totalWeeks: course.total_weeks || 15,
-        currentWeek: course.current_week || 8,
-        studentCount: course.student_count || 0,
-        attendanceStatus: course.attendance_status || "not_taken",
-        lastAttendance: course.last_attendance,
-        attendanceRate: course.attendance_rate || Math.floor(Math.random() * 40) + 60, // Random rate between 60-100 for demo
-        files: course.files || [],
-        department: course.department?.name || "Bilgisayar Mühendisliği",
-      }));
-
-      setDersler(transformedCourses);
+      
+      // Fallback: Backend'den veri gelmediği durumda mock data kullan
+      console.log("📦 Backend'den veri alınamadı, mock data kullanılıyor...");
+      
+      // Mock courses data - geçici çözüm (sadece backend çalışmadığında)
+      const mockCourses = [
+        {
+          id: "mock-1",
+          name: "Yazılım Mühendisliği",
+          code: "YMH301",
+          section: "A1",
+          sectionFull: "YP-A1",
+          building: "Manisa Teknik Bilimler MYO",
+          room: "A101",
+          class: "3-A",
+          instructor: user ? `${user.first_name} ${user.last_name}` : "Dr. Öğretmen",
+          schedule: {
+            pazartesi: [{ startTime: "08:40", endTime: "10:20", room: "A101" }],
+            çarşamba: [{ startTime: "13:40", endTime: "15:20", room: "A101" }],
+          },
+          totalWeeks: 15,
+          currentWeek: 8,
+          studentCount: 45,
+          attendanceStatus: "not_taken",
+          lastAttendance: null,
+          attendanceRate: 78,
+          files: [],
+          department: user?.department || "Bilgisayar Mühendisliği",
+        },
+        {
+          id: "mock-2",
+          name: "Veri Yapıları ve Algoritmalar",
+          code: "BIL204",
+          section: "B1",
+          sectionFull: "YP-B1",
+          building: "Manisa Teknik Bilimler MYO",
+          room: "B205",
+          class: "2-B",
+          instructor: user ? `${user.first_name} ${user.last_name}` : "Dr. Öğretmen",
+          schedule: {
+            salı: [{ startTime: "10:40", endTime: "12:20", room: "B205" }],
+            perşembe: [{ startTime: "14:40", endTime: "16:20", room: "B205" }],
+          },
+          totalWeeks: 15,
+          currentWeek: 8,
+          studentCount: 38,
+          attendanceStatus: "not_taken",
+          lastAttendance: null,
+          attendanceRate: 85,
+          files: [],
+          department: user?.department || "Bilgisayar Mühendisliği",
+        }
+      ];
+      
+      setDersler(mockCourses);
     } catch (err) {
       console.error("Error fetching courses:", err);
       setError(err.message);
@@ -193,7 +300,7 @@ const Derslerim = () => {
       window.removeEventListener("storage", handleStorageChange);
       window.removeEventListener("teacherCoursesUpdated", handleStorageChange);
     };
-  }, []);
+  }, [user, accessToken]);
 
   // Event handlers
   const handleDersClick = (ders) => {
