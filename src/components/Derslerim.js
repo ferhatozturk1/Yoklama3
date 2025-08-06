@@ -75,219 +75,115 @@ const Derslerim = () => {
     "17:30",
   ];
 
-  // Real courses from current university schedule (2025-2026)
-  const staticCourses = [
-    {
-      id: 1,
-      name: "Matematik",
-      code: "MRK 1116",
+  const [dersler, setDersler] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-      building: "Manisa Teknik Bilimler MYO",
-      room: "Amfi-6",
-      schedule: {
-        çarşamba: [{ startTime: "08:40", endTime: "11:30", room: "Amfi-6" }],
-      },
-      totalWeeks: 15,
-      currentWeek: 8,
-      studentCount: 45,
-      attendanceStatus: "completed",
-      lastAttendance: "2025-07-30",
-      attendanceRate: 88,
-      files: [],
-    },
-    {
-      id: 2,
-      name: "Matematik",
-      code: "IYS 1101",
-
+  // Fetch courses from backend
+  const fetchCourses = async () => {
+    try {
+      setLoading(true);
+      setError(null);
       
-      building: "Manisa Teknik Bilimler MYO",
-      room: "Amfi-...",
-      schedule: {
-        salı: [{ startTime: "08:40", endTime: "10:30", room: "Amfi" }],
-      },
-      totalWeeks: 15,
-      currentWeek: 8,
-      studentCount: 38,
-      attendanceStatus: "completed",
-      lastAttendance: "2025-07-29",
-      attendanceRate: 92,
-      files: [],
-    },
-    {
-      id: 3,
-      name: "Mesleki Matematik",
-      code: "EKT 1117",
+      const response = await fetch("http://127.0.0.1:8000/lecturer_data/lectures/8c1db3a3-7f46-402d-b6f7-9241cf738571/", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
 
-      
-      building: "Manisa Teknik Bilimler MYO",
-      room: "Amfi-6",
-      schedule: {
-        çarşamba: [{ startTime: "11:45", endTime: "12:30", room: "Amfi-6" }],
-      },
-      totalWeeks: 15,
-      currentWeek: 8,
-      studentCount: 32,
-      attendanceStatus: "completed",
-      lastAttendance: "2025-07-30",
-      attendanceRate: 84,
-      files: [],
-    },
-    {
-      id: 4,
-      name: "Programlama",
-      code: "IYS 1103",
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
 
-      
-      building: "Manisa Teknik Bilimler MYO",
-      room: "Derslik-7",
-      schedule: {
-        salı: [{ startTime: "16:15", endTime: "17:00", room: "Derslik-7" }],
-        cuma: [
-          { startTime: "13:40", endTime: "15:30", room: "Bilgisayar Lab-2" },
-        ],
-      },
-      totalWeeks: 15,
-      currentWeek: 8,
-      studentCount: 28,
-      attendanceStatus: "completed",
-      lastAttendance: "2025-07-26",
-      attendanceRate: 94,
-      files: [],
-    },
-    {
-      id: 5,
-      name: "Akademik Yapay Zekaya Giriş",
-      code: "SSD 3264",
+      const data = await response.json();
+      console.log("Fetched courses:", data);
+      // Transform backend data to match the expected format
+      const transformedCourses = data.map((course) => ({
+        id: course.id,
+        name: course.explicit_name || course.name || "Ders Adı",
+        code: course.code || course.course_code || "DERS001",
+        section: course.section || "A1",
+        sectionFull: `YP-${course.section || "A1"}`,
+        building: course.department?.faculty?.name || course.building || "Manisa Teknik Bilimler MYO",
+        room: course.room || "Derslik-1",
+        class: course.class_level || "1-A",
+        instructor: course.instructor || "Dr. Ayşe Kaya",
+        schedule: course.schedule || {},
+        totalWeeks: course.total_weeks || 15,
+        currentWeek: course.current_week || 8,
+        studentCount: course.student_count || 0,
+        attendanceStatus: course.attendance_status || "not_taken",
+        lastAttendance: course.last_attendance,
+        attendanceRate: course.attendance_rate || Math.floor(Math.random() * 40) + 60, // Random rate between 60-100 for demo
+        files: course.files || [],
+        department: course.department?.name || "Bilgisayar Mühendisliği",
+      }));
 
-      
-      building: "Mühendislik ve Doğa Bilimleri Fakültesi",
-      room: "Derslik",
-      schedule: {
-        perşembe: [{ startTime: "16:15", endTime: "17:00", room: "Derslik" }],
-        cuma: [{ startTime: "16:15", endTime: "17:00", room: "Derslik" }],
-      },
-      totalWeeks: 15,
-      currentWeek: 8,
-      studentCount: 22,
-      attendanceStatus: "completed",
-      lastAttendance: "2025-07-26",
-      attendanceRate: 91,
-      files: [],
-    },
-    {
-      id: 6,
-      name: "Bilişim ve Bilgisayar Ağları Temelleri",
-      code: "IYS 1107",
+      setDersler(transformedCourses);
+    } catch (err) {
+      console.error("Error fetching courses:", err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-      
-      building: "Manisa Teknik Bilimler MYO",
-      room: "Derslik-8",
-      schedule: {
-        salı: [{ startTime: "11:45", endTime: "12:30", room: "Derslik-8" }],
-      },
-      totalWeeks: 15,
-      currentWeek: 8,
-      studentCount: 35,
-      attendanceStatus: "pending",
-      lastAttendance: "2025-07-29",
-      attendanceRate: 85,
-      files: [],
-    },
-    {
-      id: 7,
-      name: "Yapay Zeka ile Zenginleştirilmiş Proje Yönetimi",
-      code: "USD 1165",
-
-      
-      building: "Mühendislik ve Doğa Bilimleri Fakültesi",
-      room: "Amfi-...",
-      schedule: {
-        perşembe: [{ startTime: "13:40", endTime: "15:30", room: "Amfi" }],
-        perşembe: [{ startTime: "17:00", endTime: "17:45", room: "Amfi" }],
-      },
-      totalWeeks: 15,
-      currentWeek: 8,
-      studentCount: 18,
-      attendanceStatus: "completed",
-      lastAttendance: "2025-07-25",
-      attendanceRate: 89,
-      files: [],
-    },
-    {
-      id: 8,
-      name: "Veri Toplama ve Analizi",
-      code: "IYS 2103",
-
-      
-      building: "Manisa Teknik Bilimler MYO",
-      room: "Derslik-6",
-      schedule: {
-        cuma: [{ startTime: "08:40", endTime: "10:30", room: "Derslik-6" }],
-      },
-      totalWeeks: 15,
-      currentWeek: 8,
-      studentCount: 26,
-      attendanceStatus: "completed",
-      lastAttendance: "2025-07-26",
-      attendanceRate: 87,
-      files: [],
-    },
-  ];
-
-  const [dersler, setDersler] = useState(staticCourses);
-
-  // Load courses from localStorage and combine with static courses
+  // Load courses from backend and localStorage
   useEffect(() => {
-    const loadCourses = () => {
+    fetchCourses();
+
+    // Also load courses from localStorage and combine
+    const loadLocalCourses = () => {
       const activeCourses = JSON.parse(
         localStorage.getItem("activeCourses") || "[]"
       );
 
-      // Convert active courses to the format expected by Derslerim
-      const convertedCourses = activeCourses.map((course) => ({
-        id: course.id || Date.now() + Math.random(),
-        name: course.courseName || course.courseTitle,
-        code: course.courseCode,
-        section: course.section,
-        sectionFull: `YP-${course.section}`,
-        building: "A Blok", // Default building
-        room: "A101", // Default room
-        class: `${course.classLevel || 1}-A`,
-        instructor: course.faculty || "Dr. Ayşe Kaya",
-        schedule: {
-          // Convert days array to schedule object
-          ...(course.days && course.days.length > 0
-            ? {
-                [course.days[0]?.toLowerCase()]: [
-                  {
-                    startTime: course.times?.split("-")[0] || "08:40",
-                    endTime: course.times?.split("-")[1] || "09:30",
-                    room: "A101",
-                  },
-                ],
-              }
-            : {}),
-        },
-        totalWeeks: 15,
-        currentWeek: 8,
-        studentCount: Math.floor(Math.random() * 30) + 20, // Random student count
-        attendanceStatus: "not_taken",
-        lastAttendance: null,
-        attendanceRate: 0,
-        files: [],
-      }));
+      if (activeCourses.length > 0) {
+        // Convert active courses to the format expected by Derslerim
+        const convertedCourses = activeCourses.map((course) => ({
+          id: course.id || Date.now() + Math.random(),
+          name: course.courseName || course.courseTitle || course.explicit_name,
+          code: course.courseCode,
+          section: course.section,
+          sectionFull: `YP-${course.section}`,
+          building: "A Blok", // Default building
+          room: "A101", // Default room
+          class: `${course.classLevel || 1}-A`,
+          instructor: course.instructor || "Dr. Ayşe Kaya",
+          schedule: {
+            // Convert days array to schedule object
+            ...(course.days && course.days.length > 0
+              ? {
+                  [course.days[0]?.toLowerCase()]: [
+                    {
+                      startTime: course.times?.split("-")[0] || "08:40",
+                      endTime: course.times?.split("-")[1] || "09:30",
+                      room: "A101",
+                    },
+                  ],
+                }
+              : {}),
+          },
+          totalWeeks: 15,
+          currentWeek: 8,
+          studentCount: Math.floor(Math.random() * 30) + 20, // Random student count
+          attendanceStatus: "not_taken",
+          lastAttendance: null,
+          attendanceRate: 0,
+          files: [],
+        }));
 
-      // Combine static courses with converted active courses
-      const allCourses = [...staticCourses, ...convertedCourses];
-      setDersler(allCourses);
+        // Combine backend courses with converted active courses
+        setDersler(prevDersler => [...prevDersler, ...convertedCourses]);
+      }
     };
 
-    loadCourses();
+    loadLocalCourses();
 
     // Listen for localStorage changes
     const handleStorageChange = () => {
-      loadCourses();
+      loadLocalCourses();
     };
 
     window.addEventListener("storage", handleStorageChange);
@@ -471,9 +367,75 @@ const Derslerim = () => {
         </Typography>
       </Box>
 
+      {/* Loading State */}
+      {loading && (
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            py: 8,
+          }}
+        >
+          <Typography variant="h6" color="text.secondary">
+            Dersler yükleniyor...
+          </Typography>
+        </Box>
+      )}
+
+      {/* Error State */}
+      {error && !loading && (
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            py: 8,
+            flexDirection: "column",
+            gap: 2,
+          }}
+        >
+          <Typography variant="h6" color="error">
+            Dersler yüklenirken hata oluştu
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            {error}
+          </Typography>
+          <Button 
+            variant="contained" 
+            onClick={fetchCourses}
+            sx={{ mt: 2 }}
+          >
+            Tekrar Dene
+          </Button>
+        </Box>
+      )}
+
       {/* Responsive Course Grid */}
-      <Grid container spacing={{ xs: 1, sm: 1.5, md: 2, lg: 2.5, xl: 3 }}>
-        {dersler.map((ders) => (
+      {!loading && !error && (
+        <Grid container spacing={{ xs: 1, sm: 1.5, md: 2, lg: 2.5, xl: 3 }}>
+          {dersler.length === 0 ? (
+            <Grid item xs={12}>
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  py: 8,
+                  flexDirection: "column",
+                  gap: 2,
+                }}
+              >
+                <Typography variant="h6" color="text.secondary">
+                  Henüz ders bulunmuyor
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Sistem yöneticisiyle iletişime geçin veya daha sonra tekrar deneyin.
+                </Typography>
+              </Box>
+            </Grid>
+          ) : (
+            dersler.map((ders) => (
           <Grid item xs={12} sm={6} md={4} lg={3} xl={3} key={ders.id}>
             <Card
               elevation={0}
@@ -722,8 +684,10 @@ const Derslerim = () => {
               </CardContent>
             </Card>
           </Grid>
-        ))}
-      </Grid>
+            ))
+          )}
+        </Grid>
+      )}
 
       {/* Schedule Management Modal */}
       <Dialog
