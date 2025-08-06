@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import profilePhoto from "../assets/mno.jpg";
-import { courseScheduleData } from "../data/courseSchedule";
+import { useAuth } from "../contexts/AuthContext";
 import {
   Container,
   Typography,
@@ -77,6 +77,12 @@ const AnaSayfa = ({
   const [currentTime, setCurrentTime] = useState(new Date());
   const [expandedDay, setExpandedDay] = useState(false);
   const [currentWeek, setCurrentWeek] = useState(8); // Şu anki hafta (8. hafta)
+  
+  // Course Schedule Data from Backend
+  const [courseScheduleData, setCourseScheduleData] = useState(null);
+  const [isLoadingSchedule, setIsLoadingSchedule] = useState(true);
+
+  const { user, accessToken } = useAuth();
 
   // QR Code System States
   const [yoklamaDialog, setYoklamaDialog] = useState(false);
@@ -84,6 +90,39 @@ const AnaSayfa = ({
   const [qrTimer, setQrTimer] = useState(5);
   const [attendanceList, setAttendanceList] = useState([]);
   const [activeLesson, setActiveLesson] = useState(null);
+
+  // Load course schedule from backend
+  useEffect(() => {
+    const fetchCourseSchedule = async () => {
+      if (!user || !accessToken) {
+        console.log('⏳ AnaSayfa - User veya token bekleniyor...');
+        return;
+      }
+
+      try {
+        setIsLoadingSchedule(true);
+        console.log('🔄 AnaSayfa - Ders programı yükleniyor...');
+        
+        // TODO: Backend'den ders programını çek
+        // Şu anlık mock veri yerine boş bir obje döndürüyoruz
+        // const response = await fetch(`${API_BASE_URL}/courses/schedule/`, {
+        //   headers: { 'Authorization': `Bearer ${accessToken}` }
+        // });
+        // const scheduleData = await response.json();
+        
+        console.log('⚠️ AnaSayfa - Backend API henüz hazır değil, boş veri kullanılıyor');
+        setCourseScheduleData({});
+        
+      } catch (error) {
+        console.error('❌ AnaSayfa - Ders programı yükleme hatası:', error);
+        setCourseScheduleData({});
+      } finally {
+        setIsLoadingSchedule(false);
+      }
+    };
+
+    fetchCourseSchedule();
+  }, [user, accessToken]);
 
   // Update time every second
   useEffect(() => {
@@ -212,9 +251,35 @@ const AnaSayfa = ({
   const getRealScheduleData = () => {
     const schedule = {};
 
-    // Check if courseScheduleData exists
-    if (!courseScheduleData || !courseScheduleData["2025-2026-Güz"]) {
-      console.error("courseScheduleData is not available");
+    // Check if courseScheduleData exists and is loaded
+    if (isLoadingSchedule) {
+      console.log("⏳ AnaSayfa - Ders programı yükleniyor...");
+      // Return empty schedule while loading
+      const timeSlots = [
+        "09:00",
+        "09:55",
+        "10:50",
+        "11:45",
+        "13:30",
+        "14:30",
+        "15:20",
+        "16:15",
+        "17:00",
+        "17:55",
+      ];
+      const dayKeys = ["pazartesi", "sali", "carsamba", "persembe", "cuma"];
+
+      timeSlots.forEach((timeSlot) => {
+        schedule[timeSlot] = {};
+        dayKeys.forEach((day) => {
+          schedule[timeSlot][day] = "";
+        });
+      });
+      return schedule;
+    }
+
+    if (!courseScheduleData || Object.keys(courseScheduleData).length === 0) {
+      console.log("⚠️ AnaSayfa - Backend'den ders programı henüz gelmedi, boş program gösteriliyor");
       // Return empty schedule as fallback
       const timeSlots = [
         "09:00",
@@ -239,9 +304,7 @@ const AnaSayfa = ({
       return schedule;
     }
 
-    const currentSchedule =
-      courseScheduleData[selectedSemester] ||
-      courseScheduleData["2025-2026-Güz"];
+    const currentSchedule = courseScheduleData[selectedSemester] || {};
 
     // Initialize empty schedule
     const timeSlots = [
@@ -714,21 +777,21 @@ const AnaSayfa = ({
     // Parse lesson info
     const [courseName, roomInfo] = lesson.split("\n");
 
-    // Create mock course data for navigation
-    const mockCourse = {
+    // Create course data for navigation (data will come from backend in future)
+    const courseData = {
       id: `${courseName}_${timeSlot}_${dayKey}`,
       name: courseName,
       code: courseName.split("/")[0] || courseName,
       section: courseName.split("/")[1] || "1",
       room: roomInfo || "Belirtilmemiş",
-      building: "Ana Bina",
-      instructor: "Öğr. Gör. M. N. Öğüt",
-      studentCount: 25,
-      attendanceStatus: "completed",
-      attendanceRate: 85,
-      lastAttendance: new Date().toISOString(),
-      currentWeek: 8,
-      totalWeeks: 14,
+      building: "Backend'den gelecek",
+      instructor: "Backend'den gelecek",
+      studentCount: 0, // Backend'den gelecek
+      attendanceStatus: "pending", // Backend'den gelecek
+      attendanceRate: 0, // Backend'den gelecek
+      lastAttendance: null, // Backend'den gelecek
+      currentWeek: currentWeek,
+      totalWeeks: 14, // Backend'den gelecek
       schedule: {
         [dayKey]: [
           {
@@ -745,7 +808,7 @@ const AnaSayfa = ({
 
     // Navigate to course detail
     if (onNavigate) {
-      onNavigate("ders-detay", mockCourse);
+      onNavigate("ders-detay", courseData);
     }
   };
 

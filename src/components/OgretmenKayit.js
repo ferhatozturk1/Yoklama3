@@ -289,6 +289,7 @@ const OgretmenKayit = () => {
     try {
       // Sadece veritabanından gelen gerçek verilerle form gönder
       const formDataForAPI = {
+        title: form.title, // Ünvan bilgisini ekle
         email: form.email,
         password: form.password,
         first_name: form.first_name,

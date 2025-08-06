@@ -17,7 +17,10 @@ import {
 import cbuLogo from "../theme/cbulogo.png";
 import profilePhoto from "../assets/mno.jpg";
 
-const Sidebar = ({ open, onToggle, isMobile, onNavigate }) => {
+const Sidebar = ({ open, onToggle, isMobile, onNavigate, userProfile }) => {
+  console.log("🔍 SIDEBAR DEBUG - UserProfile:", userProfile);
+  console.log("🔍 SIDEBAR DEBUG - UserProfile title:", userProfile?.title);
+  console.log("🔍 SIDEBAR DEBUG - UserProfile name:", userProfile?.name);
   // Navigation items
   const navigationItems = [
     {
@@ -150,8 +153,8 @@ const Sidebar = ({ open, onToggle, isMobile, onNavigate }) => {
             }}
           >
             <img
-              src={profilePhoto}
-              alt="Mehmet Nuri Öğüt"
+              src={userProfile?.profilePhoto || profilePhoto}
+              alt={`${userProfile?.title || ''} ${userProfile?.name || 'Kullanıcı'}`}
               style={{
                 width: "100%",
                 height: "100%",
@@ -169,7 +172,7 @@ const Sidebar = ({ open, onToggle, isMobile, onNavigate }) => {
                 mb: 0.5,
               }}
             >
-              Öğr. Gör. Mehmet Nuri Öğüt
+              {userProfile?.title ? `${userProfile.title} ${userProfile.name}` : userProfile?.name || 'Kullanıcı'}
             </Typography>
             <Typography
               sx={{

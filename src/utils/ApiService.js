@@ -208,30 +208,6 @@ class ApiService {
     // Default error
     throw new Error(getLocalizedText('serverError'));
   }
-  
-  /**
-   * Get mock user profile data for development
-   * @returns {Object} - Mock user profile
-   */
-  static getMockUserProfile() {
-    return {
-      id: 'user123',
-      firstName: 'MEHMET NURİ',
-      lastName: 'ÖĞÜT',
-      name: 'MEHMET NURİ ÖĞÜT',
-      title: 'Öğretim Görevlisi',
-      email: 'mehmetnuri.ogut@cbu.edu.tr',
-      phone: '+90 236 201 1163',
-      university: 'MANİSA TEKNİK BİLİMLER MESLEK YÜKSEKOKULU',
-      faculty: 'MAKİNE VE METAL TEKNOLOJİLERİ',
-      department: 'ENDÜSTRİYEL KALIPÇILIK',
-      profilePhoto: 'https://randomuser.me/api/portraits/men/32.jpg',
-      webUrl: 'https://avesis.mcbu.edu.tr/mehmetnuri.ogut',
-      otherDetails: 'WoS Araştırma Alanları: Bilgisayar Bilimi, Yapay Zeka, Matematik\nDiğer E-posta: mehmetnuri.ogut@gmail.com',
-      createdAt: new Date('2023-01-15'),
-      updatedAt: new Date('2023-06-22')
-    };
-  }
 }
 
 export default ApiService;

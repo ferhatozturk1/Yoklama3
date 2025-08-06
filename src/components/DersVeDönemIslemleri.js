@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { courseList } from "../data/courseSchedule";
 import {
   Box,
   Typography,

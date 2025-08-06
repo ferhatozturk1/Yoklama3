@@ -40,7 +40,7 @@ const Profilim = ({
   onProfileUpdate,
 }) => {
   const { t } = useLocalization();
-  const { user, accessToken, loadUserProfile, setUser } = useAuth();
+  const { user, accessToken, loadUserProfile, setUser, isAuthenticated, isLoading: authLoading } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -51,55 +51,136 @@ const Profilim = ({
   const [apiError, setApiError] = useState("");
   const [showApiError, setShowApiError] = useState(false);
 
-  console.log("Profilim component initialized with user:", user);
+  console.log("🔍 === PROFILIM COMPONENT DEBUG BAŞLANGIÇ ===");
+  console.log("👤 AuthContext'ten gelen user:", user);
+  console.log("🔑 AuthContext'ten gelen accessToken:", accessToken ? "Mevcut" : "YOK");
+  console.log("✅ isAuthenticated:", isAuthenticated);
+  console.log("⏳ authLoading:", authLoading);
+  console.log("⏳ isLoading (local):", isLoading);
+  console.log("📄 initialUserProfile:", initialUserProfile);
+  console.log("🔍 === PROFILIM COMPONENT DEBUG BİTİŞ ===");
 
   // Profil bilgilerini AuthContext'ten yükle
   useEffect(() => {
     const fetchUserProfile = async () => {
+      console.log("🚀 === PROFIL YÜKLEME İŞLEMİ BAŞLIYOR ===");
+      
       if (initialUserProfile) {
+        console.log("📦 InitialUserProfile mevcut, direkt kullanılıyor:", initialUserProfile);
         setUserProfile(initialUserProfile);
         setIsLoading(false);
         return;
       }
 
       if (!user || !accessToken) {
-        console.warn("⚠️ User veya accessToken bulunamadı");
+        console.warn("⚠️ === EKSIK BİLGİLER ===");
+        console.warn("👤 User:", user);
+        console.warn("🔑 AccessToken:", accessToken ? "Mevcut" : "YOK");
         setIsLoading(false);
+        setApiError("Oturum bilgisi bulunamadı. Lütfen tekrar giriş yapın.");
+        setShowApiError(true);
         return;
       }
 
       try {
         setIsLoading(true);
         setApiError("");
+        setShowApiError(false);
         
-        console.log("📋 AuthContext üzerinden profil bilgileri yükleniyor...");
-        const profileData = await loadUserProfile();
+        console.log("📋 === API'DEN PROFIL BİLGİLERİ ÇEKİLİYOR ===");
+        console.log("👤 Mevcut user bilgileri:", {
+          id: user.id,
+          first_name: user.first_name,
+          last_name: user.last_name,
+          email: user.email,
+          title: user.title, // Title kontrolü
+          phone: user.phone,
+          department_id: user.department_id,
+          profile_photo: user.profile_photo
+        });
+        
+        console.log("🔍 TITLE DEBUG - User'dan gelen title:", user.title);
+        console.log("🔍 TITLE DEBUG - UserProfile'dan gelen title:", userProfile?.title);
+        
+        // Timeout ile profil yükleme - 15 saniye sonra timeout
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Profil yükleme zaman aşımına uğradı')), 15000)
+        );
+        
+        const profileData = await Promise.race([
+          loadUserProfile(),
+          timeoutPromise
+        ]);
         
         if (profileData) {
+          console.log("✅ === API'DEN GELEN PROFIL VERİLERİ ===");
+          console.log("📊 Profil Data:", {
+            id: profileData.id,
+            name: profileData.name,
+            firstName: profileData.firstName,
+            lastName: profileData.lastName,
+            title: profileData.title, // Title kontrolü
+            email: profileData.email,
+            phone: profileData.phone,
+            department_id: profileData.department_id,
+            profilePhoto: profileData.profilePhoto,
+            created_at: profileData.created_at
+          });
+          
+          console.log("🔍 TITLE DEBUG - API'den gelen title:", profileData.title);
+          
           setUserProfile(profileData);
-          console.log("✅ Profil bilgileri başarıyla yüklendi:", profileData);
+          console.log("✅ Profil state'e kaydedildi");
         } else {
-          console.warn("⚠️ Profil bilgileri alınamadı");
+          console.warn("⚠️ Profil bilgileri alınamadı - null/undefined döndü");
           setApiError("Profil bilgileri yüklenemedi");
           setShowApiError(true);
+          
+          // Yedek olarak user bilgilerini kullan
+          const fallbackProfile = {
+            name: `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'Kullanıcı',
+            firstName: user.first_name || '',
+            lastName: user.last_name || '',
+            title: user.title || '', // Title alanını ekle
+            email: user.email || '',
+            phone: user.phone || '',
+            profilePhoto: user.profile_photo || null,
+            department_id: user.department_id || '',
+            university: user.university || '',
+            faculty: user.faculty || '',
+            department: user.department || ''
+          };
+          
+          console.log("🔄 Yedek profil bilgileri kullanılıyor:", fallbackProfile);
+          setUserProfile(fallbackProfile);
         }
       } catch (error) {
-        console.error("❌ Profil yükleme hatası:", error);
+        console.error("❌ === PROFIL YÜKLEME HATASI ===");
+        console.error("Error message:", error.message);
+        console.error("Error stack:", error.stack);
         setApiError(error.message || "Profil bilgileri yüklenemedi");
         setShowApiError(true);
         
-        // Hata durumunda boş profil göster
-        setUserProfile({
-          name: "",
-          firstName: "",
-          lastName: "",
-          title: "",
-          email: "",
-          phone: "",
-          profilePhoto: null,
-        });
+        // Hata durumunda user bilgilerini kullan
+        const fallbackProfile = {
+          name: `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'Kullanıcı',
+          firstName: user.first_name || '',
+          lastName: user.last_name || '',
+          title: user.title || '', // Title alanını ekle
+          email: user.email || '',
+          phone: user.phone || '',
+          profilePhoto: user.profile_photo || null,
+          department_id: user.department_id || '',
+          university: user.university || '',
+          faculty: user.faculty || '',
+          department: user.department || ''
+        };
+        
+        console.log("🔄 Hata durumunda yedek profil kullanılıyor:", fallbackProfile);
+        setUserProfile(fallbackProfile);
       } finally {
         setIsLoading(false);
+        console.log("🏁 === PROFIL YÜKLEME İŞLEMİ TAMAMLANDI ===");
       }
     };
 
@@ -108,20 +189,26 @@ const Profilim = ({
 
   // Initialize form with user profile data - memoized to prevent recalculation
   const initialFormData = useMemo(
-    () => ({
-      title: userProfile?.title || "",
-      firstName: userProfile?.firstName || "",
-      lastName: userProfile?.lastName || "",
-      email: userProfile?.email || "",
-      phone: userProfile?.phone || "",
-      university: userProfile?.school || userProfile?.university || "",
-      faculty: userProfile?.faculty || "",
-      department: userProfile?.department || "",
-      webUrl: userProfile?.webUrl || "",
-      otherDetails: userProfile?.otherDetails || "",
-      profilePhoto: userProfile?.profilePhoto || null,
-    }),
-    [userProfile]
+    () => {
+      console.log('📋 Form data initialization - User title:', user?.title);
+      console.log('📋 Form data initialization - UserProfile title:', userProfile?.title);
+      
+      return {
+        title: user?.title || userProfile?.title || "",
+        firstName: user?.first_name || userProfile?.firstName || "",
+        lastName: user?.last_name || userProfile?.lastName || "",
+        email: user?.email || userProfile?.email || "",
+        phone: user?.phone || userProfile?.phone || "",
+        // AuthContext'ten gelen yeni alanlar
+        university: user?.university || userProfile?.school || userProfile?.university || "",
+        faculty: user?.faculty || userProfile?.faculty || "",
+        department: user?.department || userProfile?.department || "",
+        webUrl: user?.web_url || userProfile?.webUrl || "",
+        otherDetails: user?.other_details || userProfile?.otherDetails || "",
+        profilePhoto: user?.profile_photo || userProfile?.profilePhoto || null,
+      };
+    },
+    [user, userProfile]
   );
 
   const {
@@ -133,6 +220,53 @@ const Profilim = ({
     validateAll,
     resetForm,
   } = useFormValidation(initialFormData);
+
+  // Form verilerini AuthContext değişikliklerine göre güncelle
+  useEffect(() => {
+    if (user || userProfile) {
+      console.log('🔄 Profilim - Form verileri güncelleniyor:', { user, userProfile });
+      console.log('🔍 TITLE DEBUG - Form güncelleme sırasında:');
+      console.log('  - user.title:', user?.title);
+      console.log('  - userProfile.title:', userProfile?.title);
+      console.log('  - initialFormData.title:', initialFormData.title);
+      resetForm(initialFormData);
+    }
+  }, [user, userProfile, initialFormData, resetForm]);
+
+  // TextField için ortak stil objesi
+  const textFieldStyles = {
+    "& .MuiInputBase-input": {
+      fontWeight: 600, // Metni daha belirgin yap
+      color: "#0f172a", // Çok koyu metin rengi
+      fontSize: "1rem",
+      letterSpacing: "0.01em",
+    },
+    "& .MuiInputBase-input:disabled": {
+      WebkitTextFillColor: "#0f172a !important", // Disabled durumda da belirgin
+      color: "#0f172a !important",
+      fontWeight: 600,
+      opacity: 1,
+    },
+    "& .MuiOutlinedInput-notchedOutline": {
+      borderColor: "#cbd5e1",
+      borderWidth: "1.5px", // Biraz daha kalın border
+    },
+    "&:hover .MuiOutlinedInput-notchedOutline": {
+      borderColor: "#94a3b8",
+    },
+    "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+      borderColor: "#1a237e",
+      borderWidth: 2,
+    },
+    "& .MuiInputLabel-root": {
+      fontWeight: 600, // Label'ı daha belirgin yap
+      color: "#374151",
+      "&.Mui-focused": {
+        color: "#1a237e",
+        fontWeight: 600,
+      },
+    },
+  };
 
   // All callbacks must be defined before early returns to follow Rules of Hooks
   const handleEditClick = useCallback(() => {
@@ -184,6 +318,10 @@ const Profilim = ({
         email: values.email,
         department_id: userProfile.department_id || "", // Departman ID'si
         phone: values.phone || null,
+        // Ek bilgiler
+        university: values.university || "",
+        faculty: values.faculty || "", 
+        department: values.department || "",
       };
 
       console.log("🔄 Profil güncelleme verisi (yeni şema):", profileUpdateData);
@@ -220,6 +358,9 @@ const Profilim = ({
         email: savedProfile.email || values.email,
         phone: savedProfile.phone || values.phone,
         department_id: savedProfile.department_id || userProfile.department_id,
+        university: savedProfile.university || values.university || userProfile.university || "",
+        faculty: savedProfile.faculty || values.faculty || userProfile.faculty || "",
+        department: savedProfile.department || values.department || userProfile.department || "",
         profilePhoto: savedProfile.profile_photo || null,
         created_at: savedProfile.created_at || userProfile.created_at,
       };
@@ -234,6 +375,9 @@ const Profilim = ({
         title: savedProfile.title || values.title || user.title,
         email: savedProfile.email || values.email,
         phone: savedProfile.phone || values.phone,
+        university: savedProfile.university || values.university || user.university || "",
+        faculty: savedProfile.faculty || values.faculty || user.faculty || "",
+        department: savedProfile.department || values.department || user.department || "",
       };
       setUser(updatedUser);
       
@@ -313,7 +457,27 @@ const Profilim = ({
   }
 
   return (
-    <Container maxWidth="lg" sx={{ mt: 2, pb: 2, position: "relative" }}>
+          <Container maxWidth="lg" sx={{ py: { xs: 2, sm: 3, md: 4 } }}>
+        {/* Tüm TextField'larda metin belirginliği için global style */}
+        <style>
+          {`
+            .MuiInputBase-input {
+              font-weight: 600 !important;
+              color: #0f172a !important;
+              font-size: 1rem !important;
+            }
+            .MuiInputBase-input:disabled {
+              -webkit-text-fill-color: #0f172a !important;
+              color: #0f172a !important;
+              font-weight: 600 !important;
+              opacity: 1 !important;
+            }
+            .MuiInputLabel-root {
+              font-weight: 600 !important;
+              color: #374151 !important;
+            }
+          `}
+        </style>
       {/* Modern Page Title */}
       <Typography
         variant="h4"
@@ -354,13 +518,48 @@ const Profilim = ({
         </Alert>
       </Snackbar>
 
-      {/* Loading Indicator */}
-      {isSaving && (
-        <Box sx={{ display: "flex", justifyContent: "center", mb: 3 }}>
-          <CircularProgress size={24} sx={{ mr: 1 }} />
-          <Typography>Kaydediliyor...</Typography>
-        </Box>
-      )}
+      {/* Loading Indicator - Profil Yüklenirken */}
+      {isLoading ? (
+        <Paper
+          elevation={0}
+          sx={{
+            p: 4,
+            borderRadius: 3,
+            textAlign: "center",
+            background: "linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%)",
+            border: "1px solid rgba(26, 35, 126, 0.08)",
+            boxShadow: "0 4px 20px rgba(26, 35, 126, 0.08)",
+          }}
+        >
+          <CircularProgress size={40} sx={{ mb: 2, color: "#1a237e" }} />
+          <Typography variant="h6" sx={{ mb: 1, color: "#1a237e" }}>
+            Profil yükleniyor...
+          </Typography>
+          <Typography variant="body2" sx={{ color: "#64748b" }}>
+            Lütfen bekleyin, verileriniz getiriliyor.
+          </Typography>
+          
+          {/* Hata durumunda yeniden yükleme butonu */}
+          {showApiError && (
+            <Button
+              variant="outlined"
+              onClick={() => window.location.reload()}
+              sx={{ mt: 2 }}
+            >
+              Sayfayı Yenile
+            </Button>
+          )}
+        </Paper>
+      ) : (
+        <>
+          {/* Normal profil UI'ı */}
+          {/* Loading Indicator - Kayıt Edilirken */}
+          {isSaving && (
+            <Box sx={{ display: "flex", justifyContent: "center", mb: 3 }}>
+              <CircularProgress size={24} sx={{ mr: 1 }} />
+              <Typography>Kaydediliyor...</Typography>
+            </Box>
+          )}
 
       {/* Modern Card Layout */}
       <Paper
@@ -577,32 +776,12 @@ const Profilim = ({
               disabled={!isEditing}
               error={touched.title && !!errors.title}
               helperText={touched.title && errors.title}
-              InputProps={{
-                readOnly: !isEditing,
-                sx: {
+              sx={{
+                ...textFieldStyles,
+                "& .MuiInputBase-root": {
                   borderRadius: 2,
                   fontFamily: '"Inter", "Roboto", system-ui, sans-serif',
                   backgroundColor: isEditing ? "#ffffff" : "#f8fafc",
-                  "& .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "#e2e8f0",
-                  },
-                  "&:hover .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "#cbd5e1",
-                  },
-                  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "#1a237e",
-                    borderWidth: 2,
-                  },
-                },
-              }}
-              InputLabelProps={{
-                sx: {
-                  fontFamily: '"Inter", "Roboto", system-ui, sans-serif',
-                  fontWeight: 500,
-                  color: "#64748b",
-                  "&.Mui-focused": {
-                    color: "#1a237e",
-                  },
                 },
               }}
               inputRef={isEditing ? firstFieldRef : null}
@@ -622,32 +801,12 @@ const Profilim = ({
               disabled={!isEditing}
               error={touched.firstName && !!errors.firstName}
               helperText={touched.firstName && errors.firstName}
-              InputProps={{
-                readOnly: !isEditing,
-                sx: {
+              sx={{
+                ...textFieldStyles,
+                "& .MuiInputBase-root": {
                   borderRadius: 2,
                   fontFamily: '"Inter", "Roboto", system-ui, sans-serif',
                   backgroundColor: isEditing ? "#ffffff" : "#f8fafc",
-                  "& .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "#e2e8f0",
-                  },
-                  "&:hover .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "#cbd5e1",
-                  },
-                  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "#1a237e",
-                    borderWidth: 2,
-                  },
-                },
-              }}
-              InputLabelProps={{
-                sx: {
-                  fontFamily: '"Inter", "Roboto", system-ui, sans-serif',
-                  fontWeight: 500,
-                  color: "#64748b",
-                  "&.Mui-focused": {
-                    color: "#1a237e",
-                  },
                 },
               }}
             />
@@ -788,8 +947,142 @@ const Profilim = ({
             />
           </Grid>
 
+          {/* Üniversite Field */}
+          <Grid item xs={12} sm={6}>
+            <TextField
+              label="Üniversite"
+              value={values.university || ""}
+              onChange={(e) => handleChange("university", e.target.value)}
+              onBlur={() => handleBlur("university")}
+              fullWidth
+              variant="outlined"
+              size="medium"
+              disabled={!isEditing}
+              error={touched.university && !!errors.university}
+              helperText={touched.university && errors.university}
+              InputProps={{
+                readOnly: !isEditing,
+                sx: {
+                  borderRadius: 2,
+                  fontFamily: '"Inter", "Roboto", system-ui, sans-serif',
+                  backgroundColor: isEditing ? "#ffffff" : "#f8fafc",
+                  "& .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#e2e8f0",
+                  },
+                  "&:hover .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#cbd5e1",
+                  },
+                  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#1a237e",
+                    borderWidth: 2,
+                  },
+                },
+              }}
+              InputLabelProps={{
+                sx: {
+                  fontFamily: '"Inter", "Roboto", system-ui, sans-serif',
+                  fontWeight: 500,
+                  color: "#64748b",
+                  "&.Mui-focused": {
+                    color: "#1a237e",
+                  },
+                },
+              }}
+            />
+          </Grid>
+
+          {/* Fakülte Field */}
+          <Grid item xs={12} sm={6}>
+            <TextField
+              label="Fakülte"
+              value={values.faculty || ""}
+              onChange={(e) => handleChange("faculty", e.target.value)}
+              onBlur={() => handleBlur("faculty")}
+              fullWidth
+              variant="outlined"
+              size="medium"
+              disabled={!isEditing}
+              error={touched.faculty && !!errors.faculty}
+              helperText={touched.faculty && errors.faculty}
+              InputProps={{
+                readOnly: !isEditing,
+                sx: {
+                  borderRadius: 2,
+                  fontFamily: '"Inter", "Roboto", system-ui, sans-serif',
+                  backgroundColor: isEditing ? "#ffffff" : "#f8fafc",
+                  "& .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#e2e8f0",
+                  },
+                  "&:hover .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#cbd5e1",
+                  },
+                  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#1a237e",
+                    borderWidth: 2,
+                  },
+                },
+              }}
+              InputLabelProps={{
+                sx: {
+                  fontFamily: '"Inter", "Roboto", system-ui, sans-serif',
+                  fontWeight: 500,
+                  color: "#64748b",
+                  "&.Mui-focused": {
+                    color: "#1a237e",
+                  },
+                },
+              }}
+            />
+          </Grid>
+
+          {/* Bölüm Field */}
+          <Grid item xs={12}>
+            <TextField
+              label="Bölüm"
+              value={values.department || ""}
+              onChange={(e) => handleChange("department", e.target.value)}
+              onBlur={() => handleBlur("department")}
+              fullWidth
+              variant="outlined"
+              size="medium"
+              disabled={!isEditing}
+              error={touched.department && !!errors.department}
+              helperText={touched.department && errors.department}
+              InputProps={{
+                readOnly: !isEditing,
+                sx: {
+                  borderRadius: 2,
+                  fontFamily: '"Inter", "Roboto", system-ui, sans-serif',
+                  backgroundColor: isEditing ? "#ffffff" : "#f8fafc",
+                  "& .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#e2e8f0",
+                  },
+                  "&:hover .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#cbd5e1",
+                  },
+                  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#1a237e",
+                    borderWidth: 2,
+                  },
+                },
+              }}
+              InputLabelProps={{
+                sx: {
+                  fontFamily: '"Inter", "Roboto", system-ui, sans-serif',
+                  fontWeight: 500,
+                  color: "#64748b",
+                  "&.Mui-focused": {
+                    color: "#1a237e",
+                  },
+                },
+              }}
+            />
+          </Grid>
+
         </Grid>
       </Paper>
+      </>
+      )}
     </Container>
   );
 };

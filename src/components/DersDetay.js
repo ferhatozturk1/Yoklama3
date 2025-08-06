@@ -196,28 +196,20 @@ const DersDetay = ({ ders, onBack }) => {
       dateRange: `${new Date().toLocaleDateString('tr-TR')} - ${new Date().toLocaleDateString('tr-TR')}`,
       class: reportType === 'class' ? selectedReportClass : availableStudents.find(s => s.id === selectedReportStudent)?.class,
       student: reportType === 'student' ? availableStudents.find(s => s.id === selectedReportStudent) : null,
-      attendanceData: generateMockAttendanceData()
+      attendanceData: [] // Backend'den yoklama verisi gelecek
     };
 
     console.log('Rapor oluşturuluyor:', reportData);
+    console.log('⚠️ DersDetay - Backend API yoklama verileri henüz entegre edilmedi');
     
-    // Burada rapor oluşturma işlemi yapılacak
-    // PDF oluşturma, Excel export vb.
+    // TODO: Backend'den yoklama verilerini çek
+    // const attendanceResponse = await fetch(`/api/attendance/${courseId}`, {
+    //   headers: { 'Authorization': `Bearer ${accessToken}` }
+    // });
+    // reportData.attendanceData = await attendanceResponse.json();
     
     setOpenReportDialog(false);
     alert(`${reportType === 'class' ? 'Sınıf' : 'Öğrenci'} bazlı rapor başarıyla oluşturuldu!`);
-  };
-
-  // Mock yoklama verisi oluştur
-  const generateMockAttendanceData = () => {
-    const weeks = Array.from({length: 8}, (_, i) => i + 1);
-    return weeks.map(week => ({
-      week,
-      date: new Date(2024, 2, week * 7).toLocaleDateString('tr-TR'),
-      present: Math.floor(Math.random() * 25) + 15,
-      absent: Math.floor(Math.random() * 10) + 2,
-      rate: Math.floor(Math.random() * 30) + 70
-    }));
   };
 
   const getAttendanceStatusColor = (status) => {

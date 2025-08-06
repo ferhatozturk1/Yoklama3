@@ -8,6 +8,7 @@ import {
 } from "react-router-dom";
 import profilePhoto from "../assets/mno.jpg";
 import { Box, useTheme, useMediaQuery } from "@mui/material";
+import { useAuth } from "../contexts/AuthContext";
 import TopNavigation from "./TopNavigation";
 import Sidebar from "./Sidebar";
 import AnaSayfa from "./AnaSayfa";
@@ -29,19 +30,37 @@ const MainPortal = () => {
   const [selectedSemester, setSelectedSemester] = useState("2025-2026-Güz");
   const [sidebarOpen, setSidebarOpen] = useState(!isMobile);
   const [selectedCourse, setSelectedCourse] = useState(null);
-  const [userProfile] = useState({
-    name: "MEHMET NURİ ÖĞÜT",
-    email: "mehmetnuri.ogut@cbu.edu.tr",
-    phone: "+90 551 406 11 90",
-    title: "Ögr. Gör.",
-    school: "MANİSA TEKNİK BİLİMLER MESLEK YÜKSEKOKULU",
-    faculty: "MAKİNE VE METAL TEKNOLOJİLERİ",
-    department: "ENDÜSTRİYEL KALIPÇILIK",
-    webUrl: "https://avesis.mcbu.edu.tr/mehmetnuri.ogut",
-    otherDetails:
-      "WoS Araştırma Alanları: Bilgisayar Bilimi, Yapay Zeka, Matematik\nDiğer E-posta: mehmetnuri.ogut@gmail.com",
+  
+  // AuthContext'ten gerçek kullanıcı verilerini al
+  const { user } = useAuth();
+  
+  // Kullanıcı profili - backend'den gelen veriler
+  const userProfile = user ? {
+    name: `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'Kullanıcı',
+    email: user.email || '',
+    phone: user.phone || '',
+    title: user.title || '',
+    school: user.university || '',
+    faculty: user.faculty || '',
+    department: user.department || '',
+    webUrl: user.web_url || user.webUrl || '',
+    otherDetails: user.other_details || user.otherDetails || '',
+    profilePhoto: user.profile_photo || user.profilePhoto || profilePhoto,
+  } : {
+    name: "Kullanıcı",
+    email: "",
+    phone: "",
+    title: "",
+    school: "",
+    faculty: "",
+    department: "",
+    webUrl: "",
+    otherDetails: "",
     profilePhoto: profilePhoto,
-  });
+  };
+
+  console.log('🔍 MainPortal - User verisi:', user);
+  console.log('🔍 MainPortal - UserProfile:', userProfile);
 
   // Get current section from URL
   const getCurrentSection = () => {
@@ -99,6 +118,7 @@ const MainPortal = () => {
         onToggle={handleSidebarToggle}
         isMobile={isMobile}
         onNavigate={handleSectionChange}
+        userProfile={userProfile}
       />
 
       {/* Main content area */}
@@ -206,7 +226,7 @@ const MainPortal = () => {
             <Route path="/yoklama" element={<Yoklama />} />
             <Route
               path="/profilim"
-              element={<Profilim userProfile={userProfile} />}
+              element={<Profilim />}
             />
             <Route
               path="*"
