@@ -267,7 +267,7 @@ const OgretmenKayit = () => {
     }
 
     // API verileri yüklenmemişse işlem yapma
-    if (!form.university || !form.faculty || !form.department_id) {
+    if (!form.university || !form.faculty || (!form.department_id && !form.department)) {
       setError("Lütfen tüm alanları doldurun. Veriler yüklenene kadar bekleyin.");
       return;
     }
@@ -275,10 +275,10 @@ const OgretmenKayit = () => {
     // Seçilen verilerin veritabanında gerçekten var olduğunu kontrol et
     const selectedUniversity = universities.find(u => u.id === form.university);
     const selectedFaculty = faculties.find(f => f.id === form.faculty);
-    const selectedDepartment = departments.find(d => d.id === form.department_id);
+    const selectedDepartment = departments.find(d => d.id === form.department_id) || departments.find(d => d.name === form.department);
 
-    if (!selectedUniversity || !selectedFaculty || !selectedDepartment) {
-      setError("Seçilen veriler geçersiz. Lütfen tekrar seçim yapın.");
+    if (!selectedUniversity || !selectedFaculty || (!selectedDepartment && !form.department_id)) {
+      setError("Seçilen veriler geçersiz. Lütfen tekrar seçim yapın!");
       return;
     }
     
@@ -287,27 +287,42 @@ const OgretmenKayit = () => {
     setSuccess("");
 
     try {
-      // Sadece veritabanından gelen gerçek verilerle form gönder
+      // Eğer department_id boşsa, fakülteye göre departman listesinden adı eşleştirerek department_id bul
+      let finalDepartmentId = form.department_id;
+      if (!finalDepartmentId) {
+        try {
+          const deptList = await getDepartments(selectedFaculty.id);
+          const match = deptList?.find(d => d.name?.toLowerCase() === (form.department || '').toLowerCase());
+          if (match?.id) finalDepartmentId = match.id;
+        } catch {}
+      }
+
       const formDataForAPI = {
-        title: form.title, // Ünvan bilgisini ekle
+        title: form.title,
         email: form.email,
         password: form.password,
         first_name: form.first_name,
         last_name: form.last_name,
-        department_id: form.department_id // Gerçek seçilen department_id
+        department_id: finalDepartmentId || form.department_id
       };
+
+      if (!formDataForAPI.department_id) {
+        throw new Error('Departman ID belirlenemedi. Lütfen departman seçimini kontrol edin.');
+      }
 
       console.log("Gönderilen veri (seçilen department_id ile):", formDataForAPI);
       console.log("Seçilen departman:", selectedDepartment);
 
-      // Kayıt API çağrısı
       const response = await registerLecturer(formDataForAPI);
       
       console.log("API yanıtı:", response);
       
-      setSuccess("🎉 Kayıt başarılı! E-posta adresinizi doğrulayın. Giriş sayfasına yönlendiriliyorsunuz...");
+      try {
+        sessionStorage.setItem('pendingDepartmentId', formDataForAPI.department_id);
+        console.log('🗂️ pendingDepartmentId sessionStorage\'a yazıldı:', formDataForAPI.department_id);
+      } catch {}
       
-      // Başarılı kayıt sonrası giriş sayfasına yönlendir
+      setSuccess("🎉 Kayıt başarılı! E-posta adresinizi doğrulayın. Giriş sayfasına yönlendiriliyorsunuz...");
       setTimeout(() => {
         navigate("/giris");
       }, 3000);

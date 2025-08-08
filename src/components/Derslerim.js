@@ -27,6 +27,8 @@ import {
   Divider,
 } from "@mui/material";
 import { useAuth } from "../contexts/AuthContext";
+import { fetchDepartmentLectures } from "../api/schedule";
+import { getLecturerProfile, getUniversities, getFaculties, getDepartments } from "../api/auth";
 import {
   Edit,
   Add as AddIcon,
@@ -40,7 +42,44 @@ import {
 import DersDetay from "./DersDetay";
 
 const Derslerim = () => {
-  const { user, accessToken } = useAuth();
+  const { user, accessToken, loadUserProfile, isLoading: authLoading, setUser } = useAuth();
+  
+  const isUuid = (v) => typeof v === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(v);
+  
+  // Helper: department anahtarını çöz (isim öncelikli)
+  const resolveDeptKey = (src) => {
+    if (!src) return undefined;
+    return (
+      src.department_name ||
+      src.departmentName ||
+      (typeof src.department === 'string' ? src.department : undefined) ||
+      src.department_id ||
+      src.departmentId ||
+      (src.department && src.department.id)
+    );
+  };
+  
+  // Department adından ID çöz (gerekirse, ama artık isim de kullanılabilir)
+  const resolveDeptIdFromNames = async (src) => {
+    try {
+      const departmentName = src?.department || src?.departmentName || src?.department_name;
+      const facultyName = src?.faculty || src?.facultyName;
+      const universityName = src?.university || src?.universityName;
+      if (!departmentName || !facultyName || !universityName) return undefined;
+
+      const universities = await getUniversities();
+      const uni = (universities || []).find(u => u.name?.toLowerCase() === String(universityName).toLowerCase());
+      if (!uni?.id) return undefined;
+      const faculties = await getFaculties(uni.id);
+      const fac = (faculties || []).find(f => f.name?.toLowerCase() === String(facultyName).toLowerCase());
+      if (!fac?.id) return undefined;
+      const departments = await getDepartments(fac.id);
+      const dept = (departments || []).find(d => d.name?.toLowerCase() === String(departmentName).toLowerCase());
+      return dept?.id;
+    } catch {
+      return undefined;
+    }
+  };
   
   // View state - 'list' veya 'detail'
   const [currentView, setCurrentView] = useState("list");
@@ -88,146 +127,100 @@ const Derslerim = () => {
       setLoading(true);
       setError(null);
       
-      console.log("🔍 Dersler yükleniyor...", { 
+      // department anahtarını (isim/id) güvenle elde et
+      let departmentKey = resolveDeptKey(user);
+      if (!departmentKey) {
+        const storedUser = (() => { try { return JSON.parse(sessionStorage.getItem('user')); } catch { return null; } })();
+        departmentKey = resolveDeptKey(storedUser) || departmentKey;
+      }
+      const pendingDepartmentId = sessionStorage.getItem('pendingDepartmentId') || null;
+      if (!departmentKey && pendingDepartmentId) {
+        departmentKey = pendingDepartmentId; // id olabilir, sorun değil
+      }
+      
+      // Hala yoksa profil tazele ve isimlerden çözmeyi dene
+      if (!departmentKey && accessToken && user?.id) {
+        try {
+          const prof = typeof loadUserProfile === 'function' ? await loadUserProfile(false) : null;
+          departmentKey = resolveDeptKey(prof) || departmentKey;
+        } catch {}
+        if (!departmentKey) {
+          const derivedId = await resolveDeptIdFromNames(user) || await resolveDeptIdFromNames((() => { try { return JSON.parse(sessionStorage.getItem('user')); } catch { return null; } })());
+          if (derivedId) {
+            departmentKey = derivedId;
+            const merged = { ...(JSON.parse(sessionStorage.getItem('user') || 'null') || {}), department_id: derivedId, departmentId: derivedId };
+            sessionStorage.setItem('user', JSON.stringify(merged));
+            if (setUser) setUser({ ...user, department_id: derivedId, departmentId: derivedId });
+          }
+        }
+      }
+      
+      console.log("🔍 Dersler yükleniyor (department key - ad veya id)...", { 
         userId: user?.id, 
-        departmentId: user?.department_id, 
+        departmentKey, 
         accessToken: !!accessToken,
         accessTokenPrefix: accessToken ? accessToken.substring(0, 10) + "..." : "null"
       });
-      
-      // Backend API call - Bilgisayar Mühendisliği derslerini çek
-      if (accessToken) {
-        try {
-          // Test için sabit department ID kullan (sizin verdiğiniz)
-          const testDepartmentId = "07f57c4d-01c6-4d90-8219-ead1876a06b7";
-          console.log("🌐 API çağrısı yapılıyor:", `http://127.0.0.1:8000/lecturer_data/lectures/${testDepartmentId}/`);
-          
-          const response = await fetch(`http://127.0.0.1:8000/lecturer_data/lectures/${testDepartmentId}/`, {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-              "Authorization": `Bearer ${accessToken}`,
-            },
-          });
 
-          if (response.ok) {
-            const data = await response.json();
-            console.log("✅ Backend'ten dersler alındı:");
-            console.log("📊 Raw API Data:", data);
-            console.log("📊 Data Length:", data.length);
-            console.log("📊 First Item:", data[0]);
-            
-            // Transform backend data to match the expected format
-            const transformedCourses = data.map((course) => ({
-              id: course.id,
-              name: course.explicit_name || course.name || course.course_name || course.lecture_name || "Ders Adı",
-              code: course.code || course.course_code || course.lecture_code || "DERS001",
-              section: course.section || course.section_name || "A1",
-              sectionFull: `YP-${course.section || course.section_name || "A1"}`,
-              building: course.department?.faculty?.university?.name || 
-                       course.building?.name || 
-                       course.building || 
-                       "Manisa Teknik Bilimler MYO",
-              room: course.room || 
-                    course.classroom?.name || 
-                    course.classroom || 
-                    "Derslik-1",
-              class: course.class_level || course.level || course.year || "1-A",
-              instructor: course.instructor?.name || 
-                         course.instructor || 
-                         `${user.first_name} ${user.last_name}`,
-              schedule: course.schedule || course.time_slots || {},
-              totalWeeks: course.total_weeks || course.semester_weeks || 15,
-              currentWeek: course.current_week || course.week || 8,
-              studentCount: course.student_count || course.enrollment_count || 0,
-              attendanceStatus: course.attendance_status || "not_taken",
-              lastAttendance: course.last_attendance || course.last_attendance_date,
-              attendanceRate: course.attendance_rate || Math.floor(Math.random() * 40) + 60,
-              files: course.files || course.materials || [],
-              department: course.department?.name || 
-                         course.department_name || 
-                         user.department || 
-                         "Bilgisayar Mühendisliği",
-              // Ek alanlar
-              semester: course.semester || course.term || "Güz 2024",
-              credits: course.credits || course.credit_hours || 3,
-              description: course.description || "",
-            }));
-
-            console.log("🔄 Dönüştürülen dersler:", transformedCourses);
-            setDersler(transformedCourses);
-            return;
-          } else {
-            console.warn("⚠️ Backend API hatası:", response.status, response.statusText);
-            const errorText = await response.text();
-            console.warn("⚠️ API Error Response:", errorText);
+      const normalizeLectures = (data) => {
+        if (!data) return [];
+        if (Array.isArray(data)) return data;
+        if (Array.isArray(data?.results)) return data.results;
+        if (Array.isArray(data?.lectures)) return data.lectures;
+        if (Array.isArray(data?.items)) return data.items;
+        if (typeof data === 'object' && data.id) return [data];
+        if (typeof data === 'object') {
+          const values = Object.values(data);
+          if (values.length && values.every(v => typeof v === 'object')) {
+            return values;
           }
-        } catch (apiError) {
-          console.warn("⚠️ Backend API çağrısı başarısız:", apiError.message);
-          console.error("⚠️ API Error Details:", apiError);
         }
-      } else {
-        console.warn("⚠️ User department_id veya accessToken eksik:", {
-          userId: user?.id,
-          departmentId: user?.department_id,
-          hasAccessToken: !!accessToken
-        });
+        return [];
+      };
+      
+      if (!accessToken) {
+        setError("Access token bulunamadı");
+        setLoading(false);
+        return;
       }
-      
-      // Fallback: Backend'den veri gelmediği durumda mock data kullan
-      console.log("📦 Backend'den veri alınamadı, mock data kullanılıyor...");
-      
-      // Mock courses data - geçici çözüm (sadece backend çalışmadığında)
-      const mockCourses = [
-        {
-          id: "mock-1",
-          name: "Yazılım Mühendisliği",
-          code: "YMH301",
-          section: "A1",
-          sectionFull: "YP-A1",
-          building: "Manisa Teknik Bilimler MYO",
-          room: "A101",
-          class: "3-A",
-          instructor: user ? `${user.first_name} ${user.last_name}` : "Dr. Öğretmen",
-          schedule: {
-            pazartesi: [{ startTime: "08:40", endTime: "10:20", room: "A101" }],
-            çarşamba: [{ startTime: "13:40", endTime: "15:20", room: "A101" }],
-          },
-          totalWeeks: 15,
-          currentWeek: 8,
-          studentCount: 45,
-          attendanceStatus: "not_taken",
-          lastAttendance: null,
-          attendanceRate: 78,
-          files: [],
-          department: user?.department || "Bilgisayar Mühendisliği",
-        },
-        {
-          id: "mock-2",
-          name: "Veri Yapıları ve Algoritmalar",
-          code: "BIL204",
-          section: "B1",
-          sectionFull: "YP-B1",
-          building: "Manisa Teknik Bilimler MYO",
-          room: "B205",
-          class: "2-B",
-          instructor: user ? `${user.first_name} ${user.last_name}` : "Dr. Öğretmen",
-          schedule: {
-            salı: [{ startTime: "10:40", endTime: "12:20", room: "B205" }],
-            perşembe: [{ startTime: "14:40", endTime: "16:20", room: "B205" }],
-          },
-          totalWeeks: 15,
-          currentWeek: 8,
-          studentCount: 38,
-          attendanceStatus: "not_taken",
-          lastAttendance: null,
-          attendanceRate: 85,
-          files: [],
-          department: user?.department || "Bilgisayar Mühendisliği",
-        }
-      ];
-      
-      setDersler(mockCourses);
+      if (!departmentKey) {
+        setError("Departman bilgisi bulunamadı. Lütfen tekrar deneyin.");
+        setLoading(false);
+        return;
+      }
+
+      // Bölüm anahtarı (ad ya da id) ile endpoint'e git
+      const lecturesRaw = await fetchDepartmentLectures(departmentKey, accessToken);
+      console.log("✅ Backend'ten dersler alındı");
+      console.log("📊 Raw API Data:", lecturesRaw);
+      const lecturesArray = normalizeLectures(lecturesRaw);
+      console.log("📏 Normalize edilmiş ders sayısı:", lecturesArray.length);
+      console.log("🧪 İlk ders (normalize):", lecturesArray[0]);
+
+      const transformedCourses = lecturesArray.map((course) => ({
+        id: course.id,
+        name: course.explicit_name || course.name || course.course_name || course.lecture_name || "Ders",
+        code: course.code || course.course_code || course.lecture_code || "DERS",
+        section: course.section || course.section_name || course.section_code || "A1",
+        sectionFull: `YP-${course.section || course.section_name || "A1"}`,
+        building: course.department?.faculty?.university?.name || 
+                 course.building?.name || 
+                 course.building || 
+                 "Ana Bina",
+        room: course.room?.name || course.room || "A101",
+        class: `${course.classLevel || 1}-A`,
+        instructor: course.instructor?.name || `${user?.first_name || ''} ${user?.last_name || ''}`.trim() || "Öğretim Üyesi",
+        schedule: {},
+        totalWeeks: 15,
+        currentWeek: 1,
+        studentCount: Math.floor(Math.random() * 30) + 20,
+        attendanceStatus: "not_taken",
+        lastAttendance: null,
+        attendanceRate: 0,
+        files: [],
+      }));
+
+      setDersler(transformedCourses);
     } catch (err) {
       console.error("Error fetching courses:", err);
       setError(err.message);
@@ -236,8 +229,14 @@ const Derslerim = () => {
     }
   };
 
+  // Basit yeniden dene
+  const handleRetry = () => {
+    fetchCourses();
+  };
+
   // Load courses from backend and localStorage
   useEffect(() => {
+    if (!user || !accessToken || authLoading) return;
     fetchCourses();
 
     // Also load courses from localStorage and combine
@@ -300,7 +299,7 @@ const Derslerim = () => {
       window.removeEventListener("storage", handleStorageChange);
       window.removeEventListener("teacherCoursesUpdated", handleStorageChange);
     };
-  }, [user, accessToken]);
+  }, [user?.department_id, user?.id, accessToken, authLoading]);
 
   // Event handlers
   const handleDersClick = (ders) => {
@@ -417,6 +416,21 @@ const Derslerim = () => {
     return <DersDetay ders={selectedDers} onBack={handleBackToList} />;
   }
 
+  // Hata görünümü
+  if (error) {
+    return (
+      <Container maxWidth="md" sx={{ py: 6, textAlign: 'center' }}>
+        <Typography variant="h5" sx={{ color: '#dc2626', fontWeight: 700, mb: 2 }}>
+          Dersler yüklenirken hata oluştu
+        </Typography>
+        <Typography sx={{ color: 'text.secondary', mb: 3 }}>
+          {error}
+        </Typography>
+        <Button variant="contained" onClick={handleRetry}>Tekrar Dene</Button>
+      </Container>
+    );
+  }
+
   return (
     <Container
       maxWidth={false}
@@ -487,34 +501,6 @@ const Derslerim = () => {
           <Typography variant="h6" color="text.secondary">
             Dersler yükleniyor...
           </Typography>
-        </Box>
-      )}
-
-      {/* Error State */}
-      {error && !loading && (
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            py: 8,
-            flexDirection: "column",
-            gap: 2,
-          }}
-        >
-          <Typography variant="h6" color="error">
-            Dersler yüklenirken hata oluştu
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            {error}
-          </Typography>
-          <Button 
-            variant="contained" 
-            onClick={fetchCourses}
-            sx={{ mt: 2 }}
-          >
-            Tekrar Dene
-          </Button>
         </Box>
       )}
 

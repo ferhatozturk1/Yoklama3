@@ -6,8 +6,6 @@ export const getUniversities = async () => {
   try {
     const possibleEndpoints = [
       `${API_BASE_URL}/lecturer_data/universities/`,
-      `${API_BASE_URL}/universities/`,
-      `${API_BASE_URL}/api/universities/`,
     ];
     
     for (const endpoint of possibleEndpoints) {
@@ -47,9 +45,6 @@ export const getFaculties = async (universityId) => {
 
     const possibleEndpoints = [
       `${API_BASE_URL}/lecturer_data/faculties/${universityId}/`,
-      `${API_BASE_URL}/faculties/${universityId}/`,
-      `${API_BASE_URL}/api/faculties/${universityId}/`,
-      `${API_BASE_URL}/lecturer_data/faculties/?university=${universityId}`,
     ];
     
     for (const endpoint of possibleEndpoints) {
@@ -92,9 +87,6 @@ export const getDepartments = async (facultyId) => {
 
     const possibleEndpoints = [
       `${API_BASE_URL}/lecturer_data/departments/${facultyId}/`,
-      `${API_BASE_URL}/departments/${facultyId}/`,
-      `${API_BASE_URL}/api/departments/${facultyId}/`,
-      `${API_BASE_URL}/lecturer_data/departments/?faculty=${facultyId}`,
     ];
     
     for (const endpoint of possibleEndpoints) {
@@ -127,43 +119,57 @@ export const getDepartments = async (facultyId) => {
   }
 };
 
+// Departman listesini getir (fakülteye göre)
+export const getDepartmentsByFaculty = async (facultyId) => {
+  const response = await fetch(`${API_BASE_URL}/lecturer_data/departments/faculty_id/${facultyId}/`, {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' }
+  });
+  if (!response.ok) {
+    const text = await response.text().catch(() => '');
+    throw new Error(`Departman listesi alınamadı ${response.status}: ${text}`);
+  }
+  return response.json();
+};
+
 // login işlemi
-export const loginLecturer = async (formData) => {
-  console.log("Login API çağrısı:", { username: formData.username, password: "***" }); // Debug için
+export const loginLecturer = async (loginData) => {
+  console.log('🔐 === LOGIN API ÇAĞRISI ===');
+  console.log('📤 Gönderilen data:', { username: loginData.username, password: '***' });
   
   const response = await fetch(`${API_BASE_URL}/lecturer_data/lecturers/login/`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
     },
-    body: JSON.stringify({ username: formData.username, password: formData.password }) // Backend username bekliyor
+    body: JSON.stringify({ 
+      username: loginData.username, 
+      password: loginData.password 
+    })
   });
 
-  console.log("Login API yanıt durumu:", response.status); // Debug için
+  console.log("📊 Login API yanıt durumu:", response.status);
 
   if (!response.ok) {
     let errorData;
     let textResponse;
     
     try {
-      // İlk önce text olarak al
       textResponse = await response.text();
-      console.error("Login API raw yanıtı:", textResponse);
+      console.error("❌ Login API raw yanıtı:", textResponse);
       
-      // Sonra JSON parse etmeyi dene
       try {
         errorData = JSON.parse(textResponse);
-        console.error("Login API JSON hata detayı:", errorData);
+        console.error("❌ Login API JSON hata detayı:", errorData);
       } catch (parseError) {
-        console.error("Login JSON parse edilemedi:", textResponse);
+        console.error("❌ Login JSON parse edilemedi:", textResponse);
         throw new Error(`Giriş başarısız (${response.status}): Server hatası`);
       }
     } catch (textError) {
-      console.error("Login response text alınamadı:", textError);
+      console.error("❌ Login response text alınamadı:", textError);
       throw new Error(`Giriş başarısız (${response.status}): Response okunamadı`);
     }
     
-    // Hata mesajını daha anlaşılır hale getir
     let errorMessage = "E-posta veya şifre hatalı";
     if (errorData.detail) {
       errorMessage = errorData.detail;
@@ -177,8 +183,44 @@ export const loginLecturer = async (formData) => {
   }
 
   const result = await response.json();
-  console.log("Login başarılı, API yanıtı:", result); // Debug için
-  return result;  // access + refresh token
+  console.log('✅ === LOGIN BAŞARILI ===');
+  console.log('📋 Backend API yanıtı:', result);
+  
+  // JWT token'ı decode edip lecturer_id'yi göster
+  if (result.access) {
+    try {
+      const tokenParts = result.access.split('.');
+      if (tokenParts.length === 3) {
+        const base64Url = tokenParts[1];
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+        }).join(''));
+        
+        const decodedToken = JSON.parse(jsonPayload);
+        console.log('🔍 JWT Token decode edildi:', decodedToken);
+        console.log('👤 Lecturer ID (JWT\'dan):', decodedToken.lecturer_id);
+        console.log('📧 Email (JWT\'dan):', decodedToken.email);
+        console.log('⏰ Token expiry:', new Date(decodedToken.exp * 1000));
+        
+        // Lecturer ID'yi response'a ekle (AuthContext için)
+        result.lecturer_id = decodedToken.lecturer_id;
+        result.email = decodedToken.email;
+        
+        console.log('🔧 Enhanced response (lecturer_id eklendi):', {
+          access: result.access ? 'MEVCUT' : 'YOK',
+          refresh: result.refresh ? 'MEVCUT' : 'YOK',
+          lecturer_id: result.lecturer_id,
+          email: result.email
+        });
+      }
+    } catch (decodeError) {
+      console.error('❌ JWT decode hatası:', decodeError);
+    }
+  }
+  
+  console.log('✅ Login fonksiyonu tamamlandı');
+  return result;
 };
 
 // kayıt işlemi
@@ -243,7 +285,7 @@ export const registerLecturer = async (formData) => {
 
 // access token yenileme
 export const refreshToken = async (refreshToken) => {
-  const response = await fetch("http://127.0.0.1:8000/lecturer_data/lecturers/login/refresh/", {
+  const response = await fetch(`${API_BASE_URL}/lecturer_data/lecturers/login/refresh/`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json"

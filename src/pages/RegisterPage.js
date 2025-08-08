@@ -22,6 +22,11 @@ const RegisterPage = () => {
     e.preventDefault();
     try {
       await registerLecturer(formData);
+      // Kaydı takiben ilk girişte kullanılmak üzere seçilen department_id'yi sakla
+      try {
+        sessionStorage.setItem("pendingDepartmentId", formData.department_id);
+        // Not: AuthContext login/session yüklemede pendingDepartmentId'yi öncelikli kullanır
+      } catch {}
       alert("Kayıt başarılı!");
       navigate("/login");
     } catch (err) {

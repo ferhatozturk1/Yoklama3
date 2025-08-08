@@ -3,8 +3,7 @@ import React, {
   useEffect,
   useCallback,
   useMemo,
-  lazy,
-  Suspense,
+  useRef,
 } from "react";
 import {
   Typography,
@@ -21,18 +20,10 @@ import {
 } from "@mui/material";
 import { Edit, Save, Cancel } from "@mui/icons-material";
 
-// Lazy load the ProfilePhotoUpload component with prefetching
-const ProfilePhotoUpload = lazy(() => {
-  // Prefetch the component when idle
-  const prefetchPromise = import("./ProfilePhotoUpload");
-  // Return the promise to React.lazy
-  return prefetchPromise;
-});
-
 import { useLocalization } from "../utils/localization";
 import { useFormValidation } from "../utils/validation";
 import { debounce } from "../utils/debounce";
-import { updateLecturerProfile, uploadProfilePhoto, deleteProfilePhoto } from "../api/auth";
+import { updateLecturerProfile, uploadProfilePhoto, deleteProfilePhoto, getUniversities, getFaculties, getDepartments } from "../api/auth";
 import { useAuth } from "../contexts/AuthContext";
 
 const Profilim = ({
@@ -71,6 +62,98 @@ const Profilim = ({
   const [apiError, setApiError] = useState("");
   const [showApiError, setShowApiError] = useState(false);
 
+  // Birden fazla kez çalışmayı engellemek için ref
+  const hasFetchedProfileRef = useRef(false);
+
+  // Test API fonksiyonlarını sadece development ortamında çalıştır
+  const isDev = process.env.NODE_ENV !== 'production';
+
+  // Test API fonksiyonu - Üniversite/Fakülte/Bölüm verilerini test et
+  const testApiConnections = async () => {
+    console.log('🧪 === API BAĞLANTI TESTİ BAŞLIYOR ===');
+    try {
+      // 1. Üniversite listesi test et
+      console.log('🧪 Üniversite listesi getiriliyor...');
+      const universities = await getUniversities();
+      console.log('🧪 Üniversite listesi sonucu:', universities);
+      
+      if (universities && universities.length > 0) {
+        const firstUniversity = universities[0];
+        console.log('🧪 İlk üniversite:', firstUniversity);
+        
+        // 2. Fakülte listesi test et
+        console.log('🧪 Fakülte listesi getiriliyor...', firstUniversity.id);
+        const faculties = await getFaculties(firstUniversity.id);
+        console.log('🧪 Fakülte listesi sonucu:', faculties);
+        
+        if (faculties && faculties.length > 0) {
+          const firstFaculty = faculties[0];
+          console.log('🧪 İlk fakülte:', firstFaculty);
+          
+          // 3. Bölüm listesi test et
+          console.log('🧪 Bölüm listesi getiriliyor...', firstFaculty.id);
+          const departments = await getDepartments(firstFaculty.id);
+          console.log('🧪 Bölüm listesi sonucu:', departments);
+          
+          console.log('✅ Tüm API çağrıları başarılı!');
+          return {
+            universities,
+            faculties,
+            departments,
+            success: true
+          };
+        }
+      }
+    } catch (error) {
+      console.error('❌ API test hatası:', error);
+      return { success: false, error: error.message };
+    }
+  };
+
+  // GERÇEK KULLANICI VERİSİNİ TEST ET
+  const testRealUserData = async () => {
+    console.log('🔍 === GERÇEK KULLANICI VERİSİ TESTİ ===');
+    console.log('👤 Current User:', user);
+    console.log('🔑 Access Token mevcut:', !!accessToken);
+    
+    if (user && user.id && accessToken) {
+      try {
+        // Backend'den direkt ham veriyi çek
+        const response = await fetch(`http://127.0.0.1:8000/lecturer_data/lecturers/${user.id}/`, {
+          method: "GET",
+         
+        });
+        
+        if (response.ok) {
+          const rawUserData = await response.json();
+          console.log('🔍 === BACKEND\'DEN GELEN HAM VERİ ===');
+          console.log('🆔 ID:', rawUserData.id);
+          console.log('👤 Ad:', rawUserData.first_name);
+          console.log('👤 Soyad:', rawUserData.last_name);
+          console.log('📧 Email:', rawUserData.email);
+          console.log('🏢 Department ID:', rawUserData.department_id);
+          console.log('🏫 University (raw):', rawUserData.university);
+          console.log('🏛️ Faculty (raw):', rawUserData.faculty);
+          console.log('🏢 Department (raw):', rawUserData.department);
+          console.log('📅 Oluşturulma tarihi:', rawUserData.created_at);
+          console.log('📷 Profil foto:', rawUserData.profile_photo);
+          console.log('🔍 === HAM VERİ BİTİŞ ===');
+          return rawUserData;
+        } else {
+          console.error('❌ Backend\'den veri çekilemedi:', response.status);
+        }
+      } catch (error) {
+        console.error('❌ Ham veri test hatası:', error);
+      }
+    } else {
+      console.warn('⚠️ Kullanıcı bilgileri eksik:', {
+        hasUser: !!user,
+        hasUserId: !!(user && user.id),
+        hasToken: !!accessToken
+      });
+    }
+  };
+
   console.log("🔍 === PROFILIM COMPONENT DEBUG BAŞLANGIÇ ===");
   console.log("👤 AuthContext'ten gelen user:", user);
   console.log("🔑 AuthContext'ten gelen accessToken:", accessToken ? "Mevcut" : "YOK");
@@ -78,13 +161,44 @@ const Profilim = ({
   console.log("⏳ authLoading:", authLoading);
   console.log("⏳ isLoading (local):", isLoading);
   console.log("📄 initialUserProfile:", initialUserProfile);
+  
+  // User'daki önemli alanları detaylı kontrol et
+  if (user) {
+    console.log("🔍 === USER DETAYLI ANALİZ ===");
+    console.log("👤 user.id:", user.id);
+    console.log("🏢 user.department_id:", user.department_id);
+    console.log("🏫 user.university:", user.university);
+    console.log("🏛️ user.faculty:", user.faculty);
+    console.log("🏢 user.department:", user.department);
+    console.log("📧 user.email:", user.email);
+    console.log("📞 user.phone:", user.phone);
+    console.log("🎓 user.title:", user.title);
+    console.log("👤 user.first_name:", user.first_name);
+    console.log("👤 user.last_name:", user.last_name);
+    console.log("🔍 === USER DETAYLI ANALİZ BİTİŞ ===");
+  }
+  
   console.log("🔍 === PROFILIM COMPONENT DEBUG BİTİŞ ===");
 
   // Profil bilgilerini AuthContext'ten yükle
   useEffect(() => {
+    // Eğer zaten çekildiyse tekrar deneme
+    if (hasFetchedProfileRef.current) return;
+
+    // Gerekli bilgiler yoksa çalıştırma
+    if (!user || !accessToken) return;
+
+    hasFetchedProfileRef.current = true;
+
     const fetchUserProfile = async () => {
       console.log("🚀 === PROFIL YÜKLEME İŞLEMİ BAŞLIYOR ===");
-      
+
+      // Debug/test çağrılarını sadece dev modda yap
+      if (isDev) {
+        try { await testRealUserData(); } catch {}
+        try { await testApiConnections(); } catch {}
+      }
+
       if (initialUserProfile) {
         console.log("📦 InitialUserProfile mevcut, direkt kullanılıyor:", initialUserProfile);
         setUserProfile(initialUserProfile);
@@ -92,82 +206,37 @@ const Profilim = ({
         return;
       }
 
-      if (!user || !accessToken) {
-        console.warn("⚠️ === EKSIK BİLGİLER ===");
-        console.warn("👤 User:", user);
-        console.warn("🔑 AccessToken:", accessToken ? "Mevcut" : "YOK");
-        setIsLoading(false);
-        setApiError("Oturum bilgisi bulunamadı. Lütfen tekrar giriş yapın.");
-        setShowApiError(true);
-        return;
-      }
-
       try {
         setIsLoading(true);
         setApiError("");
         setShowApiError(false);
-        
+
         console.log("📋 === API'DEN PROFIL BİLGİLERİ ÇEKİLİYOR ===");
-        console.log("👤 Mevcut user bilgileri:", {
-          id: user.id,
-          first_name: user.first_name,
-          last_name: user.last_name,
-          email: user.email,
-          title: user.title, // Title kontrolü
-          phone: user.phone,
-          department_id: user.department_id,
-          profile_photo: user.profile_photo
-        });
-        
-        console.log("🔍 TITLE DEBUG - User'dan gelen title:", user.title);
-        console.log("🔍 TITLE DEBUG - UserProfile'dan gelen title:", userProfile?.title);
-        
+
         // Timeout ile profil yükleme - 15 saniye sonra timeout
         const timeoutPromise = new Promise((_, reject) => 
           setTimeout(() => reject(new Error('Profil yükleme zaman aşımına uğradı')), 15000)
         );
-        
+
         const profileData = await Promise.race([
-          loadUserProfile(),
+          loadUserProfile(false),
           timeoutPromise
         ]);
-        
+
         if (profileData) {
-          console.log("✅ === API'DEN GELEN PROFIL VERİLERİ ===");
-          console.log("📊 Profil Data:", {
-            id: profileData.id,
-            name: profileData.name,
-            firstName: profileData.firstName,
-            lastName: profileData.lastName,
-            title: profileData.title, // Title kontrolü
-            email: profileData.email,
-            phone: profileData.phone,
-            department_id: profileData.department_id,
-            profilePhoto: getProfilePhotoUrl(profileData.profilePhoto),
-            created_at: profileData.created_at
-          });
-          
-          console.log("🔍 TITLE DEBUG - API'den gelen title:", profileData.title);
-          
-          // ProfilePhoto URL'ini düzeltilmiş halde kaydet
           const correctedProfileData = {
             ...profileData,
             profilePhoto: getProfilePhotoUrl(profileData.profilePhoto)
           };
-          
           setUserProfile(correctedProfileData);
-          console.log("✅ Profil state'e kaydedildi (düzeltilmiş URL ile):", correctedProfileData);
         } else {
-          console.warn("⚠️ Profil bilgileri alınamadı - null/undefined döndü");
           setApiError("Profil bilgileri yüklenemedi");
           setShowApiError(true);
-          
-          // Yedek olarak user bilgilerini kullan
           const fallbackProfile = {
             name: `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'Kullanıcı',
             firstName: user.first_name || '',
             lastName: user.last_name || '',
-            title: user.title || '', // Title alanını ekle
+            title: user.title || '',
             email: user.email || '',
             phone: user.phone || '',
             profilePhoto: getProfilePhotoUrl(user.profile_photo),
@@ -176,23 +245,17 @@ const Profilim = ({
             faculty: user.faculty || '',
             department: user.department || ''
           };
-          
-          console.log("🔄 Yedek profil bilgileri kullanılıyor:", fallbackProfile);
           setUserProfile(fallbackProfile);
         }
       } catch (error) {
         console.error("❌ === PROFIL YÜKLEME HATASI ===");
-        console.error("Error message:", error.message);
-        console.error("Error stack:", error.stack);
         setApiError(error.message || "Profil bilgileri yüklenemedi");
         setShowApiError(true);
-        
-        // Hata durumunda user bilgilerini kullan
         const fallbackProfile = {
           name: `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'Kullanıcı',
           firstName: user.first_name || '',
           lastName: user.last_name || '',
-          title: user.title || '', // Title alanını ekle
+          title: user.title || '',
           email: user.email || '',
           phone: user.phone || '',
           profilePhoto: getProfilePhotoUrl(user.profile_photo),
@@ -201,8 +264,6 @@ const Profilim = ({
           faculty: user.faculty || '',
           department: user.department || ''
         };
-        
-        console.log("🔄 Hata durumunda yedek profil kullanılıyor:", fallbackProfile);
         setUserProfile(fallbackProfile);
       } finally {
         setIsLoading(false);
@@ -211,15 +272,26 @@ const Profilim = ({
     };
 
     fetchUserProfile();
-  }, [user, accessToken, initialUserProfile, loadUserProfile]);
+  // Bu efekt sadece user.id ve token değişince tetiklensin, loadUserProfile (memoized) değişime dahil değil
+  }, [user?.id, accessToken, initialUserProfile, isDev]);
 
   // Initialize form with user profile data - memoized to prevent recalculation
   const initialFormData = useMemo(
     () => {
-      console.log('📋 Form data initialization - User title:', user?.title);
-      console.log('📋 Form data initialization - UserProfile title:', userProfile?.title);
+      console.log('📋 === INITIAL FORM DATA DEBUG BAŞLANGIÇ ===');
+      console.log('👤 User object:', user);
+      console.log('📄 UserProfile object:', userProfile);
+      console.log('🔍 User University/Faculty/Department:');
+      console.log('  - user?.university:', user?.university);
+      console.log('  - user?.faculty:', user?.faculty);
+      console.log('  - user?.department:', user?.department);
+      console.log('🔍 UserProfile University/Faculty/Department:');
+      console.log('  - userProfile?.university:', userProfile?.university);
+      console.log('  - userProfile?.faculty:', userProfile?.faculty);
+      console.log('  - userProfile?.department:', userProfile?.department);
+      console.log('  - userProfile?.school:', userProfile?.school);
       
-      return {
+      const formData = {
         title: user?.title || userProfile?.title || "",
         firstName: user?.first_name || userProfile?.firstName || "",
         lastName: user?.last_name || userProfile?.lastName || "",
@@ -233,6 +305,15 @@ const Profilim = ({
         otherDetails: user?.other_details || userProfile?.otherDetails || "",
         profilePhoto: getProfilePhotoUrl(user?.profile_photo || userProfile?.profilePhoto),
       };
+      
+      console.log('🔧 === OLUŞTURULAN FORM DATA ===');
+      console.log('🏫 formData.university:', formData.university);
+      console.log('🏛️ formData.faculty:', formData.faculty);
+      console.log('🏢 formData.department:', formData.department);
+      console.log('📊 Tam formData:', formData);
+      console.log('📋 === INITIAL FORM DATA DEBUG BİTİŞ ===');
+      
+      return formData;
     },
     [user, userProfile]
   );
@@ -250,12 +331,19 @@ const Profilim = ({
   // Form verilerini AuthContext değişikliklerine göre güncelle
   useEffect(() => {
     if (user || userProfile) {
+      console.log('🔄 === FORM RESET İŞLEMİ BAŞLIYOR ===');
       console.log('🔄 Profilim - Form verileri güncelleniyor:', { user, userProfile });
-      console.log('🔍 TITLE DEBUG - Form güncelleme sırasında:');
-      console.log('  - user.title:', user?.title);
-      console.log('  - userProfile.title:', userProfile?.title);
-      console.log('  - initialFormData.title:', initialFormData.title);
+      console.log('🔍 User University/Faculty/Department:');
+      console.log('  - user?.university:', user?.university);
+      console.log('  - user?.faculty:', user?.faculty);
+      console.log('  - user?.department:', user?.department);
+      console.log('🔄 resetForm ÖNCESI - initialFormData:', initialFormData);
+      console.log('🔄 resetForm ÖNCESI - values state:', values);
+      
       resetForm(initialFormData);
+      
+      console.log('✅ resetForm SONRASI - Form resetlendi');
+      console.log('🔄 === FORM RESET İŞLEMİ BİTTİ ===');
     }
   }, [user, userProfile, initialFormData, resetForm]);
 
@@ -302,7 +390,9 @@ const Profilim = ({
 
   const handleCancelClick = useCallback(() => {
     setIsEditing(false);
+    console.log('🔄 CANCEL - resetForm ÖNCESI:', initialFormData);
     resetForm(initialFormData);
+    console.log('✅ CANCEL - resetForm SONRASI');
     setUploadedPhoto(null);
     setPhotoPreview(null);
     setSaveMessage("");
@@ -430,7 +520,7 @@ const Profilim = ({
       updateUser(updatedUser);
       
       console.log("✅ Profil başarıyla güncellendi:", updatedUserProfile);
-      console.log("🔄 AuthContext user güncellendi:", updatedUser);
+      console.log("�� AuthContext user güncellendi:", updatedUser);
 
       // Call the onProfileUpdate callback if provided
       if (onProfileUpdate) {
@@ -509,14 +599,7 @@ const Profilim = ({
     );
   }
 
-  // Debug: Profil fotoğrafı durumunu kontrol et
-  console.log("🔍 === PROFİLİM PROFIL FOTOĞRAFI DEBUG ===");
-  console.log("👤 UserProfile:", userProfile);
-  console.log("📸 Profile Photo:", userProfile?.profilePhoto);
-  console.log("🔸 Profile Photo Type:", typeof userProfile?.profilePhoto);
-  console.log("🔸 Profile Photo başlangıcı:", userProfile?.profilePhoto?.substring(0, 100));
-  console.log("🖼️ Photo Preview:", photoPreview);
-  console.log("🔍 === PROFİLİM DEBUG BİTİŞ ===");
+  // Konsol gürültüsünü azaltmak için debug logları kapatıldı
 
   return (
           <Container maxWidth="lg" sx={{ py: { xs: 2, sm: 3, md: 4 } }}>
@@ -648,56 +731,31 @@ const Profilim = ({
         >
           {/* Profile Photo */}
           <Box sx={{ textAlign: "center", flexShrink: 0 }}>
-            {isEditing ? (
-              <Suspense
-                fallback={
-                  <Box
-                    sx={{
-                      display: "flex",
-                      justifyContent: "center",
-                      alignItems: "center",
-                      height: 80,
-                      width: 80,
-                    }}
-                  >
-                    <CircularProgress size={30} />
-                  </Box>
-                }
-              >
-                <ProfilePhotoUpload
-                  currentPhoto={photoPreview || userProfile.profilePhoto}
-                  onPhotoChange={handlePhotoChange}
-                  onPhotoRemove={handlePhotoRemove}
-                  disabled={isSaving}
-                />
-              </Suspense>
-            ) : (
-              <Avatar
-                src={photoPreview || userProfile.profilePhoto || null}
-                alt={"Profil fotoğrafı: " + (userProfile.name || "Kullanıcı")}
-                sx={{
-                  width: 80,
-                  height: 80,
-                  fontSize: "2rem",
-                  bgcolor: "#1a237e",
-                }}
-                role="img"
-                aria-label={
-                  "Profil fotoğrafı: " + (userProfile.name || "Kullanıcı")
-                }
-                onError={(e) => {
-                  console.error('❌ Profilim Avatar - Profil fotoğrafı yüklenemedi:', {
-                    src: e.target.src,
-                    originalPath: userProfile.profilePhoto,
-                    error: e
-                  });
-                }}
-              >
-                {userProfile.name
-                  ? userProfile.name.charAt(0).toUpperCase()
-                  : "?"}
-              </Avatar>
-            )}
+            <Avatar
+              src={photoPreview || userProfile.profilePhoto || null}
+              alt={"Profil fotoğrafı: " + (userProfile.name || "Kullanıcı")}
+              sx={{
+                width: 80,
+                height: 80,
+                fontSize: "2rem",
+                bgcolor: "#1a237e",
+              }}
+              role="img"
+              aria-label={
+                "Profil fotoğrafı: " + (userProfile.name || "Kullanıcı")
+              }
+              onError={(e) => {
+                console.error('❌ Profilim Avatar - Profil fotoğrafı yüklenemedi:', {
+                  src: e.target.src,
+                  originalPath: userProfile.profilePhoto,
+                  error: e
+                });
+              }}
+            >
+              {userProfile.name
+                ? userProfile.name.charAt(0).toUpperCase()
+                : "?"}
+            </Avatar>
           </Box>
 
           {/* Modern Profile Info */}
@@ -1018,6 +1076,13 @@ const Profilim = ({
 
           {/* Üniversite Field */}
           <Grid item xs={12} sm={6}>
+            {console.log('🔍 === ÜNİVERSİTE TEXTFIELD RENDER DEBUG ===')}
+            {console.log('  - values.university:', values.university)}
+            {console.log('  - values objesi tamamı:', values)}
+            {console.log('  - initialFormData.university:', initialFormData.university)}
+            {console.log('  - user?.university:', user?.university)}
+            {console.log('  - userProfile?.university:', userProfile?.university)}
+            {console.log('🔍 =======================================')}
             <TextField
               label="Üniversite"
               value={values.university || ""}
@@ -1062,6 +1127,12 @@ const Profilim = ({
 
           {/* Fakülte Field */}
           <Grid item xs={12} sm={6}>
+            {console.log('🔍 === FAKÜLTE TEXTFIELD RENDER DEBUG ===')}
+            {console.log('  - values.faculty:', values.faculty)}
+            {console.log('  - initialFormData.faculty:', initialFormData.faculty)}
+            {console.log('  - user?.faculty:', user?.faculty)}
+            {console.log('  - userProfile?.faculty:', userProfile?.faculty)}
+            {console.log('🔍 ====================================')}
             <TextField
               label="Fakülte"
               value={values.faculty || ""}
@@ -1106,6 +1177,12 @@ const Profilim = ({
 
           {/* Bölüm Field */}
           <Grid item xs={12}>
+            {console.log('🔍 === BÖLÜM TEXTFIELD RENDER DEBUG ===')}
+            {console.log('  - values.department:', values.department)}
+            {console.log('  - initialFormData.department:', initialFormData.department)}
+            {console.log('  - user?.department:', user?.department)}
+            {console.log('  - userProfile?.department:', userProfile?.department)}
+            {console.log('🔍 ==============================')}
             <TextField
               label="Bölüm"
               value={values.department || ""}

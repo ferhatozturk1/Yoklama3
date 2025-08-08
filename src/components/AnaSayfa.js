@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 
 import { useAuth } from "../contexts/AuthContext";
+import { fetchLecturerLectures, buildWeeklySchedule } from "../api/schedule";
 import {
   Container,
   Typography,
@@ -77,46 +78,80 @@ const AnaSayfa = ({
   const [currentTime, setCurrentTime] = useState(new Date());
   const [expandedDay, setExpandedDay] = useState(false);
   const [currentWeek, setCurrentWeek] = useState(8); // Şu anki hafta (8. hafta)
-  
-  // Course Schedule Data from Backend
-  const [courseScheduleData, setCourseScheduleData] = useState(null);
-  const [isLoadingSchedule, setIsLoadingSchedule] = useState(true);
 
   const { user, accessToken } = useAuth();
 
+  // Ders saat slotları (getRealScheduleData içinde kullanılmadan önce tanımlı olmalı)
+  const timeSlots = [
+    "08:40",
+    "09:30",
+    "09:50",
+    "10:40",
+    "11:00",
+    "11:50",
+    "13:40",
+    "14:30",
+    "14:40",
+    "15:30",
+    "15:40",
+    "16:30",
+    "16:40",
+    "17:30",
+  ];
+
+  // Backend'den ders programını çek ve haftalık programa dönüştür
+  const [apiWeeklySchedule, setApiWeeklySchedule] = useState(null);
+  const [scheduleError, setScheduleError] = useState(null);
+  const [scheduleLoading, setScheduleLoading] = useState(false);
+
+  // basit departmentId çözümü
+  const resolveDept = (src) => {
+    if (!src) return undefined;
+    return (
+      src.department_id ||
+      src.departmentId ||
+      (src.department && (typeof src.department === "string" ? src.department : src.department.id))
+    );
+  };
+
+  useEffect(() => {
+    const loadSchedule = async () => {
+      if (!user?.id || !accessToken) return;
+      try {
+        setScheduleLoading(true);
+        setScheduleError(null);
+        // Öğretmen dersleri
+        const lectures = await fetchLecturerLectures(user.id, accessToken);
+
+        // Ders adları/section eşlemesi için departmentId (varsa) da geçir
+        const departmentId = resolveDept(user) || resolveDept((() => { try { return JSON.parse(sessionStorage.getItem('user')); } catch { return null; } })());
+        const weekly = await buildWeeklySchedule(lectures, accessToken, departmentId || undefined);
+        setApiWeeklySchedule(weekly);
+      } catch (e) {
+        console.error("Ders programı yükleme hatası:", e);
+        setScheduleError(e.message);
+        setApiWeeklySchedule(null);
+      } finally {
+        setScheduleLoading(false);
+      }
+    };
+    loadSchedule();
+  }, [user?.id, accessToken]);
+
   // Profile photo URL'ini düzelt - Backend'den gelen relative path'i tam URL'e çevir
   const getProfilePhotoUrl = (photoPath) => {
-    console.log('📸 getProfilePhotoUrl çağrıldı:', photoPath);
     if (!photoPath) {
-      console.log('❌ Photo path boş');
       return null;
     }
     if (photoPath.startsWith('http')) {
-      console.log('✅ Zaten tam URL:', photoPath);
       return photoPath;
     }
-    
     const fullUrl = `http://127.0.0.1:8000${photoPath}`;
-    console.log('🔧 Tam URL oluşturuldu:', fullUrl);
-    
-    // URL'in yüklenip yüklenemediğini test et
-    const testImg = new Image();
-    testImg.onload = () => console.log('✅ URL başarıyla yüklendi:', fullUrl);
-    testImg.onerror = () => console.log('❌ URL yüklenemedi:', fullUrl);
-    testImg.src = fullUrl;
-    
     return fullUrl;
   };
 
   // Debug: Backend'den gelen user bilgilerini kontrol et
-  console.log("🔍 === ANA SAYFA USER DEBUG ===");
-  console.log("👤 User:", user);
-  console.log("📸 Profile Photo:", user?.profile_photo);
-  console.log("� Profile Photo Type:", typeof user?.profile_photo);
-  console.log("🔸 Profile Photo Length:", user?.profile_photo?.length);
-  console.log("🔸 Profile Photo başlangıcı:", user?.profile_photo?.substring(0, 100));
-  console.log("�🔑 AccessToken:", accessToken ? "Mevcut" : "YOK");
-  console.log("🔍 === ANA SAYFA USER DEBUG BİTİŞ ===");
+  // console debug gürültüsünü azaltmak için kapatıldı
 
   // QR Code System States
   const [yoklamaDialog, setYoklamaDialog] = useState(false);
@@ -124,39 +159,6 @@ const AnaSayfa = ({
   const [qrTimer, setQrTimer] = useState(5);
   const [attendanceList, setAttendanceList] = useState([]);
   const [activeLesson, setActiveLesson] = useState(null);
-
-  // Load course schedule from backend
-  useEffect(() => {
-    const fetchCourseSchedule = async () => {
-      if (!user || !accessToken) {
-        console.log('⏳ AnaSayfa - User veya token bekleniyor...');
-        return;
-      }
-
-      try {
-        setIsLoadingSchedule(true);
-        console.log('🔄 AnaSayfa - Ders programı yükleniyor...');
-        
-        // TODO: Backend'den ders programını çek
-        // Şu anlık mock veri yerine boş bir obje döndürüyoruz
-        // const response = await fetch(`${API_BASE_URL}/courses/schedule/`, {
-        //   headers: { 'Authorization': `Bearer ${accessToken}` }
-        // });
-        // const scheduleData = await response.json();
-        
-        console.log('⚠️ AnaSayfa - Backend API henüz hazır değil, boş veri kullanılıyor');
-        setCourseScheduleData({});
-        
-      } catch (error) {
-        console.error('❌ AnaSayfa - Ders programı yükleme hatası:', error);
-        setCourseScheduleData({});
-      } finally {
-        setIsLoadingSchedule(false);
-      }
-    };
-
-    fetchCourseSchedule();
-  }, [user, accessToken]);
 
   // Update time every second
   useEffect(() => {
@@ -283,111 +285,134 @@ const AnaSayfa = ({
 
   // Get real schedule data from course data
   const getRealScheduleData = () => {
+    // Eğer API'den geldiyse onu dönüştür: apiWeeklySchedule -> tablo formatı
+    if (apiWeeklySchedule) {
+      const dayMap = { Pazartesi: 'pazartesi', Salı: 'sali', Çarşamba: 'carsamba', Perşembe: 'persembe', Cuma: 'cuma' };
+      const base = {};
+      timeSlots.forEach(ts => {
+        base[ts] = { pazartesi: '', sali: '', carsamba: '', persembe: '', cuma: '' };
+      });
+      Object.entries(apiWeeklySchedule).forEach(([dayTr, items]) => {
+        const dayKey = dayMap[dayTr];
+        (items || []).forEach(item => {
+          const ts = item.startTime;
+          if (base[ts] && dayKey) {
+            const line1 = `${item.courseCode || ''}`.trim();
+            const line2 = `${item.sectionName || ''}`.trim();
+            base[ts][dayKey] = [line1, line2].filter(Boolean).join("\n");
+          }
+        });
+      });
+      return base;
+    }
+
+    // Fallback: static
     const schedule = {};
 
-    // Check if courseScheduleData exists and is loaded
-    if (isLoadingSchedule) {
-      console.log("⏳ AnaSayfa - Ders programı yükleniyor...");
-      // Return empty schedule while loading
-      const timeSlots = [
-        "09:00",
-        "09:55",
-        "10:50",
-        "11:45",
-        "13:30",
-        "14:30",
-        "15:20",
-        "16:15",
-        "17:00",
-        "17:55",
-      ];
-      const dayKeys = ["pazartesi", "sali", "carsamba", "persembe", "cuma"];
+    // Gerçek ders verilerini burada kullanabilirsiniz
+    // Şimdilik statik veri kullanıyoruz
+    const courses = {
+      "08:40": {
+        pazartesi: "",
+        sali: "",
+        carsamba: "",
+        persembe: "",
+        cuma: "",
+      },
+      "09:30": {
+        pazartesi: "MATH113/3\nYP-A1",
+        sali: "",
+        carsamba: "",
+        persembe: "",
+        cuma: "",
+      },
+      "09:50": {
+        pazartesi: "",
+        sali: "",
+        carsamba: "",
+        persembe: "",
+        cuma: "",
+      },
+      "10:40": {
+        pazartesi: "",
+        sali: "",
+        carsamba: "",
+        persembe: "",
+        cuma: "",
+      },
+      "11:00": {
+        pazartesi: "",
+        sali: "PHYS101/2\nFZK-B2",
+        carsamba: "",
+        persembe: "",
+        cuma: "",
+      },
+      "11:50": {
+        pazartesi: "",
+        sali: "",
+        carsamba: "",
+        persembe: "",
+        cuma: "",
+      },
+      "13:40": {
+        pazartesi: "",
+        sali: "",
+        carsamba: "CHEM201/1\nKMY-A3",
+        persembe: "",
+        cuma: "",
+      },
+      "14:30": {
+        pazartesi: "",
+        sali: "",
+        carsamba: "",
+        persembe: "ENG102/4\nİNG-C1",
+        cuma: "",
+      },
+      "14:40": {
+        pazartesi: "",
+        sali: "",
+        carsamba: "",
+        persembe: "",
+        cuma: "",
+      },
+      "15:30": {
+        pazartesi: "",
+        sali: "",
+        carsamba: "",
+        persembe: "",
+        cuma: "COMP301/2\nBLM-D2",
+      },
+      "15:40": {
+        pazartesi: "",
+        sali: "",
+        carsamba: "",
+        persembe: "",
+        cuma: "",
+      },
+      "16:30": {
+        pazartesi: "",
+        sali: "",
+        carsamba: "",
+        persembe: "",
+        cuma: "",
+      },
+      "16:40": {
+        pazartesi: "",
+        sali: "",
+        carsamba: "",
+        persembe: "",
+        cuma: "",
+      },
+      "17:30": {
+        pazartesi: "",
+        sali: "",
+        carsamba: "",
+        persembe: "",
+        cuma: "",
+      },
+    };
 
-      timeSlots.forEach((timeSlot) => {
-        schedule[timeSlot] = {};
-        dayKeys.forEach((day) => {
-          schedule[timeSlot][day] = "";
-        });
-      });
-      return schedule;
-    }
-
-    if (!courseScheduleData || Object.keys(courseScheduleData).length === 0) {
-      console.log("⚠️ AnaSayfa - Backend'den ders programı henüz gelmedi, boş program gösteriliyor");
-      // Return empty schedule as fallback
-      const timeSlots = [
-        "09:00",
-        "09:55",
-        "10:50",
-        "11:45",
-        "13:30",
-        "14:30",
-        "15:20",
-        "16:15",
-        "17:00",
-        "17:55",
-      ];
-      const dayKeys = ["pazartesi", "sali", "carsamba", "persembe", "cuma"];
-
-      timeSlots.forEach((timeSlot) => {
-        schedule[timeSlot] = {};
-        dayKeys.forEach((day) => {
-          schedule[timeSlot][day] = "";
-        });
-      });
-      return schedule;
-    }
-
-    const currentSchedule = courseScheduleData[selectedSemester] || {};
-
-    // Initialize empty schedule
-    const timeSlots = [
-      "09:00",
-      "09:55",
-      "10:50",
-      "11:45",
-      "13:30",
-      "14:30",
-      "15:20",
-      "16:15",
-      "17:00",
-      "17:55",
-    ];
-    const dayKeys = ["pazartesi", "sali", "carsamba", "persembe", "cuma"];
-
-    timeSlots.forEach((timeSlot) => {
-      schedule[timeSlot] = {};
-      dayKeys.forEach((day) => {
-        schedule[timeSlot][day] = "";
-      });
-    });
-
-    // Fill with real course data
-    if (currentSchedule) {
-      Object.keys(currentSchedule).forEach((day) => {
-        const daySchedule = currentSchedule[day];
-        if (daySchedule) {
-          Object.keys(daySchedule).forEach((timeSlot) => {
-            const course = daySchedule[timeSlot];
-
-            if (course && course.name) {
-              let courseText = "";
-              if (course.code) {
-                courseText = `${course.code}\n${course.name}`;
-              } else {
-                courseText = course.name;
-              }
-              if (course.room) {
-                courseText += `\n${course.room}`;
-              }
-              schedule[timeSlot][day] = courseText;
-            }
-          });
-        }
-      });
-    }
-
-    return schedule;
+    return courses;
   };
 
   const baseSchedule = getRealScheduleData();
@@ -407,19 +432,6 @@ const AnaSayfa = ({
       }
     });
   });
-
-  const timeSlots = [
-    "09:00",
-    "09:55",
-    "10:50",
-    "11:45",
-    "13:30",
-    "14:30",
-    "15:20",
-    "16:15",
-    "17:00",
-    "17:55",
-  ];
 
   // Function to calculate end time for each time slot
   const getEndTime = (startTime) => {

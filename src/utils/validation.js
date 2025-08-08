@@ -1,3 +1,4 @@
+import React, { useState, useCallback, useEffect } from 'react';
 import { getLocalizedText } from './localization';
 
 // Email validation regex
@@ -135,12 +136,28 @@ export const validateProfileForm = (profile) => {
 /**
  * Custom hook for form validation
  */
-import { useState, useCallback } from 'react';
-
 export const useFormValidation = (initialValues = {}) => {
+  console.log('🎯 useFormValidation başlatılıyor:', initialValues);
+  console.log('🎯 initialValues.university:', initialValues.university);
+  console.log('🎯 initialValues.faculty:', initialValues.faculty);
+  console.log('🎯 initialValues.department:', initialValues.department);
+  
   const [values, setValues] = useState(initialValues);
   const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({});
+  
+  console.log('🎯 useState values başlangıcı:', values);
+  console.log('🎯 values.university:', values.university);
+  
+  // initialValues değiştiğinde values'ı güncelle
+  useEffect(() => {
+    console.log('🔄 useFormValidation - initialValues değişti:', initialValues);
+    console.log('  - Yeni university:', initialValues.university);
+    console.log('  - Yeni faculty:', initialValues.faculty);
+    console.log('  - Yeni department:', initialValues.department);
+    setValues(initialValues);
+    console.log('✅ values state güncellendi');
+  }, [initialValues]);
   
   const validateField = useCallback((fieldName, value) => {
     let error = null;
@@ -165,10 +182,15 @@ export const useFormValidation = (initialValues = {}) => {
   }, []);
   
   const handleChange = useCallback((fieldName, value) => {
-    setValues(prev => ({
-      ...prev,
-      [fieldName]: value
-    }));
+    console.log(`🔄 handleChange - ${fieldName}:`, value);
+    setValues(prev => {
+      const newValues = {
+        ...prev,
+        [fieldName]: value
+      };
+      console.log(`✅ setValues güncellendi - ${fieldName}:`, newValues[fieldName]);
+      return newValues;
+    });
     
     // Validate field if it has been touched
     if (touched[fieldName]) {
@@ -208,7 +230,13 @@ export const useFormValidation = (initialValues = {}) => {
   }, [values]);
   
   const resetForm = useCallback((newValues = {}) => {
+    console.log('🔧 resetForm çağrıldı:');
+    console.log('  - newValues:', newValues);
+    console.log('  - newValues.university:', newValues.university);
+    console.log('  - newValues.faculty:', newValues.faculty);
+    console.log('  - newValues.department:', newValues.department);
     setValues(newValues);
+    console.log('✅ setValues tamamlandı - newValues:', newValues);
     setErrors({});
     setTouched({});
   }, []);
