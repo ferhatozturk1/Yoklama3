@@ -416,7 +416,10 @@ const DersDetay = ({ ders, onBack }) => {
                 <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                   <LocationOn sx={{ fontSize: 16, color: "#666" }} />
                   <Typography variant="body2">
-                    {ders.building} - {ders.room}
+                    {ders.building && ders.room 
+                      ? `${ders.building} - ${ders.room}`
+                      : "Konum bilgisi güncelleniyor..."
+                    }
                   </Typography>
                 </Box>
 
@@ -479,7 +482,7 @@ const DersDetay = ({ ders, onBack }) => {
                       color="text.secondary"
                       sx={{ display: "block" }}
                     >
-                      {s.startTime} - {s.endTime} ({s.room})
+                      {s.startTime} - {s.endTime} {s.room ? `(${s.room})` : ""}
                     </Typography>
                   ))}
                 </Box>

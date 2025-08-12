@@ -119,6 +119,82 @@ export const getDepartments = async (facultyId) => {
   }
 };
 
+// Bina listesini getir (üniversiteye göre)
+export const getBuildings = async (universityId, accessToken) => {
+  try {
+    if (!universityId) {
+      console.error("❌ Bina listesi için üniversite ID'si gerekli!");
+      return [];
+    }
+
+    if (!accessToken) {
+      console.error("❌ Bina listesi için access token gerekli!");
+      return [];
+    }
+
+    const endpoint = `${API_BASE_URL}/lecturer_data/buildings/${universityId}/`;
+    console.log(`🔄 Bina endpoint'i çağrılıyor: ${endpoint}`);
+    
+    const response = await fetch(endpoint, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${accessToken}`
+      }
+    });
+
+    if (response.ok) {
+      const buildings = await response.json();
+      console.log(`✅ Binalar ${endpoint} adresinden alındı:`, buildings);
+      return Array.isArray(buildings) ? buildings : [];
+    } else {
+      console.log(`❌ ${endpoint} - Status: ${response.status}`);
+      return [];
+    }
+  } catch (error) {
+    console.error("❌ Bina listesi hatası:", error);
+    return [];
+  }
+};
+
+// Sınıf listesini getir (binaya göre)
+export const getClassrooms = async (buildingId, accessToken) => {
+  try {
+    if (!buildingId) {
+      console.error("❌ Sınıf listesi için bina ID'si gerekli!");
+      return [];
+    }
+
+    if (!accessToken) {
+      console.error("❌ Sınıf listesi için access token gerekli!");
+      return [];
+    }
+
+    const endpoint = `${API_BASE_URL}/lecturer_data/classrooms/${buildingId}/`;
+    console.log(`🔄 Sınıf endpoint'i çağrılıyor: ${endpoint}`);
+    
+    const response = await fetch(endpoint, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${accessToken}`
+      }
+    });
+
+    if (response.ok) {
+      const classrooms = await response.json();
+      console.log(`✅ Sınıflar ${endpoint} adresinden alındı:`, classrooms);
+      return Array.isArray(classrooms) ? classrooms : [];
+    } else {
+      console.log(`❌ ${endpoint} - Status: ${response.status}`);
+      return [];
+    }
+  } catch (error) {
+    console.error("❌ Sınıf listesi hatası:", error);
+    return [];
+  }
+};
+
 // Departman listesini getir (fakülteye göre)
 export const getDepartmentsByFaculty = async (facultyId) => {
   const response = await fetch(`${API_BASE_URL}/lecturer_data/departments/faculty_id/${facultyId}/`, {

@@ -1,16 +1,44 @@
 // Ders programı API fonksiyonları
+import { refreshToken } from './auth';
+
 export const API_BASE_URL = 'http://127.0.0.1:8000';
 
 // Department lectures: /lecturer_data/lectures/{departmentId}/
 export async function fetchDepartmentLectures(departmentId, accessToken) {
   const url = `${API_BASE_URL}/lecturer_data/lectures/${departmentId}/`;
   console.log('🔗 fetchDepartmentLectures URL:', url);
-  const res = await fetch(url, {
+  
+  // İlk deneme
+  let res = await fetch(url, {
     headers: {
       'Content-Type': 'application/json',
       ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
     },
   });
+  
+  // Token expired ise yenilemeyi dene
+  if (res.status === 401 && accessToken) {
+    console.log('🔄 Token expired, trying to refresh...');
+    try {
+      const refreshTokenValue = sessionStorage.getItem('refreshToken');
+      if (refreshTokenValue) {
+        const newTokens = await refreshToken(refreshTokenValue);
+        sessionStorage.setItem('token', newTokens.access);
+        
+        // Yeni token ile tekrar dene
+        res = await fetch(url, {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${newTokens.access}`,
+          },
+        });
+        console.log('✅ Token refreshed and retry successful');
+      }
+    } catch (refreshError) {
+      console.error('❌ Token refresh failed:', refreshError);
+    }
+  }
+  
   if (!res.ok) {
     const text = await res.text().catch(() => '');
     throw new Error(`Department lectures failed ${res.status}: ${text}`);

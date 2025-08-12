@@ -162,6 +162,9 @@ export const AuthProvider = ({ children }) => {
             enhancedProfile.faculty = foundInfo.faculty;
             enhancedProfile.department = foundInfo.department;
             enhancedProfile.department_name = foundInfo.department;
+            enhancedProfile.university_id = foundInfo.university_id;
+            enhancedProfile.faculty_id = foundInfo.faculty_id;
+            enhancedProfile.department_id = foundInfo.department_id;
           }
         } catch (apiError) {
           console.error('❌ ===== API ÇAĞRISI HATASI =====');
@@ -215,6 +218,30 @@ export const AuthProvider = ({ children }) => {
         console.log('🔧 AuthContext - department_id set edildi:', enhancedProfile.department_id);
       }
       
+      // University ID'yi garanti altına al
+      if (!enhancedProfile.university_id && enhancedProfile.department_id) {
+        console.log('🔍 AuthContext - University ID eksik, department_id\'den çözmeye çalışılıyor...');
+        try {
+          const universities = await getUniversities();
+          for (const university of (universities || [])) {
+            const faculties = await getFaculties(university.id);
+            for (const faculty of (faculties || [])) {
+              const departments = await getDepartments(faculty.id);
+              const matchDept = (departments || []).find(d => d.id === enhancedProfile.department_id);
+              if (matchDept) {
+                enhancedProfile.university_id = university.id;
+                enhancedProfile.faculty_id = faculty.id;
+                console.log('✅ AuthContext - University ID çözüldü:', university.id);
+                break;
+              }
+            }
+            if (enhancedProfile.university_id) break;
+          }
+        } catch (resolveError) {
+          console.warn('⚠️ AuthContext - University ID çözülemedi:', resolveError);
+        }
+      }
+      
       console.log('🏁 === HAM VERİ ANALİZİ TAMAMLANDI ===');
       console.log('📊 Final Enhanced Profile:', {
         id: enhancedProfile.id,
@@ -224,7 +251,9 @@ export const AuthProvider = ({ children }) => {
         department_id: enhancedProfile.department_id,
         department_name: enhancedProfile.department_name || enhancedProfile.department,
         university: enhancedProfile.university,
+        university_id: enhancedProfile.university_id,
         faculty: enhancedProfile.faculty,
+        faculty_id: enhancedProfile.faculty_id,
         department: enhancedProfile.department
       });
       console.log('🏁 ================================');
