@@ -225,18 +225,48 @@ export const loginLecturer = async (loginData) => {
 
 // kayıt işlemi
 export const registerLecturer = async (formData) => {
-  console.log("API'ye gönderilen veri:", formData); // Debug için
-  console.log("Department ID (auth.js):", formData.department_id); // Debug için
+  console.log("🚀 REGISTER LECTURER - Başlatılıyor");
+  console.log("📊 API'ye gönderilen veri:", formData);
+  console.log("� Department Name (auth.js):", formData.department_name);
+  console.log("📝 Form data keys:", Object.keys(formData));
+  console.log("📝 Form data values:", Object.values(formData));
+  
+  // Gerekli alanları kontrol et
+  const requiredFields = ['email_send', 'password', 'department_id'];
+  const missingFields = requiredFields.filter(field => !formData[field]);
+  
+  if (missingFields.length > 0) {
+    console.error("❌ Eksik alanlar:", missingFields);
+    throw new Error(`Eksik alanlar: ${missingFields.join(', ')}`);
+  }
+  
+  console.log("✅ Tüm gerekli alanlar mevcut");
+
+  // Backend'in beklediği formata uygun hale getir
+  const apiData = {
+    ...formData,
+    // Department_id'yi string olarak gönder (UUID)
+    department_id: formData.department_id,
+    // Email'i küçük harfe çevir
+    email_send: formData.email_send?.toLowerCase().trim() || '',
+    // Boş alanları temizle
+    title: formData.title?.trim() || '',
+    first_name: formData.first_name?.trim() || '',
+    last_name: formData.last_name?.trim() || ''
+  };
+
+  console.log("🔧 API'ye gönderilecek temizlenmiş veri:", apiData);
   
   const response = await fetch(`${API_BASE_URL}/lecturer_data/lecturers/signup/`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
     },
-    body: JSON.stringify(formData)
+    body: JSON.stringify(apiData)
   });
 
-  console.log("API yanıt durumu:", response.status); // Debug için
+  console.log("📡 API yanıt durumu:", response.status);
+  console.log("📡 API yanıt headers:", Object.fromEntries(response.headers.entries()));
 
   if (!response.ok) {
     let errorData;
@@ -245,18 +275,63 @@ export const registerLecturer = async (formData) => {
     try {
       // İlk önce text olarak al
       textResponse = await response.text();
-      console.error("API raw yanıtı:", textResponse);
+      console.error("🔴 API raw yanıtı:", textResponse);
       
-      // Sonra JSON parse etmeyi dene
+      // HTML yanıt ise (Django error page)
+      if (textResponse.includes('<!DOCTYPE html>')) {
+        console.error("🔴 Server HTML hata sayfası döndü");
+        console.error("🔴 Full HTML response:", textResponse.substring(0, 1000));
+        
+        // HTML'den hata tipini çıkarmaya çalış
+        const titleMatch = textResponse.match(/<title>(.*?)<\/title>/);
+        const errorType = titleMatch ? titleMatch[1] : 'Server Error';
+        
+        // HTML'den daha fazla bilgi çıkarmaya çalış
+        const h1Match = textResponse.match(/<h1>(.*?)<\/h1>/);
+        const errorDetail = h1Match ? h1Match[1] : '';
+        
+        // Exception value'yu bul
+        const exceptionMatch = textResponse.match(/Exception Value:.*?<pre[^>]*>(.*?)<\/pre>/s);
+        const exceptionValue = exceptionMatch ? exceptionMatch[1].trim() : '';
+        
+        // Eğer KeyError varsa onu yakala
+        if (textResponse.includes('KeyError')) {
+          const keyErrorMatch = textResponse.match(/KeyError.*?['"](.*?)['"]/) || 
+                               textResponse.match(/KeyError: (.*?)(?:<|$)/) ||
+                               textResponse.match(/'([^']+)' key not found/) ||
+                               textResponse.match(/KeyError.*?at\s+(\w+)/);
+          const missingKey = keyErrorMatch ? keyErrorMatch[1] : 'bilinmeyen alan';
+          console.error("🔴 KeyError detected - Eksik alan:", missingKey);
+          console.error("🔴 Exception value:", exceptionValue);
+          throw new Error(`Backend'de eksik alan hatası: '${missingKey}' alanı bulunamadı. Lütfen bu alanı ekleyin.`);
+        }
+        
+        let errorMessage = `Server hatası (${response.status}): ${errorType}`;
+        if (errorDetail && errorDetail !== errorType) {
+          errorMessage += ` - ${errorDetail}`;
+        }
+        if (exceptionValue) {
+          errorMessage += ` - Detay: ${exceptionValue}`;
+        }
+        errorMessage += " - Lütfen gönderilen verileri kontrol edin";
+        
+        throw new Error(errorMessage);
+      }
+      
+      // JSON parse etmeyi dene
       try {
         errorData = JSON.parse(textResponse);
-        console.error("API JSON hata detayı:", errorData);
+        console.error("🔴 API JSON hata detayı:", errorData);
       } catch (parseError) {
-        console.error("JSON parse edilemedi, raw text:", textResponse);
-        throw new Error(`Server error (${response.status}): ${textResponse.substring(0, 200)}`);
+        console.error("🔴 JSON parse edilemedi, raw text:", textResponse);
+        throw new Error(`Server error (${response.status}): ${textResponse.substring(0, 300)}`);
       }
     } catch (textError) {
-      console.error("Response text alınamadı:", textError);
+      console.error("🔴 Response text alınamadı:", textError);
+      // Eğer textError zaten bizim attığımız Error ise, onu re-throw et
+      if (textError.message.includes('Server hatası') || textError.message.includes('Backend\'de eksik')) {
+        throw textError;
+      }
       throw new Error(`Server error (${response.status}): Response okunamadı`);
     }
     

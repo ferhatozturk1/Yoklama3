@@ -22,6 +22,8 @@ const Sidebar = ({ open, onToggle, isMobile, onNavigate, userProfile }) => {
   console.log("🔍 SIDEBAR DEBUG - UserProfile:", userProfile);
   console.log("🔍 SIDEBAR DEBUG - UserProfile title:", userProfile?.title);
   console.log("🔍 SIDEBAR DEBUG - UserProfile name:", userProfile?.name);
+  console.log("🔍 SIDEBAR DEBUG - UserProfile school:", userProfile?.school);
+  console.log("🔍 SIDEBAR DEBUG - UserProfile university:", userProfile?.university);
   console.log("🔍 SIDEBAR DEBUG - ProfilePhoto:", userProfile?.profilePhoto);
   console.log("🔍 SIDEBAR DEBUG - ProfilePhoto type:", typeof userProfile?.profilePhoto);
   // Navigation items
@@ -114,7 +116,7 @@ const Sidebar = ({ open, onToggle, isMobile, onNavigate, userProfile }) => {
               lineHeight: 1.3,
             }}
           >
-            Manisa Celal Bayar Üniversitesi
+            {userProfile?.school || 'Üniversite Bilgisi Yok'}
           </Typography>
         </Box>
       </Box>

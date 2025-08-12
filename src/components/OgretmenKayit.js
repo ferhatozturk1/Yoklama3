@@ -287,31 +287,42 @@ const OgretmenKayit = () => {
     setSuccess("");
 
     try {
-      // Eğer department_id boşsa, fakülteye göre departman listesinden adı eşleştirerek department_id bul
-      let finalDepartmentId = form.department_id;
-      if (!finalDepartmentId) {
+      // Backend department_id bekliyor
+      let finalDepartmentId = form.department_id || selectedDepartment?.id;
+      
+      // Eğer department_id boşsa, seçilen departmandan al
+      if (!finalDepartmentId && form.department) {
         try {
           const deptList = await getDepartments(selectedFaculty.id);
-          const match = deptList?.find(d => d.name?.toLowerCase() === (form.department || '').toLowerCase());
+          const match = deptList?.find(d => d.name?.toLowerCase() === form.department.toLowerCase());
           if (match?.id) finalDepartmentId = match.id;
         } catch {}
       }
 
       const formDataForAPI = {
         title: form.title,
-        email: form.email,
+        email_send: form.email,  // Backend email_send bekliyor
         password: form.password,
         first_name: form.first_name,
         last_name: form.last_name,
-        department_id: finalDepartmentId || form.department_id
+        department_id: finalDepartmentId
       };
 
       if (!formDataForAPI.department_id) {
         throw new Error('Departman ID belirlenemedi. Lütfen departman seçimini kontrol edin.');
       }
 
-      console.log("Gönderilen veri (seçilen department_id ile):", formDataForAPI);
+      if (!formDataForAPI.email_send) {
+        throw new Error('Email adresi belirlenemedi. Lütfen email adresini kontrol edin.');
+      }
+
+      if (!formDataForAPI.password) {
+        throw new Error('Şifre belirlenemedi. Lütfen şifrenizi kontrol edin.');
+      }
+
+      console.log("Gönderilen veri (backend formatında):", formDataForAPI);
       console.log("Seçilen departman:", selectedDepartment);
+      console.log("Final department ID:", finalDepartmentId);
 
       const response = await registerLecturer(formDataForAPI);
       
