@@ -22,10 +22,11 @@
     "xlsx": "^0.18.5"
   },
   "scripts": {
-    "dev": "react-scripts start",
-    "build": "react-scripts build",
-    "build:windows": "set CI=false && set GENERATE_SOURCEMAP=false && react-scripts build",
-    "test": "react-scripts test",
+    "start": "craco start",
+    "dev": "craco start",
+    "build": "craco build",
+    "build:windows": "set CI=false && set GENERATE_SOURCEMAP=false && craco build",
+    "test": "craco test",
     "eject": "react-scripts eject"
   },
   "browserslist": {
@@ -41,6 +42,6 @@
     ]
   },
   "devDependencies": {
-
+    "@craco/craco": "^7.1.0"
   }
 }

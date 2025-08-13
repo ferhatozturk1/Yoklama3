@@ -57,7 +57,6 @@ export const AuthProvider = ({ children }) => {
 
   // Session temizleme helper fonksiyonu
   const clearSession = () => {
-    console.log('🧹 AuthContext - Oturum temizleniyor');
     setUser(null);
     setAccessToken(null);
     setRefreshTokenState(null);
@@ -69,204 +68,72 @@ export const AuthProvider = ({ children }) => {
 
   // Profile photo URL helper function
   const getProfilePhotoUrl = (photoPath) => {
-    console.log('📸 AuthContext getProfilePhotoUrl çağrıldı:', photoPath);
     if (!photoPath) {
-      console.log('❌ Photo path boş');
       return null;
     }
     if (photoPath.startsWith('http')) {
-      console.log('✅ Zaten tam URL:', photoPath);
       return photoPath;
     }
     
     const fullUrl = `http://127.0.0.1:8000${photoPath}`;
-    console.log('🔧 AuthContext - Tam URL oluşturuldu:', fullUrl);
-    
     return fullUrl;
   };
 
-  // Profil bilgilerini üniversite/fakülte/bölüm bilgileri ile genişlet
+  // Profil bilgilerini üniversite/fakülte/bölüm bilgileri ile genişlet (basitleştirilmiş)
   const loadEnhancedProfile = async (profileData, currentAccessToken = null) => {
-    console.log('🚀 === RAW PROFILE DATA ANALIZI ===');
-    console.log('📊 Backend\'den gelen ham veri:', profileData);
-    console.log('🔑 Current Access Token mevcut:', !!currentAccessToken);
-    
     try {
+      console.log('🔍 loadEnhancedProfile - Raw profileData:', profileData);
+      
       let enhancedProfile = { ...profileData };
       
-      // Department ID kontrolü
-      console.log('🔍 === KULLANICININ GERÇEK KAYIT BİLGİLERİ ===');
-      console.log('🆔 User ID:', profileData.id);
-      console.log('� First Name:', profileData.first_name);
-      console.log('� Last Name:', profileData.last_name);
-      console.log('� Email:', profileData.email);
-      console.log('🏢 Department ID:', profileData.department_id);
-      console.log('🏫 University (from backend):', profileData.university);
-      console.log('🏛️ Faculty (from backend):', profileData.faculty);
-      console.log('🏢 Department (from backend):', profileData.department);
-      console.log('� === GERÇEK KAYIT BİLGİLERİ SONU ===')
+      // Backend'den gelen university/faculty bilgilerini kontrol et
+      const rawUniversity = profileData.university || profileData.school || 
+                          profileData.university_name || profileData.universityName;
+      const rawFaculty = profileData.faculty || profileData.faculty_name || 
+                        profileData.facultyName;
+      const rawDepartment = profileData.department || profileData.department_name || 
+                           profileData.departmentName;
       
-      let foundInfo = null;
-      
-      if (profileData.department_id) {
-        console.log('✅ AuthContext - Department ID BULUNDU! Ek bilgiler çekiliyor:', profileData.department_id);
-        
-        try {
-          console.log('🔍 AuthContext - Backend\'den üniversite/fakülte/bölüm bilgileri aranıyor...');
-          // 1. Tüm üniversiteleri al (auth.js fonksiyonunu kullan)
-          console.log('🔍 AuthContext - getUniversities() çağrılıyor...');
-          const universities = await getUniversities();
-          console.log('✅ AuthContext - Üniversiteler API yanıtı:', universities);
-          console.log('📊 Üniversite sayısı:', universities?.length || 0);
-          console.log('🔍 Üniversite türü:', typeof universities);
-          console.log('🔍 Array mi?:', Array.isArray(universities));
-
-          // Üniversite array'inin dolu olup olmadığını kontrol et
-          if (!universities || universities.length === 0) {
-            console.error('❌ AuthContext - ÜNİVERSİTE LİSTESİ BOŞ VEYA HATA!');
-            throw new Error('Üniversite listesi alınamadı');
-          }
-
-          // 2. Her üniversite için fakültelerini kontrol et
-          for (const university of universities) {
-            if (foundInfo) break;
-            try {
-              const faculties = await getFaculties(university.id);
-              if (!faculties || faculties.length === 0) continue;
-              // 3. Her fakülte için bölümleri kontrol et
-              for (const faculty of faculties) {
-                if (foundInfo) break;
-                try {
-                  const departments = await getDepartments(faculty.id);
-                  if (!departments || departments.length === 0) continue;
-
-                  const userDepartment = departments.find(dept => dept.id === profileData.department_id);
-                  if (userDepartment) {
-                    foundInfo = {
-                      university: university.name,
-                      faculty: faculty.name,
-                      department: userDepartment.name,
-                      university_id: university.id,
-                      faculty_id: faculty.id,
-                      department_id: userDepartment.id
-                    };
-                    break;
-                  }
-                } catch {}
-              }
-            } catch {}
-          }
-
-          if (foundInfo) {
-            enhancedProfile.university = foundInfo.university;
-            enhancedProfile.faculty = foundInfo.faculty;
-            enhancedProfile.department = foundInfo.department;
-            enhancedProfile.department_name = foundInfo.department;
-            enhancedProfile.university_id = foundInfo.university_id;
-            enhancedProfile.faculty_id = foundInfo.faculty_id;
-            enhancedProfile.department_id = foundInfo.department_id;
-          }
-        } catch (apiError) {
-          console.error('❌ ===== API ÇAĞRISI HATASI =====');
-          console.error('❌ AuthContext - API çağrısı hatası:', apiError);
-          // API hatası durumunda boş değerler
-          enhancedProfile.university = '';
-          enhancedProfile.faculty = '';
-          enhancedProfile.department = '';
-        }
-      } else {
-        // Department_id yoksa backend'den gelen ham veriyi kullan
-        console.warn('⚠️ === DEPARTMENT ID YOK - HAM VERİ KULLANILIYOR ===');
-        enhancedProfile.university = profileData.university || '';
-        enhancedProfile.faculty = profileData.faculty || '';
-        enhancedProfile.department = profileData.department || profileData.department_name || '';
-        enhancedProfile.department_name = profileData.department_name || profileData.department || '';
-
-        // Yalnızca departman adı varsa üniversite/fakülte/department_id'yi isimden çöz
-        try {
-          const targetDeptName = (enhancedProfile.department_name || enhancedProfile.department || '').toLowerCase();
-          if (targetDeptName) {
-            const universities = await getUniversities();
-            for (const uni of (universities || [])) {
-              const faculties = await getFaculties(uni.id);
-              for (const fac of (faculties || [])) {
-                const departments = await getDepartments(fac.id);
-                const match = (departments || []).find(d => String(d.name).toLowerCase() === targetDeptName);
-                if (match) {
-                  enhancedProfile.university = enhancedProfile.university || uni.name;
-                  enhancedProfile.faculty = enhancedProfile.faculty || fac.name;
-                  enhancedProfile.department = match.name;
-                  enhancedProfile.department_name = match.name;
-                  enhancedProfile.department_id = enhancedProfile.department_id || match.id;
-                  break;
-                }
-              }
-              if (enhancedProfile.department_id) break;
-            }
-          }
-        } catch {}
-      }
-      
-      // Department ID'yi garanti altına al
-      const candidateDepartmentId = profileData.department_id
-        || (profileData.department && profileData.department.id)
-        || (foundInfo && foundInfo.department_id)
-        || enhancedProfile.department_id
-        || resolveDepartmentId(profileData);
-      if (!enhancedProfile.department_id && candidateDepartmentId) {
-        enhancedProfile.department_id = candidateDepartmentId;
-        console.log('🔧 AuthContext - department_id set edildi:', enhancedProfile.department_id);
-      }
-      
-      // University ID'yi garanti altına al
-      if (!enhancedProfile.university_id && enhancedProfile.department_id) {
-        console.log('🔍 AuthContext - University ID eksik, department_id\'den çözmeye çalışılıyor...');
-        try {
-          const universities = await getUniversities();
-          for (const university of (universities || [])) {
-            const faculties = await getFaculties(university.id);
-            for (const faculty of (faculties || [])) {
-              const departments = await getDepartments(faculty.id);
-              const matchDept = (departments || []).find(d => d.id === enhancedProfile.department_id);
-              if (matchDept) {
-                enhancedProfile.university_id = university.id;
-                enhancedProfile.faculty_id = faculty.id;
-                console.log('✅ AuthContext - University ID çözüldü:', university.id);
-                break;
-              }
-            }
-            if (enhancedProfile.university_id) break;
-          }
-        } catch (resolveError) {
-          console.warn('⚠️ AuthContext - University ID çözülemedi:', resolveError);
-        }
-      }
-      
-      console.log('🏁 === HAM VERİ ANALİZİ TAMAMLANDI ===');
-      console.log('📊 Final Enhanced Profile:', {
-        id: enhancedProfile.id,
-        first_name: enhancedProfile.first_name,
-        last_name: enhancedProfile.last_name,
-        email: enhancedProfile.email,
-        department_id: enhancedProfile.department_id,
-        department_name: enhancedProfile.department_name || enhancedProfile.department,
-        university: enhancedProfile.university,
-        university_id: enhancedProfile.university_id,
-        faculty: enhancedProfile.faculty,
-        faculty_id: enhancedProfile.faculty_id,
-        department: enhancedProfile.department
+      console.log('🏛️ University mapping:', {
+        original: profileData.university,
+        school: profileData.school,
+        university_name: profileData.university_name,
+        final: rawUniversity
       });
-      console.log('🏁 ================================');
+      
+      console.log('🏫 Faculty mapping:', {
+        original: profileData.faculty,
+        faculty_name: profileData.faculty_name,
+        final: rawFaculty
+      });
+      
+      console.log('🏢 Department mapping:', {
+        original: profileData.department,
+        department_name: profileData.department_name,
+        final: rawDepartment
+      });
+      
+      // Enhanced profile oluştur
+      enhancedProfile.university = rawUniversity || '';
+      enhancedProfile.faculty = rawFaculty || '';
+      enhancedProfile.department = rawDepartment || '';
+      enhancedProfile.department_name = rawDepartment || '';
+      enhancedProfile.department_id = profileData.department_id || profileData.departmentId || '';
+      
+      console.log('✅ Enhanced profile result:', {
+        university: enhancedProfile.university,
+        faculty: enhancedProfile.faculty, 
+        department: enhancedProfile.department,
+        department_id: enhancedProfile.department_id
+      });
       
       return enhancedProfile;
     } catch (error) {
-      console.error('❌ === PROFIL ANALİZİ HATASI ===');
-      console.error('❌ Error:', error);
-      console.error('❌ Stack:', error.stack);
+      console.error('❌ Profil analizi hatası:', error);
       // Hata durumunda ham profil verisini döndür
       return {
         ...profileData,
-        university: profileData.university || '',
+        university: profileData.university || profileData.school || '',
         faculty: profileData.faculty || '',
         department: profileData.department || ''
       };
@@ -282,12 +149,6 @@ export const AuthProvider = ({ children }) => {
         const storedRefreshToken = sessionStorage.getItem('refreshToken');
         const pendingDepartmentId = sessionStorage.getItem('pendingDepartmentId') || null;
 
-        console.log('🔍 AuthContext - SessionStorage verileri kontrol ediliyor:');
-        console.log('User:', storedUser);
-        console.log('Token:', storedToken);
-        console.log('RefreshToken:', storedRefreshToken);
-        console.log('PendingDepartmentId:', pendingDepartmentId);
-
         if (storedToken) {
           setAccessToken(storedToken);
           setRefreshTokenState(storedRefreshToken);
@@ -295,32 +156,13 @@ export const AuthProvider = ({ children }) => {
           if (storedUser) {
             // Kullanıcı verisi varsa direkt yükle
             const userData = JSON.parse(storedUser);
-            console.log('🔍 === SESSIONSTORE USER DETAYLI ANALİZ ===');
-            console.log('👤 userData.id:', userData.id);
-            console.log('🏢 userData.department_id:', userData.department_id);
-            console.log('🏫 userData.university:', userData.university);
-            console.log('🏛️ userData.faculty:', userData.faculty);
-            console.log('🏢 userData.department:', userData.department);
-            console.log('📧 userData.email:', userData.email);
-            console.log('🔍 === SESSIONSTORE USER ANALİZ BİTİŞ ===');
-            
             setUser(userData);
             setIsAuthenticated(true);
-            console.log('✅ AuthContext - Kullanıcı oturumu yüklendi:', userData);
           } else {
             // Kullanıcı verisi yoksa token'dan lecturer_id'yi çıkarıp profil getir
-            console.log('🔄 AuthContext - Token var ama kullanıcı verisi yok, profil getiriliyor...');
             try {
               // JWT token'dan lecturer_id'yi çıkar
               const decodedToken = decodeJWT(storedToken);
-              console.log('🔍 === SESSION LOAD - JWT TOKEN DECODE ===');
-              console.log('📋 Decoded Token:', decodedToken);
-              console.log('👤 Lecturer ID (token):', decodedToken?.lecturer_id);
-              console.log('🏢 Department ID (token):', decodedToken?.department_id);
-              console.log('📧 Email (token):', decodedToken?.email);
-              console.log('⏰ Token expiry:', decodedToken?.exp ? new Date(decodedToken.exp * 1000) : 'YOK');
-              console.log('🔍 === SESSION LOAD - JWT TOKEN DECODE BİTİŞ ===');
-              
               const lecturerId = decodedToken?.lecturer_id;
               const tokenDepartmentId = decodedToken?.department_id;
               
@@ -330,12 +172,6 @@ export const AuthProvider = ({ children }) => {
                 return;
               }
               
-              console.log('📋 AuthContext - Session Load - Lecturer ID bulundu:', lecturerId);
-              if (tokenDepartmentId) {
-                console.log('📋 AuthContext - Session Load - Department ID (token\'dan):', tokenDepartmentId);
-              } else {
-                console.warn('⚠️ AuthContext - Session Load - Token\'da department_id yok');
-              }
               const profileData = await getLecturerProfile(lecturerId, storedToken);
               
               if (profileData) {
@@ -343,13 +179,6 @@ export const AuthProvider = ({ children }) => {
                 const enhancedProfile = await loadEnhancedProfile(profileData, storedToken);
                 const enhancedDeptId = resolveDepartmentId(enhancedProfile);
                 const finalDepartmentId = pendingDepartmentId || tokenDepartmentId || enhancedDeptId;
-                
-                console.log('🔧 === DEPARTMENT ID PRİORİTE SEÇİMİ ===');
-                console.log('🏢 Token\'dan department_id:', tokenDepartmentId);
-                console.log('🏢 Profile\'dan department_id:', enhancedProfile.department_id);
-                console.log('🏢 PendingDepartmentId:', pendingDepartmentId);
-                console.log('✅ Final department_id:', finalDepartmentId);
-                console.log('🔧 === DEPARTMENT ID PRİORİTE BİTİŞ ===');
                 
                 const userData = {
                   id: lecturerId,
@@ -374,9 +203,7 @@ export const AuthProvider = ({ children }) => {
                 // SessionStorage'a da kaydet
                 sessionStorage.setItem('user', JSON.stringify(userData));
                 if (pendingDepartmentId) sessionStorage.removeItem('pendingDepartmentId');
-                console.log('✅ AuthContext - Geliştirilmiş profil token ile yüklendi:', userData);
               } else {
-                console.log('⚠️ AuthContext - Profil getirilemedi, oturum sonlandırılıyor');
                 clearSession();
               }
             } catch (error) {
@@ -465,8 +292,6 @@ export const AuthProvider = ({ children }) => {
 
       // Eğer lecturer_id varsa profil bilgilerini çek
       if (lecturerId && token) {
-        console.log('📋 AuthContext - Profil bilgileri çekiliyor...', lecturerId);
-        
         try {
           const profileData = await getLecturerProfile(lecturerId, token);
           
@@ -505,7 +330,6 @@ export const AuthProvider = ({ children }) => {
             setUser(userData);
             sessionStorage.setItem('user', JSON.stringify(userData));
             if (pendingDepartmentId) sessionStorage.removeItem('pendingDepartmentId');
-            console.log('✅ AuthContext - Geliştirilmiş profil bilgileri ile kullanıcı kaydedildi:', userData);
           } else {
             // Profil çekilemezse en azından lecturer_id'yi kaydet
             const userData = {
@@ -514,7 +338,6 @@ export const AuthProvider = ({ children }) => {
             };
             setUser(userData);
             sessionStorage.setItem('user', JSON.stringify(userData));
-            console.log('⚠️ AuthContext - Sadece lecturer_id kaydedildi:', userData);
           }
         } catch (profileError) {
           console.error('❌ AuthContext - Login sonrası profil yükleme hatası:', profileError);
@@ -567,14 +390,7 @@ export const AuthProvider = ({ children }) => {
 
   // Profil bilgilerini API'den yükle
   const loadUserProfile = useCallback(async (forceRefresh = false) => {
-    console.log('🔄 === AUTHCONTEXT LOAD USER PROFILE BAŞLIYOR ===');
-    console.log('📊 Parametreler:', { forceRefresh });
-
     if (!user || !accessToken) {
-      console.warn('⚠️ === EKSIK BİLGİLER - AuthContext ===');
-      console.warn('👤 User mevcut:', !!user);
-      console.warn('🔑 AccessToken mevcut:', !!accessToken);
-      console.warn('👤 User detay:', user);
       return null;
     }
 
@@ -612,15 +428,8 @@ export const AuthProvider = ({ children }) => {
         // Profil bilgilerini ek bilgilerle genişlet
         let enhancedProfile = profileData;
         try {
-          console.log('🔄 AuthContext - Profil ek bilgilerle genişletiliyor...');
           enhancedProfile = await loadEnhancedProfile(profileData, accessToken);
-          console.log('✅ AuthContext - Enhanced profile oluşturuldu:', {
-            university: enhancedProfile.university,
-            faculty: enhancedProfile.faculty,
-            department: enhancedProfile.department
-          });
         } catch (enhanceError) {
-          console.warn('⚠️ AuthContext - Profil genişletme hatası:', enhanceError.message);
           // Hata olursa normal profil verisini kullan
           enhancedProfile = profileData;
         }

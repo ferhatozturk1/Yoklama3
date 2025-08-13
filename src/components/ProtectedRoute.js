@@ -11,16 +11,11 @@ const ProtectedRoute = ({ children }) => {
   useEffect(() => {
     // Yükleme tamamlandıysa ve kullanıcı authenticated değilse
     if (!isLoading && !isAuthenticated) {
-      console.log('🔒 ProtectedRoute - Yetkisiz erişim, giriş sayfasına yönlendiriliyor');
-      console.log('Current path:', location.pathname);
-      console.log('User:', user);
-      console.log('Access Token:', !!accessToken);
-      
       // Mevcut sayfayı kaydet ki giriş sonrası geri dönebilsin
       sessionStorage.setItem('redirectAfterLogin', location.pathname);
       navigate('/giris-yap', { replace: true });
     }
-  }, [isLoading, isAuthenticated, navigate, location.pathname, user, accessToken]);
+  }, [isLoading, isAuthenticated, navigate, location.pathname]);
 
   // Yükleme durumu
   if (isLoading) {
@@ -50,7 +45,6 @@ const ProtectedRoute = ({ children }) => {
 
   // Token kontrolü
   if (!accessToken) {
-    console.log('⚠️ ProtectedRoute - Access token bulunamadı');
     return (
       <Box
         sx={{
@@ -70,7 +64,6 @@ const ProtectedRoute = ({ children }) => {
   }
 
   // Her şey yolunda, children'ı render et
-  console.log('✅ ProtectedRoute - Erişim onaylandı');
   return children;
 };
 

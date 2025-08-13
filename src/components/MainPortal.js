@@ -36,19 +36,14 @@ const MainPortal = () => {
   
   // Profile photo URL helper function
   const getProfilePhotoUrl = (photoPath) => {
-    console.log('📸 MainPortal getProfilePhotoUrl çağrıldı:', photoPath);
     if (!photoPath) {
-      console.log('❌ Photo path boş');
       return null;
     }
     if (photoPath.startsWith('http')) {
-      console.log('✅ Zaten tam URL:', photoPath);
       return photoPath;
     }
     
     const fullUrl = `http://127.0.0.1:8000${photoPath}`;
-    console.log('🔧 MainPortal - Tam URL oluşturuldu:', fullUrl);
-    
     return fullUrl;
   };
   

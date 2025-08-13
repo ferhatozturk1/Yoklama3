@@ -27,8 +27,8 @@ import {
   Divider,
 } from "@mui/material";
 import { useAuth } from "../contexts/AuthContext";
-import { fetchDepartmentLectures } from "../api/schedule";
-import { getLecturerProfile, getUniversities, getFaculties, getDepartments, getBuildings, getClassrooms } from "../api/auth";
+import { fetchLecturerLecturesNew } from "../api/schedule";
+import { getLecturerProfile, getUniversities, getFaculties, getDepartments, getBuildings, getClassrooms, getSectionDetails, getSectionHours } from "../api/auth";
 import {
   Edit,
   Add as AddIcon,
@@ -130,6 +130,31 @@ const Derslerim = () => {
 
   // Fetch courses from backend
   const fetchCourses = async () => {
+    // Schedule formatlamak için yardımcı fonksiyon
+    const formatScheduleText = (scheduleInfo) => {
+      if (!scheduleInfo || Object.keys(scheduleInfo).length === 0) {
+        return "Ders saati atanmamış";
+      }
+      
+      const scheduleTexts = [];
+      Object.entries(scheduleInfo).forEach(([day, times]) => {
+        if (times && times.length > 0) {
+          // Saatleri daha güzel formatlayalım
+          const timeText = times.map(time => {
+            // Eğer saat formatı "09:00 - 10:30" şeklindeyse direkt kullan
+            if (time.includes(' - ')) {
+              return time;
+            }
+            // Başka formatlarda da uyumlu olsun
+            return time;
+          }).join(', ');
+          scheduleTexts.push(`${day} ${timeText}`);
+        }
+      });
+      
+      return scheduleTexts.length > 0 ? scheduleTexts.join(' | ') : "Ders saati atanmamış";
+    };
+    
     try {
       setLoading(true);
       setError(null);
@@ -162,23 +187,37 @@ const Derslerim = () => {
         }
       }
       
-      console.log("🔍 Dersler yükleniyor (department key - ad veya id)...", { 
-        userId: user?.id, 
-        departmentKey, 
-        accessToken: !!accessToken,
-        accessTokenPrefix: accessToken ? accessToken.substring(0, 10) + "..." : "null"
-      });
-
-      // Debug: User nesnesindeki university bilgilerini kontrol et
-      console.log("🔍 DEBUG - User university bilgileri:", {
-        university_id: user?.university_id,
-        university: user?.university,
-        universityId: user?.universityId,
-        fullUserObject: user
-      });
-
       const normalizeLectures = (data) => {
+        console.log('🔄 normalizeLectures - Input data:', data);
+        
         if (!data) return [];
+        
+        // Yeni API formatı: { id: "...", sections: [...] }
+        if (data.sections && Array.isArray(data.sections)) {
+          console.log('📋 New API format detected - sections array found');
+          const lectures = data.sections.map(section => {
+            // Her section içindeki lecture bilgisini al ve section bilgisini ekle
+            return {
+              ...section.lecture, // lecture bilgileri (id, name, code, explicit_name)
+              section_id: section.id, // section ID'si
+              section_number: section.section_number, // section numarası
+              // Eski format uyumluluğu için
+              id: section.lecture.id,
+              name: section.lecture.explicit_name || section.lecture.name,
+              course_name: section.lecture.explicit_name,
+              lecture_name: section.lecture.explicit_name,
+              code: section.lecture.code,
+              lecture_code: section.lecture.code,
+              section: section.section_number,
+              section_name: section.section_number,
+              section_code: section.section_number
+            };
+          });
+          console.log('✅ Converted sections to lectures:', lectures);
+          return lectures;
+        }
+        
+        // Eski format backward compatibility
         if (Array.isArray(data)) return data;
         if (Array.isArray(data?.results)) return data.results;
         if (Array.isArray(data?.lectures)) return data.lectures;
@@ -198,39 +237,137 @@ const Derslerim = () => {
         setLoading(false);
         return;
       }
-      if (!departmentKey) {
-        setError("Departman bilgisi bulunamadı. Lütfen tekrar deneyin.");
+      
+      // Lecturer ID'yi al
+      const lecturerId = user?.lecturer_id || user?.id;
+      console.log('🔑 DERSLERIM: User object:', user);
+      console.log('🔑 DERSLERIM: lecturer_id from user?.lecturer_id:', user?.lecturer_id);
+      console.log('🔑 DERSLERIM: id from user?.id:', user?.id);
+      console.log('🔑 DERSLERIM: Final lecturerId:', lecturerId);
+      console.log('🔑 DERSLERIM: Is UUID?', /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(lecturerId));
+      
+      if (!lecturerId) {
+        setError("Öğretmen bilgisi bulunamadı. Lütfen tekrar giriş yapın.");
         setLoading(false);
         return;
       }
 
-      // Bölüm anahtarı (ad ya da id) ile endpoint'e git
-      const lecturesRaw = await fetchDepartmentLectures(departmentKey, accessToken);
-      console.log("✅ Backend'ten dersler alındı");
-      console.log("📊 Raw API Data:", lecturesRaw);
-      const lecturesArray = normalizeLectures(lecturesRaw);
-      console.log("📏 Normalize edilmiş ders sayısı:", lecturesArray.length);
-      console.log("🧪 İlk ders (normalize):", lecturesArray[0]);
+      // Öğretmene ait dersleri çek
+      console.log('🎯 DERSLERIM: Lecturer ID ile dersler çekiliyor:', lecturerId);
+      console.log('🎯 DERSLERIM: Access token var mı?', !!accessToken);
+      console.log('🎯 DERSLERIM: Access token (ilk 20 karakter):', accessToken?.substring(0, 20) + '...');
+      
+      let lecturesArray = [];
+      try {
+        const lecturesRaw = await fetchLecturerLecturesNew(lecturerId, accessToken);
+        console.log('📚 DERSLERIM: Raw lectures response:', lecturesRaw);
+        lecturesArray = normalizeLectures(lecturesRaw);
+        console.log('📖 DERSLERIM: Normalized lectures:', lecturesArray);
+      } catch (apiError) {
+        console.error('❌ DERSLERIM: API çağrısı hatası:', apiError);
+        console.error('❌ DERSLERIM: Hata detayı:', {
+          message: apiError.message,
+          lecturerId,
+          accessToken: !!accessToken
+        });
+        throw apiError;
+      }
 
-      const transformedCourses = lecturesArray.map((course) => ({
-        id: course.id,
-        name: course.explicit_name || course.name || course.course_name || course.lecture_name || "Ders",
-        code: course.code || course.course_code || course.lecture_code || "DERS",
-        section: course.section || course.section_name || course.section_code || "A1",
-        sectionFull: `YP-${course.section || course.section_name || "A1"}`,
-        building: course.building?.name || course.building || null,
-        room: course.room?.name || course.room || null,
-        class: `${course.classLevel || 1}-A`,
-        instructor: course.instructor?.name || `${user?.first_name || ''} ${user?.last_name || ''}`.trim() || "Öğretim Üyesi",
-        schedule: {},
-        totalWeeks: 15,
-        currentWeek: 1,
-        studentCount: Math.floor(Math.random() * 30) + 20,
-        attendanceStatus: "not_taken",
-        lastAttendance: null,
-        attendanceRate: 0,
-        files: [],
-      }));
+      // Her ders için section detaylarını çek ve transformed courses oluştur
+      const transformedCourses = [];
+      for (const course of lecturesArray) {
+        console.log('🏗️ Processing course:', course.name, 'Section ID:', course.section_id);
+        
+        let building = course.building?.name || course.building || null;
+        let room = course.room?.name || course.room || null;
+        let scheduleInfo = {}; // Ders saatleri bilgisi
+        
+        // Eğer section_id varsa, section detaylarını ve hours bilgilerini çek
+        if (course.section_id && accessToken) {
+          try {
+            console.log('🔍 Fetching section details for:', course.section_id);
+            const sectionDetails = await getSectionDetails(course.section_id, accessToken);
+            if (sectionDetails) {
+              console.log('✅ Section details received:', sectionDetails);
+              // Section'dan building ve room bilgilerini al
+              building = sectionDetails.building?.name || sectionDetails.building || building;
+              room = sectionDetails.room?.name || sectionDetails.room || room;
+              console.log('🏢 Updated location:', { building, room });
+            }
+            
+            // Section hours bilgilerini çek
+            console.log('⏰ Fetching section hours for:', course.section_id);
+            const hoursData = await getSectionHours(course.section_id, accessToken);
+            if (hoursData && hoursData.length > 0) {
+              console.log('✅ Section hours received:', hoursData);
+              
+              // Hours verilerini gün bazında gruplayıp format et
+              const dayMapping = {
+                'monday': 'Pazartesi',
+                'tuesday': 'Salı',
+                'wednesday': 'Çarşamba', 
+                'thursday': 'Perşembe',
+                'friday': 'Cuma',
+                'saturday': 'Cumartesi',
+                'sunday': 'Pazar'
+              };
+              
+              hoursData.forEach(hour => {
+                const dayName = dayMapping[hour.day?.toLowerCase()] || hour.day || 'Bilinmeyen';
+                
+                // Saat formatını düzenle
+                let timeSlot = '';
+                if (hour.time_start && hour.time_end) {
+                  // Eğer saat formatı 09:00:00 şeklindeyse, sadece saat:dakika al
+                  const startTime = hour.time_start.length > 5 ? hour.time_start.substring(0, 5) : hour.time_start;
+                  const endTime = hour.time_end.length > 5 ? hour.time_end.substring(0, 5) : hour.time_end;
+                  timeSlot = `${startTime} - ${endTime}`;
+                } else if (hour.time_start) {
+                  const startTime = hour.time_start.length > 5 ? hour.time_start.substring(0, 5) : hour.time_start;
+                  timeSlot = startTime;
+                } else {
+                  timeSlot = 'Saat belirtilmemiş';
+                }
+                
+                console.log('⏰ Formatted time slot:', { day: dayName, time: timeSlot, original: hour });
+                
+                if (!scheduleInfo[dayName]) {
+                  scheduleInfo[dayName] = [];
+                }
+                scheduleInfo[dayName].push(timeSlot);
+              });
+              
+              console.log('📅 Formatted schedule info:', scheduleInfo);
+            }
+          } catch (sectionError) {
+            console.error('❌ Section details/hours fetch error:', sectionError);
+          }
+        }
+        
+        const transformedCourse = {
+          id: course.id,
+          name: course.explicit_name || course.name || course.course_name || course.lecture_name || "Ders",
+          code: course.code || course.course_code || course.lecture_code || "DERS",
+          section: course.section || course.section_name || course.section_code || "A1",
+          sectionFull: `YP-${course.section || course.section_name || "A1"}`,
+          building: building,
+          room: room,
+          section_id: course.section_id, // Section ID'sini de sakla
+          schedule: scheduleInfo, // Ders saatleri bilgisi
+          scheduleText: formatScheduleText(scheduleInfo), // Formatlanmış metin
+          class: `${course.classLevel || 1}-A`,
+          instructor: course.instructor?.name || `${user?.first_name || ''} ${user?.last_name || ''}`.trim() || "Öğretim Üyesi",
+          totalWeeks: 15,
+          currentWeek: 1,
+          studentCount: Math.floor(Math.random() * 30) + 20,
+          attendanceStatus: "not_taken",
+          lastAttendance: null,
+          attendanceRate: 0,
+          files: [],
+        };
+        
+        transformedCourses.push(transformedCourse);
+      }
 
       setDersler(transformedCourses);
       
@@ -257,17 +394,13 @@ const Derslerim = () => {
 
         // Eğer hala bulunamazsa kullanıcı profilini tazele ve tekrar dene
         if (!universityId && accessToken && user?.id) {
-          console.log("🔄 University ID bulunamadı, profil tazeleniyor...");
           try {
             const freshProfile = typeof loadUserProfile === 'function' ? await loadUserProfile(true) : null;
-            console.log("📊 Tazelenen profil verisi:", freshProfile);
             
             // FreshProfile'dan university_id'yi al
             universityId = freshProfile?.university_id || 
                           freshProfile?.university?.id || 
                           freshProfile?.universityId;
-            
-            console.log("🆔 Tazelen profil University ID:", universityId);
             
             // Eğer freshProfile'da university_id varsa user state'ini de güncelle
             if (freshProfile && (freshProfile.university_id || freshProfile.university?.id)) {
@@ -276,7 +409,6 @@ const Derslerim = () => {
                 ...freshProfile,
                 university_id: freshProfile.university_id || freshProfile.university?.id
               };
-              console.log("🔄 User state güncelleniyor:", updatedUser);
               if (setUser) setUser(updatedUser);
               
               // SessionStorage'ı da güncelle
@@ -292,14 +424,11 @@ const Derslerim = () => {
         }
 
         if (universityId) {
-          console.log("🏢 Bina verileri çekiliyor, University ID:", universityId);
           const buildingsData = await getBuildings(universityId, accessToken);
           setBuildings(buildingsData);
-          console.log("✅ Bina verileri alındı:", buildingsData);
           
           // Her bina için sınıf verilerini çek
           if (buildingsData.length > 0) {
-            console.log("🚪 Sınıf verileri çekiliyor...");
             const allClassrooms = [];
             for (const building of buildingsData) {
               try {
@@ -314,48 +443,9 @@ const Derslerim = () => {
               }
             }
             setClassrooms(allClassrooms);
-            console.log("✅ Tüm sınıf verileri alındı:", allClassrooms);
           }
-        } else {
-          // University ID bulunamazsa Postman'deki ID'yi kullan
-          console.warn("⚠️ University ID bulunamadı, hard-coded ID kullanılıyor...");
-          const hardcodedUniversityId = "bae612be-cd3c-4d37-825c-d394e3859009";
-          try {
-            console.log("🏢 Hard-coded University ID ile bina verileri çekiliyor:", hardcodedUniversityId);
-            const buildingsData = await getBuildings(hardcodedUniversityId, accessToken);
-            setBuildings(buildingsData);
-            console.log("✅ Hard-coded ID ile bina verileri alındı:", buildingsData);
-            
-            // Her bina için sınıf verilerini çek
-            if (buildingsData.length > 0) {
-              console.log("🚪 Sınıf verileri çekiliyor...");
-              const allClassrooms = [];
-              for (const building of buildingsData) {
-                try {
-                  const buildingClassrooms = await getClassrooms(building.id, accessToken);
-                  allClassrooms.push(...buildingClassrooms.map(classroom => ({
-                    ...classroom,
-                    buildingId: building.id,
-                    buildingName: building.name
-                  })));
-                } catch (classroomError) {
-                  console.error(`❌ ${building.name} binası için sınıflar çekilemedi:`, classroomError);
-                }
-              }
-              setClassrooms(allClassrooms);
-              console.log("✅ Hard-coded ID ile tüm sınıf verileri alındı:", allClassrooms);
-            }
-          } catch (hardcodedError) {
-            console.error("❌ Hard-coded University ID ile de hata:", hardcodedError);
-          }
-          
-          console.warn("👤 User nesnesindeki university bilgileri:", {
-            university_id: user?.university_id,
-            university: user?.university,
-            universityId: user?.universityId,
-            fullUser: user
-          });
         }
+        // University ID bulunamazsa building/classroom verilerini atla
       } catch (buildingError) {
         console.error("❌ Bina verilerini çekerken hata:", buildingError);
       }
@@ -437,12 +527,11 @@ const Derslerim = () => {
       window.removeEventListener("storage", handleStorageChange);
       window.removeEventListener("teacherCoursesUpdated", handleStorageChange);
     };
-  }, [user?.department_id, user?.id, user?.university_id, user?.university?.id, accessToken, authLoading]);
+  }, [user?.lecturer_id, user?.id, accessToken, authLoading]);
 
   // Buildings ve classrooms state değiştiğinde derslerdeki building ve room bilgilerini güncelle
   useEffect(() => {
     if (buildings.length > 0 && classrooms.length > 0 && dersler.length > 0) {
-      console.log("🏢🚪 Building ve classroom verileri ile dersler güncelleniyor...");
       setDersler(prevDersler => 
         prevDersler.map(ders => {
           // Eğer ders zaten building ve room bilgisine sahipse güncelleme
@@ -474,9 +563,31 @@ const Derslerim = () => {
   };
 
   const getDaysText = (schedule) => {
-    return Object.keys(schedule)
-      .map((day) => day.charAt(0).toUpperCase() + day.slice(1))
-      .join(", ");
+    if (!schedule || Object.keys(schedule).length === 0) {
+      return "Ders saati atanmamış";
+    }
+    
+    // Günleri ve saatleri birlikte göster
+    const scheduleTexts = [];
+    Object.entries(schedule).forEach(([day, times]) => {
+      if (times && times.length > 0) {
+        // Sadece ilk saati göster, eğer birden fazla saat varsa "..." ekle
+        const firstTime = times[0];
+        const timeDisplay = times.length > 1 ? `${firstTime}...` : firstTime;
+        scheduleTexts.push(`${day}: ${timeDisplay}`);
+      }
+    });
+    
+    if (scheduleTexts.length === 0) {
+      return "Ders saati atanmamış";
+    }
+    
+    // En fazla 2 gün göster, daha fazlası varsa "..." ekle
+    if (scheduleTexts.length > 2) {
+      return scheduleTexts.slice(0, 2).join(", ") + "...";
+    }
+    
+    return scheduleTexts.join(", ");
   };
 
   // Open schedule modal
@@ -869,7 +980,11 @@ const Derslerim = () => {
                       >
                         {ders.building && ders.room 
                           ? `${ders.building} - ${ders.room}`
-                          : "Konum güncelleniyor..."
+                          : ders.building 
+                            ? `${ders.building} - Sınıf atanmamış`
+                            : ders.room
+                              ? `Bina atanmamış - ${ders.room}`
+                              : "Konum atanmamış"
                         }
                       </Typography>
                     </Box>

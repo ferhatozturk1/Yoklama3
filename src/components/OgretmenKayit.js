@@ -75,7 +75,6 @@ const OgretmenKayit = () => {
   // Zaten login olduysa ana sayfaya yönlendir
   useEffect(() => {
     if (isAuthenticated) {
-      console.log("ℹ️ OgretmenKayit - Kullanıcı zaten giriş yapmış, ana sayfaya yönlendiriliyor");
       navigate("/portal/ana-sayfa", { replace: true });
       return;
     }
@@ -90,10 +89,8 @@ const OgretmenKayit = () => {
     const fetchInitialData = async () => {
       try {
         setLoadingData(true);
-        console.log("🔄 Üniversite listesi yükleniyor...");
         const univData = await getUniversities();
         setUniversities(univData);
-        console.log("✅ Üniversiteler yüklendi:", univData);
       } catch (error) {
         console.error("❌ Üniversite listesi yüklenemedi:", error);
         setError("Üniversite listesi yüklenemedi. Lütfen sayfayı yenileyin.");
@@ -111,10 +108,8 @@ const OgretmenKayit = () => {
     if (form.university) {
       const fetchFaculties = async () => {
         try {
-          console.log("🔄 Fakülte listesi yükleniyor:", form.university);
           const facultyData = await getFaculties(form.university);
           setFaculties(facultyData);
-          console.log("✅ Fakülteler yüklendi:", facultyData);
         } catch (error) {
           console.error("❌ Fakülte listesi yüklenemedi:", error);
           setFaculties([]);
@@ -131,10 +126,8 @@ const OgretmenKayit = () => {
     if (form.faculty) {
       const fetchDepartments = async () => {
         try {
-          console.log("🔄 Departman listesi yükleniyor:", form.faculty);
           const deptData = await getDepartments(form.faculty);
           setDepartments(deptData);
-          console.log("✅ Departmanlar yüklendi:", deptData);
         } catch (error) {
           console.error("❌ Departman listesi yüklenemedi:", error);
           setDepartments([]);
@@ -320,17 +313,10 @@ const OgretmenKayit = () => {
         throw new Error('Şifre belirlenemedi. Lütfen şifrenizi kontrol edin.');
       }
 
-      console.log("Gönderilen veri (backend formatında):", formDataForAPI);
-      console.log("Seçilen departman:", selectedDepartment);
-      console.log("Final department ID:", finalDepartmentId);
-
       const response = await registerLecturer(formDataForAPI);
-      
-      console.log("API yanıtı:", response);
       
       try {
         sessionStorage.setItem('pendingDepartmentId', formDataForAPI.department_id);
-        console.log('🗂️ pendingDepartmentId sessionStorage\'a yazıldı:', formDataForAPI.department_id);
       } catch {}
       
       setSuccess("🎉 Kayıt başarılı! E-posta adresinizi doğrulayın. Giriş sayfasına yönlendiriliyorsunuz...");

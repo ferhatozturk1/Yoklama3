@@ -1,28 +1,41 @@
 module.exports = {
-  devServer: (devServerConfig) => {
-    // Eski onBeforeSetupMiddleware ve onAfterSetupMiddleware seçeneklerini
-    // yeni setupMiddlewares yapısına dönüştür
-    if (devServerConfig.onBeforeSetupMiddleware || devServerConfig.onAfterSetupMiddleware) {
-      const onBeforeSetupMiddleware = devServerConfig.onBeforeSetupMiddleware;
-      const onAfterSetupMiddleware = devServerConfig.onAfterSetupMiddleware;
-
-      delete devServerConfig.onBeforeSetupMiddleware;
-      delete devServerConfig.onAfterSetupMiddleware;
-
-      devServerConfig.setupMiddlewares = (middlewares, devServer) => {
-        if (onBeforeSetupMiddleware) {
-          onBeforeSetupMiddleware(devServer);
-        }
-
-        // Mevcut middlewares'ları kullan
-        if (onAfterSetupMiddleware) {
-          onAfterSetupMiddleware(devServer);
-        }
-
-        return middlewares;
-      };
-    }
-
-    return devServerConfig;
+  devServer: {
+    // WebSocket yapılandırması
+    client: {
+      webSocketURL: {
+        hostname: 'localhost',
+        pathname: '/ws',
+        port: 3001,
+        protocol: 'ws',
+      },
+      overlay: {
+        errors: true,
+        warnings: false,
+      },
+    },
+    // Hot reload ayarları
+    hot: true,
+    liveReload: true,
+    port: 3001,
+    host: 'localhost',
+    
+    // Deprecated middleware uyarılarını çözmek için
+    setupMiddlewares: (middlewares, devServer) => {
+      // Middleware kurulumu burada yapılabilir
+      return middlewares;
+    },
+  },
+  
+  webpack: {
+    configure: (webpackConfig) => {
+      // WebSocket bağlantı ayarları için
+      if (webpackConfig.mode === 'development') {
+        webpackConfig.watchOptions = {
+          poll: 1000,
+          aggregateTimeout: 300,
+        };
+      }
+      return webpackConfig;
+    },
   },
 };

@@ -42,7 +42,6 @@ const GirisYap = () => {
   // Zaten login olduysa ana sayfaya yönlendir
   useEffect(() => {
     if (isAuthenticated) {
-      console.log("ℹ️ GirisYap - Kullanıcı zaten giriş yapmış, ana sayfaya yönlendiriliyor");
       navigate("/portal/ana-sayfa", { replace: true });
       return;
     }
@@ -62,15 +61,12 @@ const GirisYap = () => {
     setError("");
 
     try {
-      console.log("🔐 Giriş denemesi:", { email, password: "***" });
-      
       const formData = {
         username: email,
         password: password,
       };
       
       const response = await loginLecturer(formData);
-      console.log("✅ API'den gelen login yanıtı:", response);
       
       // AuthContext üzerinden login işlemini gerçekleştir
       await login(response);

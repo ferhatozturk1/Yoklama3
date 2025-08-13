@@ -170,8 +170,7 @@ export const getClassrooms = async (buildingId, accessToken) => {
       return [];
     }
 
-    const endpoint = `${API_BASE_URL}/lecturer_data/classrooms/${buildingId}/`;
-    console.log(`🔄 Sınıf endpoint'i çağrılıyor: ${endpoint}`);
+    const endpoint = `${API_BASE_URL}/lecturer_data/buildings/${buildingId}/classrooms/`;
     
     const response = await fetch(endpoint, {
       method: "GET",
@@ -191,6 +190,83 @@ export const getClassrooms = async (buildingId, accessToken) => {
     }
   } catch (error) {
     console.error("❌ Sınıf listesi hatası:", error);
+    return [];
+  }
+};
+
+// Section detaylarını getir (section_id ile)
+export const getSectionDetails = async (sectionId, accessToken) => {
+  try {
+    if (!sectionId) {
+      console.error("❌ Section detayları için section ID'si gerekli!");
+      return null;
+    }
+
+    if (!accessToken) {
+      console.error("❌ Section detayları için access token gerekli!");
+      return null;
+    }
+
+    const endpoint = `${API_BASE_URL}/lecturer_data/sections/${sectionId}/`;
+    console.log(`🔄 Section detay endpoint'i çağrılıyor: ${endpoint}`);
+    
+    const response = await fetch(endpoint, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${accessToken}`
+      }
+    });
+
+    if (response.ok) {
+      const sectionData = await response.json();
+      console.log(`✅ Section detayları alındı:`, sectionData);
+      return sectionData;
+    } else {
+      console.log(`❌ ${endpoint} - Status: ${response.status}`);
+      return null;
+    }
+  } catch (error) {
+    console.error("❌ Section detayları hatası:", error);
+    return null;
+  }
+};
+
+// Section hours bilgilerini getir (section_id ile)
+export const getSectionHours = async (sectionId, accessToken) => {
+  try {
+    if (!sectionId) {
+      console.error("❌ Section hours için section ID'si gerekli!");
+      return [];
+    }
+
+    if (!accessToken) {
+      console.error("❌ Section hours için access token gerekli!");
+      return [];
+    }
+
+    const endpoint = `${API_BASE_URL}/lecturer_data/hours/section/${sectionId}/`;
+    console.log(`🔄 Section hours endpoint'i çağrılıyor: ${endpoint}`);
+    
+    const response = await fetch(endpoint, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${accessToken}`
+      }
+    });
+
+    if (response.ok) {
+      const hoursData = await response.json();
+      console.log(`✅ Section hours alındı:`, hoursData);
+      // Array döndür, eğer tek obje ise array'e çevir
+      return Array.isArray(hoursData) ? hoursData : (hoursData ? [hoursData] : []);
+    } else {
+      console.log(`❌ ${endpoint} - Status: ${response.status}`);
+      return [];
+    }
+  } catch (error) {
+    console.error("❌ Section hours hatası:", error);
     return [];
   }
 };
@@ -436,7 +512,7 @@ export const registerLecturer = async (formData) => {
 
 // access token yenileme
 export const refreshToken = async (refreshToken) => {
-  const response = await fetch(`${API_BASE_URL}/lecturer_data/lecturers/login/refresh/`, {
+  const response = await fetch(`${API_BASE_URL}/lecturer_data/lecturers/login/refresh`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json"

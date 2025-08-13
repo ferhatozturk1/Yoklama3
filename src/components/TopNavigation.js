@@ -130,8 +130,6 @@ const TopNavigation = ({
   };
 
   const handleLogout = () => {
-    console.log("🚪 TopNavigation - Çıkış işlemi başlatılıyor");
-    
     // Profil menüsünü kapat
     handleProfileMenuClose();
     
@@ -141,7 +139,6 @@ const TopNavigation = ({
       
       // Ek güvenlik için localStorage'ı da temizle
       localStorage.clear();
-      console.log('🧹 TopNavigation - LocalStorage da temizlendi');
       
       // Tüm cookie'leri de temizle
       document.cookie.split(";").forEach((c) => {
@@ -149,7 +146,6 @@ const TopNavigation = ({
         const name = eqPos > -1 ? c.substr(0, eqPos) : c;
         document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
       });
-      console.log('🧹 TopNavigation - Cookies temizlendi');
       
     } catch (error) {
       console.error('❌ TopNavigation - Logout hatası:', error);
@@ -157,8 +153,6 @@ const TopNavigation = ({
     
     // Giriş sayfasına yönlendir
     navigate("/giris-yap");
-    
-    console.log("✅ TopNavigation - Çıkış işlemi tamamlandı");
   };
 
  

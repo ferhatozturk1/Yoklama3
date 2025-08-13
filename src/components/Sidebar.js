@@ -1,5 +1,4 @@
 import React from "react";
-
 import {
   Box,
   List,
@@ -19,13 +18,6 @@ import cbuLogo from "../theme/cbulogo.png";
 
 
 const Sidebar = ({ open, onToggle, isMobile, onNavigate, userProfile }) => {
-  console.log("🔍 SIDEBAR DEBUG - UserProfile:", userProfile);
-  console.log("🔍 SIDEBAR DEBUG - UserProfile title:", userProfile?.title);
-  console.log("🔍 SIDEBAR DEBUG - UserProfile name:", userProfile?.name);
-  console.log("🔍 SIDEBAR DEBUG - UserProfile school:", userProfile?.school);
-  console.log("🔍 SIDEBAR DEBUG - UserProfile university:", userProfile?.university);
-  console.log("🔍 SIDEBAR DEBUG - ProfilePhoto:", userProfile?.profilePhoto);
-  console.log("🔍 SIDEBAR DEBUG - ProfilePhoto type:", typeof userProfile?.profilePhoto);
   // Navigation items
   const navigationItems = [
     {
@@ -116,7 +108,7 @@ const Sidebar = ({ open, onToggle, isMobile, onNavigate, userProfile }) => {
               lineHeight: 1.3,
             }}
           >
-            {userProfile?.school || 'Üniversite Bilgisi Yok'}
+            {userProfile?.university || userProfile?.universityName || userProfile?.school || 'Üniversite Bilgisi Yok'}
           </Typography>
         </Box>
       </Box>
@@ -166,9 +158,8 @@ const Sidebar = ({ open, onToggle, isMobile, onNavigate, userProfile }) => {
                   height: "100%",
                   objectFit: "cover",
                 }}
-                onLoad={() => console.log('✅ Sidebar - Profil fotoğrafı yüklendi:', userProfile.profilePhoto)}
+                onLoad={() => {}}
                 onError={(e) => {
-                  console.error("❌ Sidebar - Profil fotoğrafı yükleme hatası:", userProfile.profilePhoto, e);
                   e.target.style.display = 'none';
                   e.target.nextSibling.style.display = 'flex';
                 }}

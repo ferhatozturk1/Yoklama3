@@ -144,13 +144,12 @@ const DersDetay = ({ ders, onBack }) => {
   };
 
   const handleConfirmYoklamaYenile = () => {
-    console.log("Yoklama yenileniyor - onaylandı");
     setOpenYoklamaYenileDialog(false);
     // Burada yoklama yenileme işlemi yapılacak
   };
 
   const handleTelafiDers = () => {
-    console.log("Telafi ders");
+    // Telafi ders işlemi
   };
 
   const handleStudentList = () => {
@@ -199,9 +198,6 @@ const DersDetay = ({ ders, onBack }) => {
       attendanceData: [] // Backend'den yoklama verisi gelecek
     };
 
-    console.log('Rapor oluşturuluyor:', reportData);
-    console.log('⚠️ DersDetay - Backend API yoklama verileri henüz entegre edilmedi');
-    
     // TODO: Backend'den yoklama verilerini çek
     // const attendanceResponse = await fetch(`/api/attendance/${courseId}`, {
     //   headers: { 'Authorization': `Bearer ${accessToken}` }
@@ -453,40 +449,70 @@ const DersDetay = ({ ders, onBack }) => {
                 </Typography>
               </Box>
 
-              {Object.entries(ders.schedule).map(([day, schedules]) => (
+              {ders.schedule && Object.keys(ders.schedule).length > 0 ? (
+                Object.entries(ders.schedule).map(([day, times]) => (
+                  <Box
+                    key={day}
+                    sx={{
+                      mb: 1,
+                      p: 1.5,
+                      bgcolor: "#f8f9fa",
+                      borderRadius: 1,
+                      border: "1px solid #e9ecef",
+                    }}
+                  >
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        textTransform: "capitalize",
+                        fontWeight: 600,
+                        mb: 0.5,
+                        fontSize: "0.875rem",
+                      }}
+                    >
+                      {day}:
+                    </Typography>
+                    {Array.isArray(times) ? (
+                      times.map((timeSlot, index) => (
+                        <Typography
+                          key={index}
+                          variant="caption"
+                          color="text.secondary"
+                          sx={{ display: "block" }}
+                        >
+                          {timeSlot}
+                        </Typography>
+                      ))
+                    ) : (
+                      <Typography
+                        variant="caption"
+                        color="text.secondary"
+                        sx={{ display: "block" }}
+                      >
+                        {times}
+                      </Typography>
+                    )}
+                  </Box>
+                ))
+              ) : (
                 <Box
-                  key={day}
                   sx={{
-                    mb: 1,
-                    p: 1.5,
-                    bgcolor: "#f8f9fa",
+                    p: 2,
+                    bgcolor: "#fff3cd",
                     borderRadius: 1,
-                    border: "1px solid #e9ecef",
+                    border: "1px solid #ffeaa7",
+                    textAlign: "center",
                   }}
                 >
                   <Typography
                     variant="body2"
-                    sx={{
-                      textTransform: "capitalize",
-                      fontWeight: 600,
-                      mb: 0.5,
-                      fontSize: "0.875rem",
-                    }}
+                    color="text.secondary"
+                    sx={{ fontStyle: "italic" }}
                   >
-                    {day}:
+                    {ders.scheduleText || "Ders saati atanmamış"}
                   </Typography>
-                  {schedules.map((s, index) => (
-                    <Typography
-                      key={index}
-                      variant="caption"
-                      color="text.secondary"
-                      sx={{ display: "block" }}
-                    >
-                      {s.startTime} - {s.endTime} {s.room ? `(${s.room})` : ""}
-                    </Typography>
-                  ))}
                 </Box>
-              ))}
+              )}
             </CardContent>
           </Card>
         </Grid>

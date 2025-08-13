@@ -35,19 +35,14 @@ const Profilim = ({
   
   // Profile photo URL helper function
   const getProfilePhotoUrl = (photoPath) => {
-    console.log('📸 Profilim getProfilePhotoUrl çağrıldı:', photoPath);
     if (!photoPath) {
-      console.log('❌ Photo path boş');
       return null;
     }
     if (photoPath.startsWith('http')) {
-      console.log('✅ Zaten tam URL:', photoPath);
       return photoPath;
     }
     
     const fullUrl = `http://127.0.0.1:8000${photoPath}`;
-    console.log('🔧 Profilim - Tam URL oluşturuldu:', fullUrl);
-    
     return fullUrl;
   };
   
@@ -70,32 +65,22 @@ const Profilim = ({
 
   // Test API fonksiyonu - Üniversite/Fakülte/Bölüm verilerini test et
   const testApiConnections = async () => {
-    console.log('🧪 === API BAĞLANTI TESTİ BAŞLIYOR ===');
     try {
-      // 1. Üniversite listesi test et
-      console.log('🧪 Üniversite listesi getiriliyor...');
+      // API bağlantılarını test et
       const universities = await getUniversities();
-      console.log('🧪 Üniversite listesi sonucu:', universities);
       
       if (universities && universities.length > 0) {
         const firstUniversity = universities[0];
-        console.log('🧪 İlk üniversite:', firstUniversity);
         
         // 2. Fakülte listesi test et
-        console.log('🧪 Fakülte listesi getiriliyor...', firstUniversity.id);
         const faculties = await getFaculties(firstUniversity.id);
-        console.log('🧪 Fakülte listesi sonucu:', faculties);
         
         if (faculties && faculties.length > 0) {
           const firstFaculty = faculties[0];
-          console.log('🧪 İlk fakülte:', firstFaculty);
           
           // 3. Bölüm listesi test et
-          console.log('🧪 Bölüm listesi getiriliyor...', firstFaculty.id);
           const departments = await getDepartments(firstFaculty.id);
-          console.log('🧪 Bölüm listesi sonucu:', departments);
           
-          console.log('✅ Tüm API çağrıları başarılı!');
           return {
             universities,
             faculties,
@@ -112,10 +97,6 @@ const Profilim = ({
 
   // GERÇEK KULLANICI VERİSİNİ TEST ET
   const testRealUserData = async () => {
-    console.log('🔍 === GERÇEK KULLANICI VERİSİ TESTİ ===');
-    console.log('👤 Current User:', user);
-    console.log('🔑 Access Token mevcut:', !!accessToken);
-    
     if (user && user.id && accessToken) {
       try {
         // Backend'den direkt ham veriyi çek
@@ -126,18 +107,6 @@ const Profilim = ({
         
         if (response.ok) {
           const rawUserData = await response.json();
-          console.log('🔍 === BACKEND\'DEN GELEN HAM VERİ ===');
-          console.log('🆔 ID:', rawUserData.id);
-          console.log('👤 Ad:', rawUserData.first_name);
-          console.log('👤 Soyad:', rawUserData.last_name);
-          console.log('📧 Email:', rawUserData.email);
-          console.log('🏢 Department ID:', rawUserData.department_id);
-          console.log('🏫 University (raw):', rawUserData.university);
-          console.log('🏛️ Faculty (raw):', rawUserData.faculty);
-          console.log('🏢 Department (raw):', rawUserData.department);
-          console.log('📅 Oluşturulma tarihi:', rawUserData.created_at);
-          console.log('📷 Profil foto:', rawUserData.profile_photo);
-          console.log('🔍 === HAM VERİ BİTİŞ ===');
           return rawUserData;
         } else {
           console.error('❌ Backend\'den veri çekilemedi:', response.status);
@@ -145,40 +114,17 @@ const Profilim = ({
       } catch (error) {
         console.error('❌ Ham veri test hatası:', error);
       }
-    } else {
-      console.warn('⚠️ Kullanıcı bilgileri eksik:', {
-        hasUser: !!user,
-        hasUserId: !!(user && user.id),
-        hasToken: !!accessToken
-      });
     }
   };
 
-  console.log("🔍 === PROFILIM COMPONENT DEBUG BAŞLANGIÇ ===");
-  console.log("👤 AuthContext'ten gelen user:", user);
-  console.log("🔑 AuthContext'ten gelen accessToken:", accessToken ? "Mevcut" : "YOK");
-  console.log("✅ isAuthenticated:", isAuthenticated);
-  console.log("⏳ authLoading:", authLoading);
-  console.log("⏳ isLoading (local):", isLoading);
-  console.log("📄 initialUserProfile:", initialUserProfile);
+  // User'daki önemli alanları kontrol et
+  useEffect(() => {
+    if (user) {
+      // User data available
+    }
+  }, [user]);
   
-  // User'daki önemli alanları detaylı kontrol et
-  if (user) {
-    console.log("🔍 === USER DETAYLI ANALİZ ===");
-    console.log("👤 user.id:", user.id);
-    console.log("🏢 user.department_id:", user.department_id);
-    console.log("🏫 user.university:", user.university);
-    console.log("🏛️ user.faculty:", user.faculty);
-    console.log("🏢 user.department:", user.department);
-    console.log("📧 user.email:", user.email);
-    console.log("📞 user.phone:", user.phone);
-    console.log("🎓 user.title:", user.title);
-    console.log("👤 user.first_name:", user.first_name);
-    console.log("👤 user.last_name:", user.last_name);
-    console.log("🔍 === USER DETAYLI ANALİZ BİTİŞ ===");
-  }
-  
-  console.log("🔍 === PROFILIM COMPONENT DEBUG BİTİŞ ===");
+
 
   // Profil bilgilerini AuthContext'ten yükle
   useEffect(() => {
@@ -191,7 +137,7 @@ const Profilim = ({
     hasFetchedProfileRef.current = true;
 
     const fetchUserProfile = async () => {
-      console.log("🚀 === PROFIL YÜKLEME İŞLEMİ BAŞLIYOR ===");
+  
 
       // Debug/test çağrılarını sadece dev modda yap
       if (isDev) {
@@ -200,7 +146,6 @@ const Profilim = ({
       }
 
       if (initialUserProfile) {
-        console.log("📦 InitialUserProfile mevcut, direkt kullanılıyor:", initialUserProfile);
         setUserProfile(initialUserProfile);
         setIsLoading(false);
         return;
@@ -211,7 +156,7 @@ const Profilim = ({
         setApiError("");
         setShowApiError(false);
 
-        console.log("📋 === API'DEN PROFIL BİLGİLERİ ÇEKİLİYOR ===");
+    
 
         // Timeout ile profil yükleme - 15 saniye sonra timeout
         const timeoutPromise = new Promise((_, reject) => 
@@ -267,7 +212,7 @@ const Profilim = ({
         setUserProfile(fallbackProfile);
       } finally {
         setIsLoading(false);
-        console.log("🏁 === PROFIL YÜKLEME İŞLEMİ TAMAMLANDI ===");
+    
       }
     };
 
@@ -278,19 +223,6 @@ const Profilim = ({
   // Initialize form with user profile data - memoized to prevent recalculation
   const initialFormData = useMemo(
     () => {
-      console.log('📋 === INITIAL FORM DATA DEBUG BAŞLANGIÇ ===');
-      console.log('👤 User object:', user);
-      console.log('📄 UserProfile object:', userProfile);
-      console.log('🔍 User University/Faculty/Department:');
-      console.log('  - user?.university:', user?.university);
-      console.log('  - user?.faculty:', user?.faculty);
-      console.log('  - user?.department:', user?.department);
-      console.log('🔍 UserProfile University/Faculty/Department:');
-      console.log('  - userProfile?.university:', userProfile?.university);
-      console.log('  - userProfile?.faculty:', userProfile?.faculty);
-      console.log('  - userProfile?.department:', userProfile?.department);
-      console.log('  - userProfile?.school:', userProfile?.school);
-      
       const formData = {
         title: user?.title || userProfile?.title || "",
         firstName: user?.first_name || userProfile?.firstName || "",
@@ -298,20 +230,13 @@ const Profilim = ({
         email: user?.email || userProfile?.email || "",
         phone: user?.phone || userProfile?.phone || "",
         // AuthContext'ten gelen yeni alanlar
-        university: user?.university || userProfile?.school || userProfile?.university || "",
-        faculty: user?.faculty || userProfile?.faculty || "",
-        department: user?.department || userProfile?.department || "",
+        university: user?.university || user?.universityName || userProfile?.school || userProfile?.university || "",
+        faculty: user?.faculty || user?.facultyName || userProfile?.faculty || "",
+        department: user?.department || user?.department_name || userProfile?.department || "",
         webUrl: user?.web_url || userProfile?.webUrl || "",
         otherDetails: user?.other_details || userProfile?.otherDetails || "",
         profilePhoto: getProfilePhotoUrl(user?.profile_photo || userProfile?.profilePhoto),
       };
-      
-      console.log('🔧 === OLUŞTURULAN FORM DATA ===');
-      console.log('🏫 formData.university:', formData.university);
-      console.log('🏛️ formData.faculty:', formData.faculty);
-      console.log('🏢 formData.department:', formData.department);
-      console.log('📊 Tam formData:', formData);
-      console.log('📋 === INITIAL FORM DATA DEBUG BİTİŞ ===');
       
       return formData;
     },
@@ -331,19 +256,7 @@ const Profilim = ({
   // Form verilerini AuthContext değişikliklerine göre güncelle
   useEffect(() => {
     if (user || userProfile) {
-      console.log('🔄 === FORM RESET İŞLEMİ BAŞLIYOR ===');
-      console.log('🔄 Profilim - Form verileri güncelleniyor:', { user, userProfile });
-      console.log('🔍 User University/Faculty/Department:');
-      console.log('  - user?.university:', user?.university);
-      console.log('  - user?.faculty:', user?.faculty);
-      console.log('  - user?.department:', user?.department);
-      console.log('🔄 resetForm ÖNCESI - initialFormData:', initialFormData);
-      console.log('🔄 resetForm ÖNCESI - values state:', values);
-      
       resetForm(initialFormData);
-      
-      console.log('✅ resetForm SONRASI - Form resetlendi');
-      console.log('🔄 === FORM RESET İŞLEMİ BİTTİ ===');
     }
   }, [user, userProfile, initialFormData, resetForm]);
 
@@ -1076,13 +989,6 @@ const Profilim = ({
 
           {/* Üniversite Field */}
           <Grid item xs={12} sm={6}>
-            {console.log('🔍 === ÜNİVERSİTE TEXTFIELD RENDER DEBUG ===')}
-            {console.log('  - values.university:', values.university)}
-            {console.log('  - values objesi tamamı:', values)}
-            {console.log('  - initialFormData.university:', initialFormData.university)}
-            {console.log('  - user?.university:', user?.university)}
-            {console.log('  - userProfile?.university:', userProfile?.university)}
-            {console.log('🔍 =======================================')}
             <TextField
               label="Üniversite"
               value={values.university || ""}
@@ -1127,12 +1033,6 @@ const Profilim = ({
 
           {/* Fakülte Field */}
           <Grid item xs={12} sm={6}>
-            {console.log('🔍 === FAKÜLTE TEXTFIELD RENDER DEBUG ===')}
-            {console.log('  - values.faculty:', values.faculty)}
-            {console.log('  - initialFormData.faculty:', initialFormData.faculty)}
-            {console.log('  - user?.faculty:', user?.faculty)}
-            {console.log('  - userProfile?.faculty:', userProfile?.faculty)}
-            {console.log('🔍 ====================================')}
             <TextField
               label="Fakülte"
               value={values.faculty || ""}
@@ -1177,12 +1077,6 @@ const Profilim = ({
 
           {/* Bölüm Field */}
           <Grid item xs={12}>
-            {console.log('🔍 === BÖLÜM TEXTFIELD RENDER DEBUG ===')}
-            {console.log('  - values.department:', values.department)}
-            {console.log('  - initialFormData.department:', initialFormData.department)}
-            {console.log('  - user?.department:', user?.department)}
-            {console.log('  - userProfile?.department:', userProfile?.department)}
-            {console.log('🔍 ==============================')}
             <TextField
               label="Bölüm"
               value={values.department || ""}

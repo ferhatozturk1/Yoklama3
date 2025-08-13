@@ -38,7 +38,11 @@ import {
   MenuItem,
   FormControl,
   InputLabel,
-  Select
+  Select,
+  MenuList,
+  Popover,
+  TextField,
+  Grid
 } from '@mui/material';
 import { 
   School, 
@@ -207,6 +211,20 @@ const OgretmenPanel = () => {
   const [openStudentListDialog, setOpenStudentListDialog] = useState(false);
   const [openTelafiDialog, setOpenTelafiDialog] = useState(false);
   const [openQRDialog, setOpenQRDialog] = useState(false);
+  
+  // Öğrenci ekleme dropdown state'leri
+  const [addStudentAnchorEl, setAddStudentAnchorEl] = useState(null);
+  const [showExcelUpload, setShowExcelUpload] = useState(false);
+  const [showCSVUpload, setShowCSVUpload] = useState(false);
+  const [showManualAdd, setShowManualAdd] = useState(false);
+  const [newStudentData, setNewStudentData] = useState({
+    ad: '',
+    soyad: '',
+    no: '',
+    email: '',
+    sinif: ''
+  });
+  
   const [qrCode, setQrCode] = useState('');
   const [yoklamaSuresi, setYoklamaSuresi] = useState(5); // dakika
   const [kalanSure, setKalanSure] = useState(0);
@@ -458,6 +476,149 @@ const OgretmenPanel = () => {
       severity: 'success'
     });
     setAnchorEl(null);
+  };
+
+  // Yeni Excel dosyası yükleme (dropdown'dan)
+  const handleExcelUploadNew = (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, { type: 'array' });
+        const sheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[sheetName];
+        const jsonData = XLSX.utils.sheet_to_json(worksheet);
+
+        const yeniOgrenciler = jsonData.map((row, index) => ({
+          id: ogrenciler.length + index + 1,
+          ad: row['Ad'] || row['ad'] || '',
+          soyad: row['Soyad'] || row['soyad'] || '',
+          no: row['No'] || row['no'] || row['Numara'] || '',
+          sinif: row['Sınıf'] || row['sinif'] || row['Sinif'] || '',
+          email: row['Email'] || row['email'] || row['E-posta'] || '',
+          devamsizlik: 0,
+          toplamDers: 0,
+          katilanDers: 0
+        }));
+
+        setOgrenciler([...ogrenciler, ...yeniOgrenciler]);
+        setSnackbar({
+          open: true,
+          message: `${yeniOgrenciler.length} öğrenci Excel'den başarıyla yüklendi!`,
+          severity: 'success'
+        });
+        setShowExcelUpload(false);
+        setAddStudentAnchorEl(null);
+      } catch (error) {
+        setSnackbar({
+          open: true,
+          message: 'Excel dosyası okuma hatası!',
+          severity: 'error'
+        });
+      }
+    };
+    reader.readAsArrayBuffer(file);
+  };
+
+  // CSV dosyası yükleme
+  const handleCSVUploadNew = (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const csv = e.target.result;
+        const lines = csv.split('\n');
+        const headers = lines[0].split(',').map(h => h.trim());
+        
+        const yeniOgrenciler = lines.slice(1)
+          .filter(line => line.trim())
+          .map((line, index) => {
+            const values = line.split(',').map(v => v.trim());
+            const student = { id: ogrenciler.length + index + 1 };
+            
+            headers.forEach((header, i) => {
+              if (header.toLowerCase().includes('ad') && !header.toLowerCase().includes('soyad')) {
+                student.ad = values[i] || '';
+              } else if (header.toLowerCase().includes('soyad')) {
+                student.soyad = values[i] || '';
+              } else if (header.toLowerCase().includes('no') || header.toLowerCase().includes('numara')) {
+                student.no = values[i] || '';
+              } else if (header.toLowerCase().includes('sınıf') || header.toLowerCase().includes('sinif')) {
+                student.sinif = values[i] || '';
+              } else if (header.toLowerCase().includes('email') || header.toLowerCase().includes('mail')) {
+                student.email = values[i] || '';
+              }
+            });
+            
+            student.devamsizlik = 0;
+            student.toplamDers = 0;
+            student.katilanDers = 0;
+            
+            return student;
+          });
+
+        setOgrenciler([...ogrenciler, ...yeniOgrenciler]);
+        setSnackbar({
+          open: true,
+          message: `${yeniOgrenciler.length} öğrenci CSV'den başarıyla yüklendi!`,
+          severity: 'success'
+        });
+        setShowCSVUpload(false);
+        setAddStudentAnchorEl(null);
+      } catch (error) {
+        setSnackbar({
+          open: true,
+          message: 'CSV dosyası okuma hatası!',
+          severity: 'error'
+        });
+      }
+    };
+    reader.readAsText(file);
+  };
+
+  // Elle öğrenci ekleme
+  const handleManualAddStudent = (e) => {
+    e.preventDefault();
+    
+    if (!newStudentData.ad || !newStudentData.soyad || !newStudentData.no) {
+      setSnackbar({
+        open: true,
+        message: 'Ad, soyad ve numara alanları zorunludur!',
+        severity: 'error'
+      });
+      return;
+    }
+
+    const yeniOgrenci = {
+      id: ogrenciler.length + 1,
+      ...newStudentData,
+      devamsizlik: 0,
+      toplamDers: 0,
+      katilanDers: 0
+    };
+
+    setOgrenciler([...ogrenciler, yeniOgrenci]);
+    setSnackbar({
+      open: true,
+      message: 'Öğrenci başarıyla eklendi!',
+      severity: 'success'
+    });
+    
+    setNewStudentData({
+      ad: '',
+      soyad: '',
+      no: '',
+      email: '',
+      sinif: ''
+    });
+    setShowManualAdd(false);
+    setAddStudentAnchorEl(null);
+  };
   };
 
   const getDurumColor = (durum) => {
@@ -1764,15 +1925,45 @@ const OgretmenPanel = () => {
                 Dışa Aktar
               </Button>
               <Button
-                startIcon={<CloudUpload />}
+                startIcon={<Add />}
                 variant="contained"
-                onClick={() => {
-                  setOpenStudentListDialog(false);
-                  setOpenUploadDialog(true);
+                onClick={(e) => setAddStudentAnchorEl(e.currentTarget)}
+                endIcon={<ArrowForward sx={{ transform: 'rotate(90deg)' }} />}
+              >
+                Öğrenci Ekle
+              </Button>
+              <Menu
+                anchorEl={addStudentAnchorEl}
+                open={Boolean(addStudentAnchorEl)}
+                onClose={() => setAddStudentAnchorEl(null)}
+                anchorOrigin={{
+                  vertical: 'bottom',
+                  horizontal: 'right',
+                }}
+                transformOrigin={{
+                  vertical: 'top',
+                  horizontal: 'right',
                 }}
               >
-                Yükle
-              </Button>
+                <MenuItem onClick={() => {
+                  setShowExcelUpload(true);
+                  setAddStudentAnchorEl(null);
+                }}>
+                  📊 Excel olarak yükle
+                </MenuItem>
+                <MenuItem onClick={() => {
+                  setShowManualAdd(true);
+                  setAddStudentAnchorEl(null);
+                }}>
+                  ✏️ Elle ekle
+                </MenuItem>
+                <MenuItem onClick={() => {
+                  setShowCSVUpload(true);
+                  setAddStudentAnchorEl(null);
+                }}>
+                  📄 CSV olarak yükle
+                </MenuItem>
+              </Menu>
             </Box>
           </Box>
         </DialogTitle>
@@ -1851,6 +2042,157 @@ const OgretmenPanel = () => {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setOpenStudentListDialog(false)}>Kapat</Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Excel Upload Modal */}
+      <Dialog open={showExcelUpload} onClose={() => setShowExcelUpload(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>📊 Excel Dosyası Yükle</DialogTitle>
+        <DialogContent>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            Öğrenci listesini Excel dosyası olarak yükleyin (.xlsx, .xls)
+          </Typography>
+          <Box
+            sx={{
+              border: '2px dashed #d1d5db',
+              borderRadius: 2,
+              p: 4,
+              textAlign: 'center',
+              '&:hover': { borderColor: '#2563eb' }
+            }}
+          >
+            <input
+              type="file"
+              id="excel-upload-new"
+              accept=".xlsx,.xls"
+              onChange={handleExcelUploadNew}
+              style={{ display: 'none' }}
+            />
+            <label htmlFor="excel-upload-new">
+              <Button
+                variant="contained"
+                component="span"
+                startIcon={<CloudUpload />}
+                sx={{ mb: 1 }}
+              >
+                Excel Dosyası Seç
+              </Button>
+            </label>
+            <Typography variant="caption" display="block" color="text.secondary">
+              Sütun başlıkları: Ad, Soyad, No, Sınıf, Email
+            </Typography>
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setShowExcelUpload(false)}>İptal</Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* CSV Upload Modal */}
+      <Dialog open={showCSVUpload} onClose={() => setShowCSVUpload(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>📄 CSV Dosyası Yükle</DialogTitle>
+        <DialogContent>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            Öğrenci listesini CSV dosyası olarak yükleyin
+          </Typography>
+          <Box
+            sx={{
+              border: '2px dashed #d1d5db',
+              borderRadius: 2,
+              p: 4,
+              textAlign: 'center',
+              '&:hover': { borderColor: '#2563eb' }
+            }}
+          >
+            <input
+              type="file"
+              id="csv-upload-new"
+              accept=".csv"
+              onChange={handleCSVUploadNew}
+              style={{ display: 'none' }}
+            />
+            <label htmlFor="csv-upload-new">
+              <Button
+                variant="contained"
+                component="span"
+                startIcon={<CloudUpload />}
+                sx={{ mb: 1 }}
+              >
+                CSV Dosyası Seç
+              </Button>
+            </label>
+            <Typography variant="caption" display="block" color="text.secondary">
+              Virgül ile ayrılmış değerler: Ad,Soyad,No,Sınıf,Email
+            </Typography>
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setShowCSVUpload(false)}>İptal</Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Manual Add Student Modal */}
+      <Dialog open={showManualAdd} onClose={() => setShowManualAdd(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>✏️ Öğrenci Elle Ekle</DialogTitle>
+        <DialogContent>
+          <Box component="form" onSubmit={handleManualAddStudent} sx={{ mt: 1 }}>
+            <Grid container spacing={2}>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  required
+                  fullWidth
+                  label="Ad"
+                  value={newStudentData.ad}
+                  onChange={(e) => setNewStudentData({...newStudentData, ad: e.target.value})}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  required
+                  fullWidth
+                  label="Soyad"
+                  value={newStudentData.soyad}
+                  onChange={(e) => setNewStudentData({...newStudentData, soyad: e.target.value})}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  required
+                  fullWidth
+                  label="Öğrenci Numarası"
+                  value={newStudentData.no}
+                  onChange={(e) => setNewStudentData({...newStudentData, no: e.target.value})}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label="Sınıf"
+                  value={newStudentData.sinif}
+                  onChange={(e) => setNewStudentData({...newStudentData, sinif: e.target.value})}
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label="E-posta"
+                  type="email"
+                  value={newStudentData.email}
+                  onChange={(e) => setNewStudentData({...newStudentData, email: e.target.value})}
+                />
+              </Grid>
+            </Grid>
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setShowManualAdd(false)}>İptal</Button>
+          <Button 
+            onClick={handleManualAddStudent}
+            variant="contained"
+            disabled={!newStudentData.ad || !newStudentData.soyad || !newStudentData.no}
+          >
+            Kaydet
+          </Button>
         </DialogActions>
       </Dialog>
 

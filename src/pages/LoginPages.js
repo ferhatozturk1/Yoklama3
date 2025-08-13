@@ -12,26 +12,18 @@ const LoginPage = () => {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      console.log('🔐 === LOGIN İŞLEMİ BAŞLIYOR ===');
-      console.log('📧 Email:', email);
-      console.log('🔑 Password mevcut:', !!password);
-      
       // API'ye username olarak email gönder (backend username bekliyor)
       const loginData = {
         username: email, // Backend username alanında email bekliyor
         password: password
       };
       
-      console.log('📤 API\'ye gönderilen data:', { username: loginData.username, password: '***' });
-      
       // Backend API'ye login çağrısı yap
       const apiResponse = await loginLecturer(loginData);
-      console.log('✅ Backend API yanıtı:', apiResponse);
       
       // AuthContext'e login bilgilerini bildir
       await login(apiResponse);
       
-      console.log('🎉 Login başarılı! Yönlendiriliyor...');
       alert("Giriş başarılı!");
       navigate("/"); // Giriş sonrası anasayfaya yönlendir
     } catch (err) {
