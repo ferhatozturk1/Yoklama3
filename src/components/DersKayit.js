@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
+import { fetchLecturerLectures } from "../api/schedule";
 import {
   Box,
   Typography,
@@ -32,6 +34,8 @@ import {
 
 const DersKayit = ({ onBack, selectedSemester = "2025-2026-Güz" }) => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, accessToken } = useAuth();
   const [courseData, setCourseData] = useState({
     term: selectedSemester,
     branch: "",
@@ -46,6 +50,8 @@ const DersKayit = ({ onBack, selectedSemester = "2025-2026-Güz" }) => {
   });
 
   const [savedCourses, setSavedCourses] = useState([]);
+  const [lecturerCourses, setLecturerCourses] = useState([]); // Hocanın mevcut dersleri
+  const [loading, setLoading] = useState(false);
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: "",
@@ -68,6 +74,43 @@ const DersKayit = ({ onBack, selectedSemester = "2025-2026-Güz" }) => {
     }
   }, [location.state]);
 
+  // Load lecturer's existing courses from API
+  useEffect(() => {
+    const loadLecturerCourses = async () => {
+      if (!user?.lecturer_id || !accessToken) return;
+      
+      try {
+        setLoading(true);
+        console.log('🔄 Loading lecturer courses for DersKayit...');
+        const data = await fetchLecturerLectures(user.lecturer_id, accessToken);
+        
+        // Normalize the courses data
+        let normalizedCourses = [];
+        if (data?.sections && Array.isArray(data.sections)) {
+          normalizedCourses = data.sections.map(section => ({
+            id: section.lecture.id,
+            name: section.lecture.explicit_name || section.lecture.name,
+            code: section.lecture.code,
+            section_number: section.section_number,
+            section_id: section.id,
+            // Backend format için ek bilgiler
+            lecture_name: section.lecture.explicit_name || section.lecture.name,
+            lecture_code: section.lecture.code,
+          }));
+        }
+        
+        setLecturerCourses(normalizedCourses);
+        console.log('✅ Lecturer courses loaded:', normalizedCourses);
+      } catch (error) {
+        console.error('❌ Error loading lecturer courses:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadLecturerCourses();
+  }, [user?.lecturer_id, accessToken]);
+
   // Save courses to localStorage whenever savedCourses changes
   useEffect(() => {
     localStorage.setItem("teacherCourses", JSON.stringify(savedCourses));
@@ -84,7 +127,7 @@ const DersKayit = ({ onBack, selectedSemester = "2025-2026-Güz" }) => {
     }));
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     // Validation
     const requiredFields = [
       "term",
@@ -106,38 +149,75 @@ const DersKayit = ({ onBack, selectedSemester = "2025-2026-Güz" }) => {
       return;
     }
 
-    const courseWithId = {
-      ...courseData,
-      id: editingCourse ? editingCourse.id : Date.now(),
-      createdAt: editingCourse
-        ? editingCourse.createdAt
-        : new Date().toISOString(),
-    };
+    try {
+      setLoading(true);
 
-    if (editingCourse) {
-      // Update existing course
-      setSavedCourses((prev) =>
-        prev.map((course) =>
-          course.id === editingCourse.id ? courseWithId : course
-        )
-      );
-      setEditingCourse(null);
+      // Backend API formatına uygun veri hazırla
+      const backendCourseData = {
+        name: courseData.courseName,
+        code: courseData.courseCode,
+        explicit_name: courseData.courseName,
+        language: courseData.courseLanguage,
+        theory_practice: courseData.theoryPractice,
+        mandatory_elective: courseData.mandatoryElective === "Z" ? "mandatory" : "elective",
+        credits: parseInt(courseData.credits),
+        ects: parseInt(courseData.ects),
+        term: courseData.term,
+        branch: courseData.branch,
+        faculty: courseData.faculty
+      };
+
+      console.log('📤 Backend course data to be sent:', backendCourseData);
+
+      // Şimdilik localStorage'a kaydet (backend entegrasyonu sonra eklenebilir)
+      const courseWithId = {
+        ...courseData,
+        id: editingCourse ? editingCourse.id : Date.now(),
+        createdAt: editingCourse
+          ? editingCourse.createdAt
+          : new Date().toISOString(),
+      };
+
+      if (editingCourse) {
+        // Update existing course
+        setSavedCourses((prev) =>
+          prev.map((course) =>
+            course.id === editingCourse.id ? courseWithId : course
+          )
+        );
+        setEditingCourse(null);
+        setSnackbar({
+          open: true,
+          message: "Ders başarıyla güncellendi! Ders Programı sayfasına yönlendiriliyorsunuz...",
+          severity: "success",
+        });
+      } else {
+        // Add new course
+        setSavedCourses((prev) => [...prev, courseWithId]);
+        setSnackbar({
+          open: true,
+          message: "Ders başarıyla kaydedildi! Ders Programı sayfasına yönlendiriliyorsunuz...",
+          severity: "success",
+        });
+      }
+
+      handleClear();
+
+      // 2 saniye sonra yönlendir
+      setTimeout(() => {
+        navigate('/portal/ders-ve-donem-islemleri'); // Ders programı sayfasına git
+      }, 2000);
+
+    } catch (error) {
+      console.error('❌ Error saving course:', error);
       setSnackbar({
         open: true,
-        message: "Ders başarıyla güncellendi",
-        severity: "success",
+        message: "Ders kaydedilirken hata oluştu: " + error.message,
+        severity: "error",
       });
-    } else {
-      // Add new course
-      setSavedCourses((prev) => [...prev, courseWithId]);
-      setSnackbar({
-        open: true,
-        message: "Ders başarıyla kaydedildi",
-        severity: "success",
-      });
+    } finally {
+      setLoading(false);
     }
-
-    handleClear();
   };
 
   const handleClear = () => {
@@ -354,8 +434,9 @@ const DersKayit = ({ onBack, selectedSemester = "2025-2026-Güz" }) => {
                 startIcon={<SaveIcon />}
                 onClick={handleSave}
                 size="small"
+                disabled={loading}
               >
-                {editingCourse ? "Güncelle" : "Kaydet"}
+                {loading ? "Kaydediliyor..." : (editingCourse ? "Güncelle" : "Kaydet")}
               </Button>
             </Box>
           </Paper>
@@ -368,19 +449,63 @@ const DersKayit = ({ onBack, selectedSemester = "2025-2026-Güz" }) => {
               variant="h6"
               sx={{ mb: 1.5, color: "primary.main", fontWeight: 600, fontSize: '1rem' }}
             >
-              Kayıtlı Dersler ({savedCourses.length})
+              Kayıtlı Dersler ({(savedCourses.length + lecturerCourses.length)})
             </Typography>
 
-            {savedCourses.length === 0 ? (
+            {(savedCourses.length === 0 && lecturerCourses.length === 0) ? (
               <Typography
                 variant="body2"
                 color="text.secondary"
                 sx={{ textAlign: "center", py: 2, fontSize: '0.875rem' }}
               >
-                Henüz kayıtlı ders bulunmamaktadır
+                {loading ? "Dersler yükleniyor..." : "Henüz kayıtlı ders bulunmamaktadır"}
               </Typography>
             ) : (
               <Box sx={{ maxHeight: 400, overflow: "auto" }}>
+                {/* Hocanın mevcut dersleri */}
+                {lecturerCourses.map((course) => (
+                  <Card
+                    key={`lecturer-${course.id}`}
+                    sx={{ mb: 1, border: "1px solid #4caf50", borderRadius: 2, backgroundColor: "#f1f8e9" }}
+                  >
+                    <CardContent sx={{ p: 1.5, "&:last-child": { pb: 1.5 } }}>
+                      <Box
+                        sx={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "flex-start",
+                          mb: 0.5,
+                        }}
+                      >
+                        <Typography
+                          variant="subtitle2"
+                          sx={{ fontWeight: 600, color: "#2e7d32", fontSize: '0.875rem', lineHeight: 1.2 }}
+                        >
+                          {course.code} - {course.name}
+                        </Typography>
+                        <Chip
+                          label="Mevcut Ders"
+                          size="small"
+                          sx={{
+                            backgroundColor: "#4caf50",
+                            color: "white",
+                            fontSize: "0.7rem",
+                            height: 20,
+                          }}
+                        />
+                      </Box>
+                      <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        sx={{ fontSize: '0.75rem', lineHeight: 1.3 }}
+                      >
+                        Şube: {course.section_number}
+                      </Typography>
+                    </CardContent>
+                  </Card>
+                ))}
+                
+                {/* LocalStorage'dan kayıtlı dersler */}
                 {savedCourses.map((course) => (
                   <Card
                     key={course.id}

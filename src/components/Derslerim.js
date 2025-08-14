@@ -204,8 +204,8 @@ const Derslerim = () => {
               // Eski format uyumluluğu için
               id: section.lecture.id,
               name: section.lecture.explicit_name || section.lecture.name,
-              course_name: section.lecture.explicit_name,
-              lecture_name: section.lecture.explicit_name,
+              course_name: section.lecture.explicit_name || section.lecture.name,
+              lecture_name: section.lecture.explicit_name || section.lecture.name, // API'den gelen name kullan
               code: section.lecture.code,
               lecture_code: section.lecture.code,
               section: section.section_number,
@@ -464,7 +464,22 @@ const Derslerim = () => {
 
   // Load courses from backend and localStorage
   useEffect(() => {
-    if (!user || !accessToken || authLoading) return;
+    console.log('🔄 DERSLERIM: useEffect çağırıldı!', { 
+      lecturer_id: user?.lecturer_id, 
+      hasToken: !!accessToken,
+      authLoading,
+      timestamp: new Date().toISOString()
+    });
+    
+    if (!user?.lecturer_id || !accessToken || authLoading) {
+      console.log('❌ DERSLERIM: Eksik bilgiler, çıkılıyor...', {
+        lecturer_id: user?.lecturer_id,
+        hasToken: !!accessToken,
+        authLoading
+      });
+      return;
+    }
+    
     fetchCourses();
 
     // Also load courses from localStorage and combine
@@ -527,29 +542,34 @@ const Derslerim = () => {
       window.removeEventListener("storage", handleStorageChange);
       window.removeEventListener("teacherCoursesUpdated", handleStorageChange);
     };
-  }, [user?.lecturer_id, user?.id, accessToken, authLoading]);
+  }, [user?.lecturer_id, accessToken]); // authLoading ve user.id kaldırıldı
 
   // Buildings ve classrooms state değiştiğinde derslerdeki building ve room bilgilerini güncelle
   useEffect(() => {
     if (buildings.length > 0 && classrooms.length > 0 && dersler.length > 0) {
-      setDersler(prevDersler => 
-        prevDersler.map(ders => {
-          // Eğer ders zaten building ve room bilgisine sahipse güncelleme
-          if (ders.building && ders.room) {
-            return ders;
-          }
-          
-          // API'den gelen derslerin building/room bilgisi yoksa rastgele ata
-          const randomClassroom = classrooms[Math.floor(Math.random() * classrooms.length)];
-          return {
-            ...ders,
-            building: randomClassroom?.buildingName || ders.building || "Bina bilgisi güncelleniyor",
-            room: randomClassroom?.name || ders.room || "Sınıf bilgisi güncelleniyor"
-          };
-        })
-      );
+      // Bu useEffect'i daha az çalıştırmak için sadece building/room bilgisi eksik olan dersleri kontrol et
+      const shouldUpdate = dersler.some(ders => !ders.building || !ders.room);
+      
+      if (shouldUpdate) {
+        setDersler(prevDersler => 
+          prevDersler.map(ders => {
+            // Eğer ders zaten building ve room bilgisine sahipse güncelleme
+            if (ders.building && ders.room) {
+              return ders;
+            }
+            
+            // API'den gelen derslerin building/room bilgisi yoksa rastgele ata
+            const randomClassroom = classrooms[Math.floor(Math.random() * classrooms.length)];
+            return {
+              ...ders,
+              building: randomClassroom?.buildingName || ders.building || "Bina bilgisi güncelleniyor",
+              room: randomClassroom?.name || ders.room || "Sınıf bilgisi güncelleniyor"
+            };
+          })
+        );
+      }
     }
-  }, [buildings, classrooms]);
+  }, [buildings.length, classrooms.length, dersler.length]); // Length'leri kullan, array'lerin kendisini değil
 
   // Event handlers
   const handleDersClick = (ders) => {
@@ -865,7 +885,9 @@ const Derslerim = () => {
                           mb: 0.3,
                         }}
                       >
-                        {ders.code}
+                        {ders.lecture_name && ders.lecture_code 
+                          ? `${ders.lecture_name}-${ders.lecture_code}` 
+                          : (ders.code || 'DERS')}
                       </Typography>
                       <Typography
                         variant="body2"

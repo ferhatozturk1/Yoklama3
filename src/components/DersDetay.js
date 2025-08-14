@@ -58,6 +58,27 @@ import {
 import ÖğrenciDetay from "./ÖğrenciDetay";
 
 const DersDetay = ({ ders, onBack }) => {
+  // Ders null ise early return yap
+  if (!ders) {
+    return (
+      <Container maxWidth="lg" sx={{ mt: 2, mb: 4 }}>
+        <Box sx={{ textAlign: 'center', py: 4 }}>
+          <Typography variant="h6" color="text.secondary">
+            Ders bilgisi yükleniyor...
+          </Typography>
+          <Button 
+            variant="outlined" 
+            onClick={onBack} 
+            sx={{ mt: 2 }}
+            startIcon={<ArrowBack />}
+          >
+            Geri Dön
+          </Button>
+        </Box>
+      </Container>
+    );
+  }
+
   // Dialog states
   const [openStudentDialog, setOpenStudentDialog] = useState(false);
   const [openFileDialog, setOpenFileDialog] = useState(false);
@@ -237,9 +258,9 @@ const DersDetay = ({ ders, onBack }) => {
   const getSortedStudents = () => {
     const sorted = [...students].sort((a, b) => {
       if (sortOrder === "asc") {
-        return a.name.localeCompare(b.name, "tr");
+        return (a.name || '').localeCompare(b.name || '', "tr");
       } else {
-        return b.name.localeCompare(a.name, "tr");
+        return (b.name || '').localeCompare(a.name || '', "tr");
       }
     });
     return sorted;
@@ -375,7 +396,7 @@ const DersDetay = ({ ders, onBack }) => {
               alignItems: "center",
             }}
           >
-            {ders.name}
+            {ders?.name || 'Ders Bilgisi Yükleniyor...'}
           </Typography>
         </Box>
       </Box>
@@ -920,10 +941,10 @@ const DersDetay = ({ ders, onBack }) => {
                               fontSize: "0.875rem",
                             }}
                           >
-                            {student.name.charAt(0)}
+                            {(student.name || 'X').charAt(0)}
                           </Avatar>
                           <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                            {student.name}
+                            {student.name || 'İsimsiz Öğrenci'}
                           </Typography>
                         </Box>
                       </TableCell>
@@ -1242,7 +1263,7 @@ const DersDetay = ({ ders, onBack }) => {
                 >
                   {availableStudents.map((student) => (
                     <MenuItem key={student.id} value={student.id}>
-                      {student.name} - {student.id} ({student.class})
+                      {student.name || 'İsimsiz'} - {student.id} ({student.class})
                     </MenuItem>
                   ))}
                 </Select>
@@ -1275,7 +1296,7 @@ const DersDetay = ({ ders, onBack }) => {
               )}
               {reportType === 'student' && (
                 <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                  <strong>Seçili Öğrenci:</strong> {availableStudents.find(s => s.id === selectedReportStudent)?.name}
+                  <strong>Seçili Öğrenci:</strong> {availableStudents.find(s => s.id === selectedReportStudent)?.name || 'Seçili öğrenci bulunamadı'}
                 </Typography>
               )}
               <Typography variant="body2" color="text.secondary">
@@ -1338,7 +1359,7 @@ const DersDetay = ({ ders, onBack }) => {
 
         <DialogContent sx={{ pt: 1 }}>
           <Typography variant="body1" sx={{ mb: 1.5 }}>
-            Bu işlem, <strong>{ders.name}</strong> dersi için mevcut tüm yoklama
+            Bu işlem, <strong>{ders?.name || 'Bu ders'}</strong> dersi için mevcut tüm yoklama
             bilgilerini sıfırlayacaktır.
           </Typography>
           <Typography variant="body2" color="error" sx={{ mb: 1.5 }}>

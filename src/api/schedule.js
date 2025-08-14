@@ -205,26 +205,27 @@ export const buildWeeklyScheduleNew = async (lecturerId, accessToken) => {
 
     // 1. Öğretmenin derslerini al
     console.log('📚 1. ADIM: Öğretmenin dersleri çekiliyor...');
-    const lecturesResponse = await fetchLecturerLecturesNew(lecturerId, accessToken);
+    const lecturesResponse = await fetchLecturerLectures(lecturerId, accessToken);
     console.log('📚 API Response:', lecturesResponse);
     
-    // Response'u diziye çevir - Yeni API formatı desteği
+    // Response'u diziye çevir - Derslerim.js ile uyumlu format
     const toArray = (data) => {
       console.log('🔄 toArray - Input data:', data);
       
       if (!data) return [];
       
-      // Yeni API formatı: { id: "...", sections: [...] }
+      // Yeni API formatı: { sections: [...] } - Derslerim.js ile aynı
       if (data.sections && Array.isArray(data.sections)) {
-        console.log('📋 New API format detected in toArray - converting sections');
+        console.log('📋 New API format detected in toArray - converting sections to lectures');
         const lectures = data.sections.map(section => ({
           ...section.lecture, // lecture bilgileri
           section_id: section.id, // section ID'si ekliyoruz
           section_number: section.section_number,
-          // Eski format uyumluluğu
+          // Schedule için gerekli formatlar
           id: section.lecture.id,
           name: section.lecture.explicit_name || section.lecture.name,
-          lecturer: data.lecturer || 'Öğretim Görevlisi', // Lecturer bilgisi varsa
+          code: section.lecture.code,
+          lecturer: data.lecturer || 'Öğretim Görevlisi',
         }));
         console.log('✅ Converted sections to lectures for schedule:', lectures);
         return lectures;
@@ -267,20 +268,16 @@ export const buildWeeklyScheduleNew = async (lecturerId, accessToken) => {
 
     const weeklySchedule = { Pazartesi: [], Salı: [], Çarşamba: [], Perşembe: [], Cuma: [], Cumartesi: [], Pazar: [] };
 
-    // 2. Her ders için şubelerini ve saatlerini çek
+    // 2. Her lecture (section) için saatlerini çek
     for (const lecture of lectures) {
       try {
-        console.log(`📚 2. ADIM: Ders ${lecture.id} (${lecture.name}) için şubeler çekiliyor...`);
+        console.log(`📚 2. ADIM: Lecture ${lecture.id} (${lecture.name}) section ${lecture.section_id} için saatler çekiliyor...`);
         
-        // Dersin şubelerini çek
-        const sectionsResponse = await fetchLectureSections(lecture.id, accessToken);
-        const sections = toArray(sectionsResponse);
-        console.log(`📦 Ders ${lecture.id} şubeleri (sayı: ${sections.length}):`, sections);
-
-        if (sections.length === 0) {
-          console.warn(`⚠️ Ders ${lecture.id} için şube bulunamadı! Genel ders bilgisi ekleniyor...`);
+        // Lecture zaten section bilgisini içeriyor, ayrı section çekmeye gerek yok
+        if (!lecture.section_id) {
+          console.warn(`⚠️ Lecture ${lecture.id} için section_id bulunamadı! Genel ders bilgisi ekleniyor...`);
           
-          // Şube yoksa da en azından ders bilgisini gösterelim (saat bilgisi olmadan)
+          // Section ID yoksa da en azından ders bilgisini gösterelim (saat bilgisi olmadan)
           const fallbackEntry = {
             lecture: lecture.name || 'Bilinmeyen Ders',
             lecturer: lecture.lecturer || 'Bilinmeyen Öğretim Görevlisi',
@@ -288,7 +285,7 @@ export const buildWeeklyScheduleNew = async (lecturerId, accessToken) => {
             room: 'Sınıf atanmamış',
             building: 'Bina atanmamış',
             lectureId: lecture.id,
-            sectionId: null // Şube yok
+            sectionId: lecture.section_id
           };
           
           // Tüm günlere ekle (genel ders bilgisi olarak)
@@ -297,49 +294,50 @@ export const buildWeeklyScheduleNew = async (lecturerId, accessToken) => {
           continue;
         }
 
-        // 3. Her şube için saatleri çek
-        for (const section of sections) {
-          try {
-            console.log(`⏰ 3. ADIM: Şube ${section.id} saatleri çekiliyor...`);
-            
-            const hoursResponse = await fetchSectionHoursNew(section.id, accessToken);
-            const hours = toArray(hoursResponse);
-            console.log(`⏰ Şube ${section.id} saatleri (sayı: ${hours.length}):`, hours);
+        // 3. Section'ın saatlerini çek
+        try {
+          console.log(`⏰ 3. ADIM: Section ${lecture.section_id} saatleri çekiliyor...`);
+          
+          const hoursResponse = await fetchSectionHours(lecture.section_id, accessToken);
+          const hours = toArray(hoursResponse);
+          console.log(`⏰ Section ${lecture.section_id} saatleri (sayı: ${hours.length}):`, hours);
 
-            if (hours.length === 0) {
-              console.warn(`⚠️ Şube ${section.id} için saat bulunamadı!`);
-              continue;
-            }
-
-            // 4. Saatleri haftalık programa ekle
-            for (const hour of hours) {
-              const dayName = dayMapping[hour.day?.toLowerCase()] || hour.day;
-              
-              if (weeklySchedule[dayName]) {
-                const scheduleEntry = {
-                  lecture: lecture.name || 'Bilinmeyen Ders',
-                  lecturer: lecture.lecturer || 'Bilinmeyen Öğretim Görevlisi', 
-                  time: hour.time_start && hour.time_end ? `${hour.time_start.substring(0,5)} - ${hour.time_end.substring(0,5)}` : 'Saat atanmamış',
-                  room: section.room || 'Bilinmeyen',
-                  building: section.building || 'Bilinmeyen',
-                  lectureId: lecture.id,  // AnaSayfa için lecture ID
-                  sectionId: section.id   // AnaSayfa için section ID
-                };
-                
-                weeklySchedule[dayName].push(scheduleEntry);
-                console.log(`✅ ${dayName} gününe ders eklendi:`, scheduleEntry);
-              } else {
-                console.warn(`⚠️ Geçersiz gün ismi: ${hour.day}`);
-              }
-            }
-
-          } catch (sectionError) {
-            console.error(`❌ Şube ${section.id} işlenirken hata:`, sectionError);
+          if (hours.length === 0) {
+            console.warn(`⚠️ Section ${lecture.section_id} için saat bulunamadı!`);
+            continue;
           }
+
+          // 4. Saatleri haftalık programa ekle
+          for (const hour of hours) {
+            const dayName = dayMapping[hour.day?.toLowerCase()] || hour.day;
+            
+            if (weeklySchedule[dayName]) {
+              const scheduleEntry = {
+                lecture: lecture.name || 'Bilinmeyen Ders',
+                lectureCode: lecture.code || 'DERS',
+                lectureDisplay: `${lecture.name || 'DERS'}-${lecture.code || '000'}`, // "CENG-140" formatı
+                lecturer: lecture.lecturer || 'Öğretim Görevlisi',
+                time: hour.time_start && hour.time_end ? `${hour.time_start.substring(0,5)} - ${hour.time_end.substring(0,5)}` : 'Saat atanmamış',
+                room: hour.classroom_name || 'Sınıf Bilgisi Yok',
+                building: hour.building_name || 'Bina Bilgisi Yok',
+                lectureId: lecture.id,
+                sectionId: lecture.section_id,
+                hourId: hour.id
+              };
+              
+              weeklySchedule[dayName].push(scheduleEntry);
+              console.log(`✅ ${dayName} gününe ders eklendi:`, scheduleEntry);
+            } else {
+              console.warn(`⚠️ Geçersiz gün ismi: ${hour.day}`);
+            }
+          }
+
+        } catch (hourError) {
+          console.error(`❌ Section ${lecture.section_id} saatleri işlenirken hata:`, hourError);
         }
 
       } catch (lectureError) {
-        console.error(`❌ Ders ${lecture.id} işlenirken hata:`, lectureError);
+        console.error(`❌ Lecture ${lecture.id} işlenirken hata:`, lectureError);
       }
     }
 
@@ -351,3 +349,141 @@ export const buildWeeklyScheduleNew = async (lecturerId, accessToken) => {
     throw error;
   }
 };
+
+// Yeni API fonksiyonları - Ders güncelleme için
+// 1. Öğretmenin tüm derslerini getir (section bilgileri ile)
+export async function fetchLecturerLectures(lecturerId, accessToken) {
+  const url = `${API_BASE_URL}/lecturer_data/lecturers/lectures/${lecturerId}/`;
+  
+  console.log('🎯 DERS GÜNCELLEME: fetchLecturerLectures URL:', url);
+  console.log('🎯 DERS GÜNCELLEME: lecturerId:', lecturerId);
+  console.log('🎯 DERS GÜNCELLEME: accessToken var mı:', !!accessToken);
+  
+  let res = await fetch(url, {
+    headers: {
+      'Content-Type': 'application/json',
+      ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+    },
+  });
+  
+  console.log('🎯 DERS GÜNCELLEME: HTTP Status:', res.status);
+  console.log('🎯 DERS GÜNCELLEME: Response OK:', res.ok);
+  
+  // Token expired ise yenilemeyi dene
+  if (res.status === 401 && accessToken) {
+    console.log('🔄 DERS GÜNCELLEME: Token expired, trying to refresh...');
+    try {
+      const refreshTokenValue = sessionStorage.getItem('refreshToken');
+      if (refreshTokenValue) {
+        const newTokens = await refreshToken(refreshTokenValue);
+        sessionStorage.setItem('token', newTokens.access);
+        
+        res = await fetch(url, {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${newTokens.access}`,
+          },
+        });
+        console.log('✅ DERS GÜNCELLEME: Token refreshed and retry successful');
+      }
+    } catch (refreshError) {
+      console.error('❌ DERS GÜNCELLEME: Token refresh failed:', refreshError);
+      throw new Error(`Authentication failed: ${refreshError.message}`);
+    }
+  }
+  
+  if (!res.ok) {
+    const text = await res.text().catch(() => '');
+    console.error('❌ DERS GÜNCELLEME: API Error:', res.status, text);
+    throw new Error(`Lecturer lectures failed ${res.status}: ${text}`);
+  }
+  
+  const jsonData = await res.json();
+  console.log('🎯 DERS GÜNCELLEME: API Response:', jsonData);
+  console.log('🎯 DERS GÜNCELLEME: Response Type:', typeof jsonData);
+  console.log('🎯 DERS GÜNCELLEME: Is Array:', Array.isArray(jsonData));
+  
+  return jsonData;
+}
+
+// 2. Section'ın saatlerini getir
+export async function fetchSectionHours(sectionId, accessToken) {
+  const url = `${API_BASE_URL}/lecturer_data/hours/section/${sectionId}/`;
+  
+  let res = await fetch(url, {
+    headers: {
+      'Content-Type': 'application/json',
+      ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+    },
+  });
+  
+  // Token expired ise yenilemeyi dene
+  if (res.status === 401 && accessToken) {
+    try {
+      const refreshTokenValue = sessionStorage.getItem('refreshToken');
+      if (refreshTokenValue) {
+        const newTokens = await refreshToken(refreshTokenValue);
+        sessionStorage.setItem('token', newTokens.access);
+        
+        res = await fetch(url, {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${newTokens.access}`,
+          },
+        });
+      }
+    } catch (refreshError) {
+      throw new Error(`Authentication failed: ${refreshError.message}`);
+    }
+  }
+  
+  if (!res.ok) {
+    const text = await res.text().catch(() => '');
+    throw new Error(`Section hours failed ${res.status}: ${text}`);
+  }
+  
+  return await res.json();
+}
+
+// 3. Saat güncelle
+export async function updateHour(hourId, hourData, accessToken) {
+  const url = `${API_BASE_URL}/lecturer_data/hours/${hourId}/`;
+  
+  let res = await fetch(url, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+    },
+    body: JSON.stringify(hourData),
+  });
+  
+  // Token expired ise yenilemeyi dene
+  if (res.status === 401 && accessToken) {
+    try {
+      const refreshTokenValue = sessionStorage.getItem('refreshToken');
+      if (refreshTokenValue) {
+        const newTokens = await refreshToken(refreshTokenValue);
+        sessionStorage.setItem('token', newTokens.access);
+        
+        res = await fetch(url, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${newTokens.access}`,
+          },
+          body: JSON.stringify(hourData),
+        });
+      }
+    } catch (refreshError) {
+      throw new Error(`Authentication failed: ${refreshError.message}`);
+    }
+  }
+  
+  if (!res.ok) {
+    const text = await res.text().catch(() => '');
+    throw new Error(`Update hour failed ${res.status}: ${text}`);
+  }
+  
+  return await res.json();
+}

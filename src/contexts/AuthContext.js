@@ -53,6 +53,7 @@ export const AuthProvider = ({ children }) => {
   const lastProfileLoadTsRef = useRef(0);
   const lastProfileDataRef = useRef(null);
   const currentProfilePromiseRef = useRef(null);
+  const accessTokenRef = useRef(null); // Güncel accessToken'a erişim için
   const PROFILE_THROTTLE_MS = 30_000;
 
   // Session temizleme helper fonksiyonu
@@ -225,6 +226,11 @@ export const AuthProvider = ({ children }) => {
     loadUserFromStorage();
   }, []);
 
+  // AccessToken değiştiğinde ref'i güncelle
+  useEffect(() => {
+    accessTokenRef.current = accessToken;
+  }, [accessToken]);
+
   // Login fonksiyonu
   const login = async (loginData) => {
     try {
@@ -389,7 +395,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   // Profil bilgilerini API'den yükle
-  const loadUserProfile = useCallback(async (forceRefresh = false) => {
+  const loadUserProfile = useCallback(async (forceRefresh = false, retryCount = 0) => {
     if (!user || !accessToken) {
       return null;
     }
@@ -421,14 +427,14 @@ export const AuthProvider = ({ children }) => {
           phone: user.phone
         });
 
-        const profileData = await getLecturerProfile(user.id, accessToken);
+        const profileData = await getLecturerProfile(user.id, accessTokenRef.current || accessToken);
         console.log('✅ === API YANITI ALINDI ===');
         console.log('📊 Ham API Response:', profileData);
 
         // Profil bilgilerini ek bilgilerle genişlet
         let enhancedProfile = profileData;
         try {
-          enhancedProfile = await loadEnhancedProfile(profileData, accessToken);
+          enhancedProfile = await loadEnhancedProfile(profileData, accessTokenRef.current || accessToken);
         } catch (enhanceError) {
           // Hata olursa normal profil verisini kullan
           enhancedProfile = profileData;
@@ -513,12 +519,12 @@ export const AuthProvider = ({ children }) => {
       console.error('Error message:', error.message);
       console.error('Error stack:', error.stack);
 
-      // Token süresi dolmuşsa refresh token ile yenile
-      if (error.message.includes('401') || error.message.includes('token')) {
+      // Token süresi dolmuşsa refresh token ile yenile (max 1 defa)
+      if ((error.message.includes('401') || error.message.includes('token')) && retryCount === 0) {
         try {
           await refreshAccessToken();
-          // Tekrar dene (forceRefresh devre dışı, çünkü zaten yenilendi)
-          return await loadUserProfile(forceRefresh);
+          // Tekrar dene (sadece bir kez)
+          return await loadUserProfile(forceRefresh, retryCount + 1);
         } catch (refreshError) {
           console.error('❌ AuthContext - Token yenileme hatası:', refreshError);
           clearSession();
@@ -531,7 +537,7 @@ export const AuthProvider = ({ children }) => {
       isLoadingProfileRef.current = false;
       currentProfilePromiseRef.current = null;
     }
-  }, [user?.id, accessToken]);
+  }, []); // Sadece mount olduğunda çalışır, token refresh döngüsünden kaçınır
 
   // Access token'ı yenile
   const refreshAccessToken = async () => {

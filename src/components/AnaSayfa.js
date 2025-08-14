@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 
 import { useAuth } from "../contexts/AuthContext";
-import { buildWeeklyScheduleNew } from "../api/schedule";
+import { fetchLecturerLecturesNew } from "../api/schedule";
+import { getSectionDetails, getSectionHours } from "../api/auth";
 import {
   Container,
   Typography,
@@ -69,10 +70,13 @@ const AnaSayfa = ({
   const timeSlots = [
     "08:40",
     "09:30",
+    "09:40", // Programming Language Concepts - Salı
     "09:50",
     "10:40",  
     "11:00",
+    "11:40", // Programming Language Concepts - Çarşamba
     "11:50",
+    "12:40", // Data Structures - Pazartesi
     "13:40",
     "14:30",
     "14:40",
@@ -89,9 +93,63 @@ const AnaSayfa = ({
   const [scheduleLoading, setScheduleLoading] = useState(false);
 
   useEffect(() => {
+    // API response'u normalize etmek için Derslerim ile aynı fonksiyon
+    const normalizeLectures = (data) => {
+      console.log('🔄 ANASAYFA normalizeLectures - Input data:', data);
+      
+      if (!data) return [];
+      
+      // Yeni API formatı: { id: "...", sections: [...] }
+      if (data.sections && Array.isArray(data.sections)) {
+        console.log('📋 ANASAYFA: New API format detected - sections array found');
+        const lectures = data.sections.map(section => {
+          // Her section içindeki lecture bilgisini al ve section bilgisini ekle
+          return {
+            ...section.lecture, // lecture bilgileri (id, name, code, explicit_name)
+            section_id: section.id, // section ID'si
+            section_number: section.section_number, // section numarası
+            // Eski format uyumluluğu için
+            id: section.lecture.id,
+            name: section.lecture.explicit_name || section.lecture.name,
+            course_name: section.lecture.explicit_name || section.lecture.name,
+            lecture_name: section.lecture.explicit_name || section.lecture.name,
+            code: section.lecture.code,
+            lecture_code: section.lecture.code,
+            section: section.section_number,
+            section_name: section.section_number,
+            section_code: section.section_number
+          };
+        });
+        console.log('✅ ANASAYFA: Converted sections to lectures:', lectures);
+        return lectures;
+      }
+      
+      // Eski format backward compatibility
+      if (Array.isArray(data)) return data;
+      if (Array.isArray(data?.results)) return data.results;
+      if (Array.isArray(data?.lectures)) return data.lectures;
+      if (Array.isArray(data?.items)) return data.items;
+      if (typeof data === 'object' && data.id) return [data];
+      if (typeof data === 'object') {
+        const values = Object.values(data);
+        if (values.length && values.every(v => typeof v === 'object')) {
+          return values;
+        }
+      }
+      
+      console.warn('⚠️ ANASAYFA: Unknown data format, returning empty array');
+      return [];
+    };
+
     const loadSchedule = async () => {
-      if (!user?.id || !accessToken) {
-        console.log('❌ User ID veya accessToken eksik:', { userId: user?.id, hasToken: !!accessToken });
+      console.log('🔄 ANASAYFA: loadSchedule çağırıldı!', { 
+        lecturerId: user?.lecturer_id, 
+        hasToken: !!accessToken,
+        timestamp: new Date().toISOString()
+      });
+      
+      if (!user?.lecturer_id || !accessToken) {
+        console.log('❌ Lecturer ID veya accessToken eksik:', { lecturerId: user?.lecturer_id, hasToken: !!accessToken });
         return;
       }
       
@@ -99,25 +157,90 @@ const AnaSayfa = ({
         setScheduleLoading(true);
         setScheduleError(null);
         
-        console.log('🎯 ÖĞRETMEN DERSLERİ ENDPOINT ZİNCİRİ ile ders programı yükleniyor...');
-        console.log('👨‍🏫 User ID:', user.id);
-        console.log('🔑 Access Token (ilk 20 karakter):', accessToken?.substring(0, 20) + '...');
+        console.log('🎯 ANASAYFA: Derslerim ile aynı API kullanılıyor - fetchLecturerLecturesNew');
+        console.log('👨‍🏫 Lecturer ID:', user.lecturer_id);
         
-        // ÇALIŞAN ENDPOINT ZİNCİRİ: lecturers/lectures/{lecturer_id}/ → sections/lecture/{lecture_id}/ → hours/section/{section_id}/
-        const weeklySchedule = await buildWeeklyScheduleNew(user.id, accessToken);
+        // Derslerim ile aynı API kullan
+        const lecturesRaw = await fetchLecturerLecturesNew(user.lecturer_id, accessToken);
+        console.log('✅ ANASAYFA: Raw lectures data received:', lecturesRaw);
+        
+        // API response'u normalize et
+        const lecturesArray = normalizeLectures(lecturesRaw);
+        console.log('✅ ANASAYFA: Normalized lectures array:', lecturesArray);
+        
+        // Derslerden haftalık program oluştur
+        const weeklySchedule = {
+          Pazartesi: [],
+          Salı: [],
+          Çarşamba: [],
+          Perşembe: [],
+          Cuma: [],
+          Cumartesi: [],
+          Pazar: []
+        };
+        
+        // Her ders için section detaylarını çek ve program oluştur
+        for (const course of lecturesArray) {
+          if (course.section_id && accessToken) {
+            try {
+              console.log('🔍 ANASAYFA: Fetching section hours for:', course.section_id);
+              const hoursData = await getSectionHours(course.section_id, accessToken);
+              
+              if (hoursData && hoursData.length > 0) {
+                const dayMapping = {
+                  'monday': 'Pazartesi',
+                  'tuesday': 'Salı', 
+                  'wednesday': 'Çarşamba',
+                  'thursday': 'Perşembe',
+                  'friday': 'Cuma',
+                  'saturday': 'Cumartesi',
+                  'sunday': 'Pazar'
+                };
+                
+                hoursData.forEach(hour => {
+                  const dayName = dayMapping[hour.day?.toLowerCase()] || hour.day;
+                  
+                  if (dayName && weeklySchedule[dayName]) {
+                    let timeSlot = '';
+                    if (hour.time_start && hour.time_end) {
+                      const startTime = hour.time_start.length > 5 ? hour.time_start.substring(0, 5) : hour.time_start;
+                      const endTime = hour.time_end.length > 5 ? hour.time_end.substring(0, 5) : hour.time_end;
+                      timeSlot = `${startTime} - ${endTime}`;
+                    }
+                    
+                    // Ders bilgisini program slot'una ekle
+                    weeklySchedule[dayName].push({
+                      id: course.id,
+                      name: course.explicit_name || course.name || "Ders",
+                      code: course.code || course.course_code || "DERS",
+                      time: timeSlot,
+                      startTime: hour.time_start,
+                      endTime: hour.time_end,
+                      building: course.building?.name || course.building || "",
+                      room: course.room?.name || course.room || "",
+                      section: course.section || "A1"
+                    });
+                  }
+                });
+              }
+            } catch (sectionError) {
+              console.error('❌ ANASAYFA: Section hours fetch error:', sectionError);
+            }
+          }
+        }
+        
+        console.log('✅ ANASAYFA: Weekly schedule created:', weeklySchedule);
         setApiWeeklySchedule(weeklySchedule);
-        
-        console.log('✅ ÖĞRETMEN DERSLERİ ENDPOINT ZİNCİRİ ile program yüklendi:', weeklySchedule);
         
         // Debug: Veri var mı kontrol et
         const hasData = weeklySchedule && Object.values(weeklySchedule).some(dayEntries => dayEntries.length > 0);
-        console.log('📊 Program verisi var mı?', hasData);
+        console.log('📊 ANASAYFA: Program verisi var mı?', hasData);
         if (!hasData) {
-          console.warn('⚠️ Hiç ders verisi yok! Öğretmenin derslerini ve şube/saat atamalarını kontrol edin.');
+          console.warn('⚠️ ANASAYFA: Hiç ders verisi yok!');
         }
         
       } catch (e) {
-        console.error("❌ ÖĞRETMEN DERSLERİ ENDPOINT ZİNCİRİ ders programı yükleme hatası:", e);
+        console.error("❌ ANASAYFA: Ders programı yükleme hatası:", e);
         setScheduleError(e.message);
         setApiWeeklySchedule(null);
       } finally {
@@ -125,9 +248,26 @@ const AnaSayfa = ({
       }
     };
 
-    // Sadece user.id ve accessToken değiştiğinde çalıştır, diğer değişikliklerden etkilenme
+    // Sadece user.lecturer_id ve accessToken değiştiğinde çalıştır, diğer değişikliklerden etkilenme
     loadSchedule();
-  }, [user?.id, accessToken]); // Sadece bu iki değer değiştiğinde çalışsın
+  }, [user?.lecturer_id, accessToken]); // Sadece bu iki değer değiştiğinde çalışsın
+
+  // Debug: user ve accessToken değişimlerini logla
+  useEffect(() => {
+    console.log('👤 ANASAYFA: User değişti:', { 
+      lecturer_id: user?.lecturer_id, 
+      name: user?.name,
+      timestamp: new Date().toISOString()
+    });
+  }, [user]);
+
+  useEffect(() => {
+    console.log('🔑 ANASAYFA: AccessToken değişti:', { 
+      hasToken: !!accessToken,
+      tokenLength: accessToken?.length,
+      timestamp: new Date().toISOString()
+    });
+  }, [accessToken]);
 
   // Profile photo URL'ini düzelt - Backend'den gelen relative path'i tam URL'e çevir
   const getProfilePhotoUrl = (photoPath) => {
@@ -309,21 +449,39 @@ const AnaSayfa = ({
         const dayKey = dayMap[dayTr];
         if (!dayKey) return;
         
+        console.log(`🔍 ${dayTr} günü için ${items?.length || 0} ders bulundu:`, items);
+        
         (items || []).forEach(item => {
-          // API'den gelen saat bilgisini time slot'a çevir
-          const timeStart = item.time ? item.time.split(' - ')[0] : null;
+          // API'den gelen startTime'ı kullan
+          const startTime = item.startTime;
           
-          if (timeStart && base[timeStart]) {
-            const line1 = `${item.lecture || 'Bilinmeyen Ders'}`;
-            const line2 = `${item.time || 'Saat atanmamış'}`;
-            const line3 = `${item.room || 'Sınıf atanmamış'}`;
+          console.log(`🕐 Processing course: ${item.name}, startTime: ${startTime}, endTime: ${item.endTime}`);
+          
+          if (startTime) {
+            // startTime'ı timeSlots'ta ara
+            const cleanStartTime = startTime.length > 5 ? startTime.substring(0, 5) : startTime;
+            const matchingSlot = timeSlots.find(slot => {
+              return slot === cleanStartTime;
+            });
             
-            // Ders adı ve saat bilgisini birlikte göster
-            base[timeStart][dayKey] = [line1, line2].filter(Boolean).join("\n");
+            console.log(`🔍 Looking for slot "${cleanStartTime}" in timeSlots:`, timeSlots);
+            console.log(`🎯 Matching slot found: ${matchingSlot}`);
             
-            console.log(`📅 AnaSayfa Program: ${dayTr} ${timeStart} -> ${base[timeStart][dayKey]}`);
+            if (matchingSlot) {
+              // Sadece ders adını göster, saat bilgisini kaldır
+              const courseName = item.name || item.code || 'Bilinmeyen Ders';
+              const room = item.room ? ` - ${item.room}` : '';
+              
+              base[matchingSlot][dayKey] = `${courseName}${room}`;
+              
+              console.log(`✅ AnaSayfa Program: ${dayTr} ${matchingSlot} -> ${courseName}${room}`);
+            } else {
+              console.warn(`❌ Time slot bulunamadı: "${cleanStartTime}" for ${item.name}`);
+              console.log('🔍 Available slots:', timeSlots);
+              console.log('🔍 Looking for:', cleanStartTime);
+            }
           } else {
-            console.warn(`⚠️ Time slot bulunamadı: ${timeStart} for ${item.lecture}`);
+            console.warn(`⚠️ StartTime bulunamadı for ${item.name}`);
           }
         });
       });
@@ -539,46 +697,48 @@ const AnaSayfa = ({
       <Box
         sx={{
           display: "flex",
+          alignItems: "center",
           gap: isMobile ? 1 : 2,
-          mb: isMobile ? 0.75 : 1,
-          flexDirection: isMobile ? "column" : "row",
+          mb: isMobile ? 1.5 : 2,
+          justifyContent: "space-between",
         }}
       >
-        {/* Left Block - Time */}
+        {/* Left - Time Info */}
         <Paper
           elevation={2}
           sx={{
-            flex: isMobile ? "none" : 1,
-            p: isMobile ? 1.5 : 2,
+            flex: 1,
+            p: isMobile ? 1 : 1.5,
             background: "linear-gradient(135deg, #1B2E6D 0%, #4A90E2 100%)",
             borderRadius: "8px",
             color: "white",
             boxShadow: "0 2px 8px rgba(0, 0, 0, 0.12)",
             textAlign: "center",
+            minWidth: isMobile ? "auto" : "160px",
           }}
         >
           <Typography
-            variant={isMobile ? "body1" : "h6"}
+            variant={isMobile ? "body2" : "body1"}
             sx={{
               fontWeight: 500,
-              mb: 0.5,
+              mb: 0.3,
               fontSize: currentHoliday
                 ? isMobile
                   ? "0.75rem"
                   : "0.95rem"
                 : isMobile
-                ? "0.9rem"
-                : "1.1rem",
+                ? "0.85rem"
+                : "1rem",
               lineHeight: 1.2,
             }}
           >
             {currentHoliday || currentTime.toLocaleTimeString("tr-TR")}
           </Typography>
           <Typography
-            variant="body2"
+            variant="caption"
             sx={{
               opacity: 0.9,
-              fontSize: isMobile ? "0.7rem" : "0.85rem",
+              fontSize: isMobile ? "0.65rem" : "0.75rem",
               lineHeight: 1.2,
             }}
           >
@@ -590,191 +750,248 @@ const AnaSayfa = ({
           </Typography>
         </Paper>
 
-        {/* Right Block - Lesson Info (Clickable) */}
+        {/* Center - Week Selector */}
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            gap: 1,
+            flex: isMobile ? 0 : 1,
+          }}
+        >
+          <IconButton
+            onClick={() => setCurrentWeek(Math.max(1, currentWeek - 1))}
+            size="small"
+            disabled={currentWeek <= 1}
+            sx={{
+              bgcolor: "white",
+              boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+              "&:hover": { bgcolor: "#f5f5f5" },
+              "&:disabled": { bgcolor: "#f5f5f5", opacity: 0.5 },
+              width: isMobile ? 28 : 32,
+              height: isMobile ? 28 : 32,
+            }}
+          >
+            <ChevronLeftIcon fontSize="small" />
+          </IconButton>
+
+          <FormControl size="small" sx={{ minWidth: isMobile ? 90 : 120 }}>
+            <Select
+              value={currentWeek}
+              onChange={(e) => setCurrentWeek(e.target.value)}
+              MenuProps={{
+                PaperProps: {
+                  sx: {
+                    maxHeight: 200,
+                    overflowY: "auto",
+                    "&::-webkit-scrollbar": {
+                      width: "6px",
+                    },
+                    "&::-webkit-scrollbar-track": {
+                      background: "#f1f1f1",
+                      borderRadius: "3px",
+                    },
+                    "&::-webkit-scrollbar-thumb": {
+                      background: "#c1c1c1",
+                      borderRadius: "3px",
+                      "&:hover": {
+                        background: "#a8a8a8",
+                      },
+                    },
+                  },
+                },
+              }}
+              sx={{
+                bgcolor: "white",
+                "& .MuiOutlinedInput-notchedOutline": {
+                  border: "1px solid #e0e0e0",
+                },
+                "&:hover .MuiOutlinedInput-notchedOutline": {
+                  border: "1px solid #1976d2",
+                },
+                height: isMobile ? 28 : 32,
+                fontSize: isMobile ? "0.75rem" : "0.875rem",
+              }}
+            >
+              <MenuItem value={1}>1.Hafta</MenuItem>
+              <MenuItem value={2}>2.Hafta</MenuItem>
+              <MenuItem value={3}>3.Hafta</MenuItem>
+              <MenuItem value={4}>4.Hafta</MenuItem>
+              <MenuItem value={5}>5.Hafta</MenuItem>
+              <MenuItem value={6}>6.Hafta</MenuItem>
+              <MenuItem value={7}>7.Hafta</MenuItem>
+              <MenuItem value={8}>8.Hafta</MenuItem>
+              <MenuItem value={9}>9.Hafta</MenuItem>
+              <MenuItem value={10}>10.Hafta</MenuItem>
+              <MenuItem value={11}>11.Hafta</MenuItem>
+              <MenuItem value={12}>12.Hafta</MenuItem>
+              <MenuItem value={13}>13.Hafta</MenuItem>
+              <MenuItem value={14}>14.Hafta</MenuItem>
+              <MenuItem value={15}>15.Hafta</MenuItem>
+            </Select>
+          </FormControl>
+
+          <IconButton
+            onClick={() => setCurrentWeek(Math.min(15, currentWeek + 1))}
+            size="small"
+            disabled={currentWeek >= 15}
+            sx={{
+              bgcolor: "white",
+              boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+              "&:hover": { bgcolor: "#f5f5f5" },
+              "&:disabled": { bgcolor: "#f5f5f5", opacity: 0.5 },
+              width: isMobile ? 28 : 32,
+              height: isMobile ? 28 : 32,
+            }}
+          >
+            <ChevronRightIcon fontSize="small" />
+          </IconButton>
+        </Box>
+
+        {/* Right - Next Class Info */}
         <Paper
           elevation={2}
+          onClick={handleLessonBlockClick}
           sx={{
-            flex: isMobile ? "none" : 1,
-            p: isMobile ? 1.5 : 2,
+            flex: 1,
+            p: isMobile ? 1 : 1.5,
             background: "linear-gradient(135deg, #1B2E6D 0%, #4A90E2 100%)",
             borderRadius: "8px",
             color: "white",
             boxShadow: "0 2px 8px rgba(0, 0, 0, 0.12)",
             cursor: "pointer",
-            transition: "all 0.2s ease-in-out",
+            minWidth: isMobile ? "auto" : "160px",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: 0.5,
+            transition: "transform 0.2s ease",
             "&:hover": {
               transform: "translateY(-1px)",
-              boxShadow: "0 4px 12px rgba(0, 0, 0, 0.2)",
+              boxShadow: "0 4px 12px rgba(0, 0, 0, 0.18)",
             },
           }}
-          onClick={handleLessonBlockClick}
         >
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              gap: 1,
-            }}
-          >
-            <Box sx={{ flex: 1 }}>
-              {(() => {
-                if (currentClass) {
-                  const [courseCode, courseName] =
-                    currentClass.lesson.split("\n");
-                  return (
-                    <>
-                      <Typography
-                        variant="body1"
-                        sx={{
-                          fontWeight: 600,
-                          fontSize: isMobile ? "0.75rem" : "0.9rem",
-                          lineHeight: 1.2,
-                          mb: 0.3,
-                          color: "#27AE60",
-                        }}
-                      >
-                        Şu Andaki Ders
-                      </Typography>
-                      <Typography
-                        variant="body2"
-                        sx={{
-                          fontWeight: 600,
-                          fontSize: isMobile ? "0.7rem" : "0.85rem",
-                          lineHeight: 1.1,
-                          mb: 0.2,
-                          color: "white",
-                        }}
-                      >
-                        {courseCode || "DERS KODU"}
-                      </Typography>
-                      <Typography
-                        variant="caption"
-                        sx={{
-                          opacity: 0.9,
-                          fontSize: isMobile ? "0.6rem" : "0.7rem",
-                          lineHeight: 1.1,
-                          display: "block",
-                        }}
-                      >
-                        {courseName || "Ders Adı"}
-                      </Typography>
-                    </>
-                  );
-                } else if (nextClass) {
-                  const [courseCode, courseName] = nextClass.lesson.split("\n");
-                  return (
-                    <>
-                      <Typography
-                        variant="body1"
-                        sx={{
-                          fontWeight: 600,
-                          fontSize: isMobile ? "0.75rem" : "0.9rem",
-                          lineHeight: 1.2,
-                          mb: 0.3,
-                          color: "#F39C12",
-                        }}
-                      >
-                        Sonraki Ders
-                      </Typography>
-                      <Typography
-                        variant="body2"
-                        sx={{
-                          fontWeight: 600,
-                          fontSize: isMobile ? "0.7rem" : "0.85rem",
-                          lineHeight: 1.1,
-                          mb: 0.2,
-                          color: "white",
-                        }}
-                      >
-                        {courseCode || "DERS KODU"}
-                      </Typography>
-                      <Typography
-                        variant="caption"
-                        sx={{
-                          opacity: 0.9,
-                          fontSize: isMobile ? "0.6rem" : "0.7rem",
-                          lineHeight: 1.1,
-                          display: "block",
-                        }}
-                      >
-                        {courseName || "Ders Adı"}
-                      </Typography>
-                    </>
-                  );
-                } else {
-                  return (
-                    <>
-                      <Typography
-                        variant="body1"
-                        sx={{
-                          fontWeight: 600,
-                          fontSize: isMobile ? "0.75rem" : "0.9rem",
-                          lineHeight: 1.2,
-                          mb: 0.3,
-                          color: "#E3F2FD",
-                        }}
-                      >
-                        Örnek Ders
-                      </Typography>
-                      <Typography
-                        variant="body2"
-                        sx={{
-                          fontWeight: 600,
-                          fontSize: isMobile ? "0.7rem" : "0.85rem",
-                          lineHeight: 1.1,
-                          mb: 0.2,
-                          color: "white",
-                        }}
-                      >
-                        MATH113/3
-                      </Typography>
-                      <Typography
-                        variant="caption"
-                        sx={{
-                          opacity: 0.9,
-                          fontSize: isMobile ? "0.6rem" : "0.7rem",
-                          lineHeight: 1.1,
-                          display: "block",
-                        }}
-                      >
-                        Matematik Dersi
-                      </Typography>
-                    </>
-                  );
-                }
-              })()}
-            </Box>
-
-            {/* Yoklama Button - Always visible but only active during class time */}
-            <Chip
-              label={isMobile ? "YOKLAMA" : "YOKLAMA AL"}
-              size="small"
-              onClick={(e) => {
-                e.stopPropagation();
-                if (currentClass) {
-                  handleYoklamaAl(currentClass);
-                } else {
-                  // Show message when not in class time
-                  alert("Yoklama sadece ders saatinde alınabilir!");
-                }
-              }}
-              sx={{
-                bgcolor: currentClass ? "#4F46E5" : "#666",
-                color: "white",
-                fontWeight: 500,
-                fontSize: isMobile ? "0.5rem" : "0.6rem",
-                height: isMobile ? "16px" : "18px",
-                cursor: "pointer",
-                opacity: currentClass ? 1 : 0.6,
-                "&:hover": {
-                  bgcolor: currentClass ? "#3730A3" : "#555",
-                  opacity: currentClass ? 1 : 0.8,
-                },
-                transition: "all 0.2s ease",
-              }}
-            />
+          <Box sx={{ textAlign: "center", width: "100%" }}>
+            {(() => {
+              if (currentClass) {
+                const courseName = currentClass.lesson?.split("\\n")?.[0] || currentClass.lesson || "Ders";
+                return (
+                  <>
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        fontWeight: 600,
+                        fontSize: isMobile ? "0.7rem" : "0.85rem",
+                        lineHeight: 1.1,
+                        mb: 0.2,
+                        color: "white",
+                      }}
+                    >
+                      {courseName}
+                    </Typography>
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        opacity: 0.9,
+                        fontSize: isMobile ? "0.6rem" : "0.7rem",
+                        lineHeight: 1.1,
+                        display: "block",
+                      }}
+                    >
+                      Şimdi - {currentClass.remainingTime} dk kaldı
+                    </Typography>
+                  </>
+                );
+              } else if (nextClass) {
+                const courseName = nextClass.lesson?.split("\\n")?.[0] || nextClass.lesson || "Ders";
+                return (
+                  <>
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        fontWeight: 600,
+                        fontSize: isMobile ? "0.7rem" : "0.85rem",
+                        lineHeight: 1.1,
+                        mb: 0.2,
+                        color: "white",
+                      }}
+                    >
+                      {courseName}
+                    </Typography>
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        opacity: 0.9,
+                        fontSize: isMobile ? "0.6rem" : "0.7rem",
+                        lineHeight: 1.1,
+                        display: "block",
+                      }}
+                    >
+                      Sıradaki Ders - {nextClass.time}
+                    </Typography>
+                  </>
+                );
+              } else {
+                return (
+                  <>
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        fontWeight: 600,
+                        fontSize: isMobile ? "0.7rem" : "0.85rem",
+                        lineHeight: 1.1,
+                        mb: 0.2,
+                        color: "white",
+                      }}
+                    >
+                      MATH113/3
+                    </Typography>
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        opacity: 0.9,
+                        fontSize: isMobile ? "0.6rem" : "0.7rem",
+                        lineHeight: 1.1,
+                        display: "block",
+                      }}
+                    >
+                      Matematik Dersi
+                    </Typography>
+                  </>
+                );
+              }
+            })()}
           </Box>
+
+          {/* Yoklama Button - Always visible but only active during class time */}
+          <Chip
+            label={isMobile ? "YOKLAMA" : "YOKLAMA AL"}
+            size="small"
+            onClick={(e) => {
+              e.stopPropagation();
+              if (currentClass) {
+                handleYoklamaAl(currentClass);
+              } else {
+                alert("Yoklama sadece ders saatinde alınabilir!");
+              }
+            }}
+            sx={{
+              bgcolor: currentClass ? "#4F46E5" : "#666",
+              color: "white",
+              fontWeight: 500,
+              fontSize: isMobile ? "0.5rem" : "0.6rem",
+              height: isMobile ? "16px" : "18px",
+              cursor: "pointer",
+              opacity: currentClass ? 1 : 0.6,
+              "&:hover": {
+                bgcolor: currentClass ? "#3730A3" : "#555",
+                opacity: currentClass ? 1 : 0.8,
+              },
+              transition: "all 0.2s ease",
+            }}
+          />
         </Paper>
       </Box>
     );
@@ -901,14 +1118,14 @@ const AnaSayfa = ({
       entries.forEach(entry => {
         allScheduleEntries.push({
           day: day,
-          startTime: entry.startTime,
-          endTime: entry.endTime,
-          course: `${entry.courseCode} - ${entry.courseName}`,
-          courseName: entry.courseName,
-          courseCode: entry.courseCode,
-          sectionName: entry.sectionName,
-          building: entry.building,
-          room: entry.room,
+          startTime: entry.time?.split(' - ')[0] || '00:00',
+          endTime: entry.time?.split(' - ')[1] || '00:00',
+          course: entry.lectureDisplay || `${entry.lectureCode || 'DERS'} - ${entry.lecture || 'Bilinmeyen'}`,
+          courseName: entry.lecture || 'Bilinmeyen Ders',
+          courseCode: entry.lectureCode || 'DERS',
+          sectionName: entry.sectionId || 'Bilinmeyen Şube',
+          building: entry.building || 'Bilinmeyen Bina',
+          room: entry.room || 'Bilinmeyen Sınıf',
           lectureId: entry.lectureId,
           sectionId: entry.sectionId
         });
@@ -1387,105 +1604,7 @@ const AnaSayfa = ({
           background: "linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)",
         }}
       >
-        {/* Compact Week Navigation */}
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            mb: 1.5,
-            gap: 1,
-          }}
-        >
-          <IconButton
-            onClick={() => setCurrentWeek(Math.max(1, currentWeek - 1))}
-            size="small"
-            disabled={currentWeek <= 1}
-            sx={{
-              bgcolor: "white",
-              boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
-              "&:hover": { bgcolor: "#f5f5f5" },
-              "&:disabled": { bgcolor: "#f5f5f5", opacity: 0.5 },
-              width: 32,
-              height: 32,
-            }}
-          >
-            <ChevronLeftIcon fontSize="small" />
-          </IconButton>
-
-          <FormControl size="small" sx={{ minWidth: 120 }}>
-            <Select
-              value={currentWeek}
-              onChange={(e) => setCurrentWeek(e.target.value)}
-              MenuProps={{
-                PaperProps: {
-                  sx: {
-                    maxHeight: 200, // Maksimum yükseklik
-                    overflowY: "auto", // Dikey scroll
-                    "&::-webkit-scrollbar": {
-                      width: "6px",
-                    },
-                    "&::-webkit-scrollbar-track": {
-                      background: "#f1f1f1",
-                      borderRadius: "3px",
-                    },
-                    "&::-webkit-scrollbar-thumb": {
-                      background: "#c1c1c1",
-                      borderRadius: "3px",
-                      "&:hover": {
-                        background: "#a8a8a8",
-                      },
-                    },
-                  },
-                },
-              }}
-              sx={{
-                bgcolor: "white",
-                "& .MuiOutlinedInput-notchedOutline": {
-                  border: "1px solid #e0e0e0",
-                },
-                "&:hover .MuiOutlinedInput-notchedOutline": {
-                  border: "1px solid #1976d2",
-                },
-                height: 32,
-                fontSize: "0.875rem",
-              }}
-            >
-              <MenuItem value={1}>1.Hafta</MenuItem>
-              <MenuItem value={2}>2.Hafta</MenuItem>
-              <MenuItem value={3}>3.Hafta</MenuItem>
-              <MenuItem value={4}>4.Hafta</MenuItem>
-              <MenuItem value={5}>5.Hafta</MenuItem>
-              <MenuItem value={6}>6.Hafta</MenuItem>
-              <MenuItem value={7}>7.Hafta</MenuItem>
-              <MenuItem value={8}>8.Hafta</MenuItem>
-              <MenuItem value={9}>9.Hafta</MenuItem>
-              <MenuItem value={10}>10.Hafta</MenuItem>
-              <MenuItem value={11}>11.Hafta</MenuItem>
-              <MenuItem value={12}>12.Hafta</MenuItem>
-              <MenuItem value={13}>13.Hafta</MenuItem>
-              <MenuItem value={14}>14.Hafta</MenuItem>
-              <MenuItem value={15}>15.Hafta</MenuItem>
-            </Select>
-          </FormControl>
-
-          <IconButton
-            onClick={() => setCurrentWeek(Math.min(15, currentWeek + 1))}
-            size="small"
-            disabled={currentWeek >= 15}
-            sx={{
-              bgcolor: "white",
-              boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
-              "&:hover": { bgcolor: "#f5f5f5" },
-              "&:disabled": { bgcolor: "#f5f5f5", opacity: 0.5 },
-              width: 32,
-              height: 32,
-            }}
-          >
-            <ChevronRightIcon fontSize="small" />
-          </IconButton>
-        </Box>
-
+        {/* Schedule Table */}
         <Box sx={{ mt: 1 }}>
           {isMobile ? <MobileSchedule /> : <DesktopSchedule />}
         </Box>
