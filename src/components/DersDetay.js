@@ -56,8 +56,11 @@ import {
   Person,
 } from "@mui/icons-material";
 import ÖğrenciDetay from "./ÖğrenciDetay";
+import { useAuth } from "../contexts/AuthContext";
 
 const DersDetay = ({ ders, onBack }) => {
+  const { accessToken } = useAuth();
+  
   // Ders null ise early return yap
   if (!ders) {
     return (
@@ -119,45 +122,84 @@ const DersDetay = ({ ders, onBack }) => {
     department: "",
   });
 
-  // Sample students data
-  const [students, setStudents] = useState([
-    {
-      id: 1,
-      name: "Ahmet Yılmaz",
-      number: "2021001",
-      class: "10-A",
-      department: "Matematik Bölümü",
-      order: 1,
-      attendance: 23,
-      total: 25,
-      rate: 92,
-      lastAttendanceStatus: "Katıldı",
-      attendanceHistory: [
-        { date: "2025-07-22", status: "Katıldı" },
-        { date: "2025-07-21", status: "Katıldı" },
-        { date: "2025-07-20", status: "Katılmadı" },
-        { date: "2025-07-19", status: "Katıldı" },
-      ],
-    },
-    {
-      id: 2,
-      name: "Ayşe Kaya",
-      number: "2021002",
-      class: "10-A",
-      department: "Matematik Bölümü",
-      order: 2,
-      attendance: 24,
-      total: 25,
-      rate: 96,
-      lastAttendanceStatus: "Katıldı",
-      attendanceHistory: [
-        { date: "2025-07-22", status: "Katıldı" },
-        { date: "2025-07-21", status: "Katıldı" },
-        { date: "2025-07-20", status: "Katıldı" },
-        { date: "2025-07-19", status: "Katıldı" },
-      ],
-    },
-  ]);
+  // API states for student list
+  const [students, setStudents] = useState([]);
+  const [studentsLoading, setStudentsLoading] = useState(false);
+  const [studentsError, setStudentsError] = useState(null);
+
+  // API fonksiyonu - öğrenci listesini çekmek için
+  const fetchStudentList = async () => {
+    if (!ders?.section_id) {
+      setStudentsError('Section ID bulunamadı');
+      return;
+    }
+
+    console.log('Ders objesi:', ders);
+    console.log('Section ID:', ders.section_id);
+
+    setStudentsLoading(true);
+    setStudentsError(null);
+
+    try {
+      // Farklı endpoint formatlarını dene
+      const endpoints = [
+        `http://127.0.0.1:8000/yoklama_data/student_list/section_id/${ders.section_id}/`,
+        `http://127.0.0.1:8000/yoklama_data/student_list/${ders.section_id}/`,
+        `http://127.0.0.1:8000/student_data/student_list/section_id/${ders.section_id}/`,
+        `http://127.0.0.1:8000/student_data/student_list/${ders.section_id}/`,
+        `http://127.0.0.1:8000/api/yoklama_data/student_list/section_id/${ders.section_id}/`,
+        `http://127.0.0.1:8000/api/student_data/student_list/section_id/${ders.section_id}/`,
+        `http://127.0.0.1:8000/yoklama_data/students/section_id/${ders.section_id}/`,
+        `http://127.0.0.1:8000/student_data/students/section_id/${ders.section_id}/`,
+        `http://127.0.0.1:8000/yoklama/student_list/section_id/${ders.section_id}/`,
+        `http://127.0.0.1:8000/yoklama/students/section_id/${ders.section_id}/`,
+        `http://127.0.0.1:8000/course/students/section_id/${ders.section_id}/`,
+        `http://127.0.0.1:8000/section/students/${ders.section_id}/`,
+      ];
+      
+      let response = null;
+      let successUrl = null;
+      
+      // Her endpoint'i sırayla dene
+      for (const url of endpoints) {
+        try {
+          console.log('Denenen URL:', url);
+          response = await fetch(url, {
+            method: 'GET',
+            headers: {
+              'Authorization': `Bearer ${accessToken}`,
+              'Content-Type': 'application/json',
+            },
+          });
+          
+          if (response.ok) {
+            successUrl = url;
+            console.log('Başarılı URL:', successUrl);
+            break;
+          } else {
+            console.log(`${url} - Status: ${response.status}`);
+          }
+        } catch (err) {
+          console.log(`${url} - Error: ${err.message}`);
+        }
+      }
+      
+      if (!response || !response.ok) {
+        throw new Error(`Tüm endpoint'ler denendi, hiçbiri çalışmadı. Son status: ${response?.status}`);
+      }
+
+      const data = await response.json();
+      console.log('API Response:', data); // Debug için
+      // API response'unda students array'i içinde öğrenciler var
+      setStudents(data.students || []);
+    } catch (error) {
+      console.error('Öğrenci listesi alınırken hata:', error);
+      setStudentsError('Öğrenci listesi alınırken bir hata oluştu');
+      setStudents([]);
+    } finally {
+      setStudentsLoading(false);
+    }
+  };
 
   // Event handlers
   const handleYoklamaYenile = () => {
@@ -175,6 +217,7 @@ const DersDetay = ({ ders, onBack }) => {
 
   const handleStudentList = () => {
     setOpenStudentDialog(true);
+    fetchStudentList(); // API çağrısını yap
   };
 
   const handleFileManagement = () => {
@@ -908,6 +951,9 @@ const DersDetay = ({ ders, onBack }) => {
                     <TableCell sx={{ fontWeight: 600, py: 1 }}>
                       Öğrenci Adı
                     </TableCell>
+                    <TableCell sx={{ fontWeight: 600, py: 1 }}>
+                      Öğrenci No
+                    </TableCell>
                     <TableCell sx={{ fontWeight: 600, py: 1 }}>Bölüm</TableCell>
                     <TableCell sx={{ fontWeight: 600, py: 1 }}>
                       İşlemler
@@ -941,16 +987,21 @@ const DersDetay = ({ ders, onBack }) => {
                               fontSize: "0.875rem",
                             }}
                           >
-                            {(student.name || 'X').charAt(0)}
+                            {(student.first_name || student.name || 'X').charAt(0)}
                           </Avatar>
                           <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                            {student.name || 'İsimsiz Öğrenci'}
+                            {`${student.first_name || ''} ${student.last_name || ''}`.trim() || student.name || 'İsimsiz Öğrenci'}
                           </Typography>
                         </Box>
                       </TableCell>
                       <TableCell sx={{ py: 1 }}>
+                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                          {student.student_number || student.number || '-'}
+                        </Typography>
+                      </TableCell>
+                      <TableCell sx={{ py: 1 }}>
                         <Typography variant="caption" color="text.secondary">
-                          {student.department}
+                          {student.department_name || student.department || 'Bölüm belirtilmemiş'}
                         </Typography>
                       </TableCell>
                       <TableCell sx={{ py: 1 }}>
