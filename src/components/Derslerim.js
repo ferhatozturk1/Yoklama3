@@ -885,9 +885,7 @@ const Derslerim = () => {
                           mb: 0.3,
                         }}
                       >
-                        {ders.lecture_name && ders.lecture_code 
-                          ? `${ders.lecture_name}-${ders.lecture_code}` 
-                          : (ders.code || 'DERS')}
+                        {(ders.lecture_code || ders.code || 'DERS')} - {ders.lecture_name || ders.name || 'Ders Adı'}
                       </Typography>
                       <Typography
                         variant="body2"
