@@ -383,6 +383,8 @@ const DersDetay = ({ ders, onBack }) => {
         student={selectedStudent}
         course={ders}
         onBack={handleBackFromStudentDetail}
+        loading={studentsLoading}
+        error={studentsError}
       />
     );
   }

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Typography,
   Box,
@@ -21,7 +21,9 @@ import {
   List,
   ListItem,
   ListItemText,
-  ListItemIcon
+  ListItemIcon,
+  CircularProgress,
+  Alert
 } from '@mui/material';
 import {
   ArrowBack,
@@ -33,28 +35,160 @@ import {
   Cancel,
   CalendarToday
 } from '@mui/icons-material';
+import { useAuth } from '../contexts/AuthContext';
 
-const ÖğrenciDetay = ({ student, course, onBack }) => {
-  // Eğer student prop'u yoksa varsayılan veri kullan
-  const studentData = student || {
-    id: 1,
-    name: 'Ahmet Taşlık',
-    number: '2021001',
-    class: 'GENG 1. sınıf',
-    department: 'Bilgisayar Mühendisliği',
-    attendance: 23,
-    total: 25,
-    rate: 92,
-    attendanceHistory: [
-      { date: '2025-07-22', status: 'Katıldı', week: 15 },
-      { date: '2025-07-21', status: 'Katıldı', week: 14 },
-      { date: '2025-07-20', status: 'Katılmadı', week: 13 },
-      { date: '2025-07-19', status: 'Katıldı', week: 12 },
-      { date: '2025-07-18', status: 'Katıldı', week: 11 },
-      { date: '2025-07-17', status: 'Katıldı', week: 10 },
-      { date: '2025-07-16', status: 'Katılmadı', week: 9 },
-      { date: '2025-07-15', status: 'Katıldı', week: 8 }
-    ]
+const ÖğrenciDetay = ({ student, course, onBack, loading, error }) => {
+  const { accessToken } = useAuth();
+  const [studentDetail, setStudentDetail] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [apiError, setApiError] = useState(null);
+
+  // Student ID'yi al
+  const getStudentId = () => {
+    if (student?.id) return student.id;
+    if (student?.student_id) return student.student_id;
+    if (student?.student_number) return student.student_number;
+    return null;
+  };
+
+  // API'den öğrenci detaylarını getir
+  const fetchStudentDetail = async (studentId) => {
+    if (!studentId) {
+      console.error('❌ Student ID bulunamadı:', student);
+      setApiError('Öğrenci ID bulunamadı');
+      return;
+    }
+
+    setIsLoading(true);
+    setApiError(null);
+
+    try {
+      const url = `http://127.0.0.1:8000/student_data/students/student_id/${studentId}/`;
+      console.log('🔍 Öğrenci detayı getiriliyor:', url);
+
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      console.log('📡 Student Detail Response:', response.status);
+
+      if (response.status === 404) {
+        console.warn('⚠️ Öğrenci detayı bulunamadı (404)');
+        setApiError('Bu öğrencinin detaylı bilgileri bulunamadı');
+        return;
+      }
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      console.log('📊 Student Detail Data:', data);
+      
+      setStudentDetail(data);
+      
+    } catch (error) {
+      console.error('❌ Öğrenci detayı fetch hatası:', error);
+      setApiError(`Öğrenci detayı alınamadı: ${error.message}`);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Component mount olduğunda öğrenci detayını getir
+  useEffect(() => {
+    const studentId = getStudentId();
+    if (studentId && accessToken) {
+      fetchStudentDetail(studentId);
+    }
+  }, [student, accessToken]);
+
+  // Loading state from parent
+  if (loading) {
+    return (
+      <Container maxWidth="lg" sx={{ mt: 4, pb: 4 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 4 }}>
+          <IconButton
+            onClick={onBack}
+            sx={{ 
+              mr: 2, 
+              bgcolor: '#1976d2', 
+              color: 'white',
+              '&:hover': { bgcolor: '#1565c0' }
+            }}
+          >
+            <ArrowBack />
+          </IconButton>
+          <Typography variant="h4" sx={{ fontWeight: 'bold', color: '#1a237e' }}>
+            Öğrenci Detayları
+          </Typography>
+        </Box>
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', py: 4 }}>
+          <CircularProgress />
+          <Typography variant="body2" sx={{ ml: 2 }}>
+            Öğrenci detayları yükleniyor...
+          </Typography>
+        </Box>
+      </Container>
+    );
+  }
+
+  // Error state from parent
+  if (error) {
+    return (
+      <Container maxWidth="lg" sx={{ mt: 4, pb: 4 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 4 }}>
+          <IconButton
+            onClick={onBack}
+            sx={{ 
+              mr: 2, 
+              bgcolor: '#1976d2', 
+              color: 'white',
+              '&:hover': { bgcolor: '#1565c0' }
+            }}
+          >
+            <ArrowBack />
+          </IconButton>
+          <Typography variant="h4" sx={{ fontWeight: 'bold', color: '#1a237e' }}>
+            Öğrenci Detayları
+          </Typography>
+        </Box>
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {error}
+        </Alert>
+        <Button variant="outlined" onClick={onBack}>
+          Geri Dön
+        </Button>
+      </Container>
+    );
+  }
+
+  // Merge student data with API detail
+  const studentData = {
+    // Base student data
+    id: student?.id || student?.student_id,
+    name: `${student?.first_name || ''} ${student?.last_name || ''}`.trim() || student?.name || 'İsimsiz Öğrenci',
+    number: student?.student_number || student?.number || '-',
+    department: student?.department_name || student?.department || 'Bölüm belirtilmemiş',
+    email: student?.email || '-',
+    year: student?.year || '-',
+    
+    // API'den gelen detay bilgileri
+    ...studentDetail,
+    
+    // Fallback values
+    attendance: studentDetail?.attendance || student?.attendance || 0,
+    total: studentDetail?.total || student?.total || 0,
+    rate: studentDetail?.rate || student?.rate || 0,
+    attendanceHistory: Array.isArray(studentDetail?.attendanceHistory) 
+      ? studentDetail.attendanceHistory 
+      : Array.isArray(student?.attendanceHistory) 
+        ? student.attendanceHistory 
+        : []
   };
 
   const courseData = course || {
@@ -68,8 +202,17 @@ const ÖğrenciDetay = ({ student, course, onBack }) => {
   };
 
   const getAttendanceRate = () => {
+    if (!Array.isArray(studentData.attendanceHistory) || studentData.attendanceHistory.length === 0) {
+      return 0;
+    }
     const attendedCount = studentData.attendanceHistory.filter(a => a.status === 'Katıldı').length;
     return Math.round((attendedCount / studentData.attendanceHistory.length) * 100);
+  };
+
+  // Güvenli string alma fonksiyonu
+  const getFirstChar = (text) => {
+    if (!text || typeof text !== 'string') return '?';
+    return text.charAt(0).toUpperCase();
   };
 
   return (
@@ -129,7 +272,7 @@ const ÖğrenciDetay = ({ student, course, onBack }) => {
                     mr: 3
                   }}
                 >
-                  {studentData.name.charAt(0)}
+                  {getFirstChar(studentData.name)}
                 </Avatar>
                 <Box>
                   <Typography variant="h5" sx={{ fontWeight: 'bold', color: '#1a237e' }}>
