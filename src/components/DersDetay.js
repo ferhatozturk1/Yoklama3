@@ -57,9 +57,55 @@ import {
 } from "@mui/icons-material";
 import ÖğrenciDetay from "./ÖğrenciDetay";
 import { useAuth } from "../contexts/AuthContext";
+import { QRCodeCanvas } from 'qrcode.react';
 
 const DersDetay = ({ ders, onBack }) => {
-  const { accessToken } = useAuth();
+  const { accessToken, refreshAccessToken } = useAuth();
+  
+  // Helper function to make API requests with automatic token refresh
+  const makeAuthenticatedRequest = async (url, options = {}, retryCount = 0) => {
+    try {
+      const response = await fetch(url, {
+        ...options,
+        headers: {
+          'Content-Type': 'application/json',
+          ...(accessToken ? { 'Authorization': `Bearer ${accessToken}` } : {}),
+          ...options.headers
+        }
+      });
+      
+      // If we get 401 and haven't retried yet, try to refresh token
+      if (response.status === 401 && retryCount === 0) {
+        console.log('Token expired, attempting to refresh...');
+        try {
+          const newToken = await refreshAccessToken();
+          console.log('Token refreshed successfully, retrying request...');
+          
+          // Retry with new token
+          return await fetch(url, {
+            ...options,
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${newToken}`,
+              ...options.headers
+            }
+          });
+        } catch (refreshError) {
+          console.error('Token refresh failed:', refreshError);
+          alert('Oturum süresi dolmuş ve yenilenemedi. Lütfen tekrar giriş yapın.');
+          if (typeof window !== 'undefined') {
+            window.location.href = '/login';
+          }
+          throw refreshError;
+        }
+      }
+      
+      return response;
+    } catch (error) {
+      console.error('Request failed:', error);
+      throw error;
+    }
+  };
   
   // Ders null ise early return yap
   if (!ders) {
@@ -87,6 +133,7 @@ const DersDetay = ({ ders, onBack }) => {
   const [openFileDialog, setOpenFileDialog] = useState(false);
   const [openReportDialog, setOpenReportDialog] = useState(false);
   const [openYoklamaYenileDialog, setOpenYoklamaYenileDialog] = useState(false);
+  const [qrModalOpen, setQrModalOpen] = useState(false);
 
   // Report states
   const [reportType, setReportType] = useState('');
@@ -127,6 +174,11 @@ const DersDetay = ({ ders, onBack }) => {
   const [studentsLoading, setStudentsLoading] = useState(false);
   const [studentsError, setStudentsError] = useState(null);
 
+  // QR kod ve yoklama akışı için state'ler
+  const [qrToken, setQrToken] = useState("");
+  const [qrLastUpdate, setQrLastUpdate] = useState("");
+  const [currentAttendanceListId, setCurrentAttendanceListId] = useState(null);
+
   // API fonksiyonu - öğrenci listesini çekmek için
   const fetchStudentList = async () => {
     if (!ders?.section_id) {
@@ -143,17 +195,15 @@ const DersDetay = ({ ders, onBack }) => {
     try {
       // Farklı endpoint formatlarını dene
       const endpoints = [
-        `http://127.0.0.1:8000/yoklama_data/student_list/section_id/${ders.section_id}/`,
         `http://127.0.0.1:8000/yoklama_data/student_list/${ders.section_id}/`,
-        `http://127.0.0.1:8000/student_data/student_list/section_id/${ders.section_id}/`,
         `http://127.0.0.1:8000/student_data/student_list/${ders.section_id}/`,
-        `http://127.0.0.1:8000/api/yoklama_data/student_list/section_id/${ders.section_id}/`,
-        `http://127.0.0.1:8000/api/student_data/student_list/section_id/${ders.section_id}/`,
-        `http://127.0.0.1:8000/yoklama_data/students/section_id/${ders.section_id}/`,
-        `http://127.0.0.1:8000/student_data/students/section_id/${ders.section_id}/`,
-        `http://127.0.0.1:8000/yoklama/student_list/section_id/${ders.section_id}/`,
-        `http://127.0.0.1:8000/yoklama/students/section_id/${ders.section_id}/`,
-        `http://127.0.0.1:8000/course/students/section_id/${ders.section_id}/`,
+        `http://127.0.0.1:8000/api/yoklama_data/student_list/${ders.section_id}/`,
+        `http://127.0.0.1:8000/api/student_data/student_list/${ders.section_id}/`,
+        `http://127.0.0.1:8000/yoklama_data/students/${ders.section_id}/`,
+        `http://127.0.0.1:8000/student_data/students/${ders.section_id}/`,
+        `http://127.0.0.1:8000/yoklama/student_list/${ders.section_id}/`,
+        `http://127.0.0.1:8000/yoklama/students/${ders.section_id}/`,
+        `http://127.0.0.1:8000/course/students/${ders.section_id}/`,
         `http://127.0.0.1:8000/section/students/${ders.section_id}/`,
       ];
       
@@ -201,14 +251,326 @@ const DersDetay = ({ ders, onBack }) => {
     }
   };
 
-  // Event handlers
-  const handleYoklamaYenile = () => {
-    setOpenYoklamaYenileDialog(true);
+  // QR kodu almak için API çağrısı
+  const fetchQrToken = async (attendanceListId) => {
+    if (!attendanceListId) return;
+    try {
+      const qrTokenUrl = `http://127.0.0.1:8000/qr/qr_token/${attendanceListId}/`;
+      const qrResponse = await makeAuthenticatedRequest(qrTokenUrl, {
+        method: 'GET'
+      });
+      
+      if (qrResponse.ok) {
+        const qrData = await qrResponse.json();
+        setQrToken(qrData.token || qrData.jwt || "");
+        setQrLastUpdate(new Date().toLocaleTimeString());
+      } else {
+        console.error('QR token fetch failed:', qrResponse.status);
+      }
+    } catch (error) {
+      console.error('QR token fetch error:', error);
+    }
   };
 
-  const handleConfirmYoklamaYenile = () => {
-    setOpenYoklamaYenileDialog(false);
-    // Burada yoklama yenileme işlemi yapılacak
+  // Event handlers
+  const handleYoklamaYenile = async () => {
+    if (!ders?.section_id) {
+      alert('Bu ders için section_id bulunamadı!');
+      return;
+    }
+
+    try {
+      console.log('Yoklama alma işlemi başlatılıyor...');
+      
+      // 0. Section kontrolü - section var mı kontrol et
+      console.log('Section kontrolü yapılıyor...');
+      let sectionExists = true;
+      
+      // Section'ın varlığını kontrol et
+      try {
+        const sectionCheckUrl = `http://127.0.0.1:8000/lecturer_data/sections/${ders.section_id}/`;
+        const sectionCheckResponse = await makeAuthenticatedRequest(sectionCheckUrl, {
+          method: 'GET'
+        });
+        
+        if (!sectionCheckResponse.ok) {
+          console.log('Section bulunamadı, yeni section oluşturulması gerekebilir');
+          sectionExists = false;
+        } else {
+          const sectionData = await sectionCheckResponse.json();
+          console.log('Mevcut section bulundu:', sectionData);
+        }
+      } catch (sectionError) {
+        console.log('Section kontrol hatası:', sectionError);
+        sectionExists = false;
+      }
+      
+      // Section yoksa ve lecture_id varsa yeni section oluştur
+      if (!sectionExists && ders.lecture_id) {
+        try {
+          console.log('Yeni section oluşturuluyor...');
+          const createSectionUrl = `http://127.0.0.1:8000/lecturer_data/sections/lecture/${ders.lecture_id}/`;
+          const createSectionBody = {
+            name: ders.name || 'Yeni Section',
+            lecture_id: ders.lecture_id,
+            capacity: 50 // Varsayılan kapasite
+          };
+          
+          console.log('Section oluşturma URL:', createSectionUrl);
+          console.log('Gönderilen section verisi:', createSectionBody);
+          
+          const createSectionResponse = await makeAuthenticatedRequest(createSectionUrl, {
+            method: 'POST',
+            body: JSON.stringify(createSectionBody)
+          });
+          
+          if (createSectionResponse.ok) {
+            const newSection = await createSectionResponse.json();
+            console.log('Yeni section oluşturuldu:', newSection);
+            // Section ID'yi güncelle
+            ders.section_id = newSection.id || newSection.section_id;
+          } else {
+            const errorText = await createSectionResponse.text();
+            console.error('Section oluşturma hatası:', errorText);
+          }
+        } catch (error) {
+          console.error('Section oluşturma exception:', error);
+        }
+      }
+      
+      // 1. Section öğrenci listesini çek (mevcut StudentList'i kontrol et)
+      const getUrl = `http://127.0.0.1:8000/yoklama_data/student_list/${ders.section_id}/`;
+      const getResponse = await makeAuthenticatedRequest(getUrl, {
+        method: 'GET'
+      });
+      
+      let studentListData;
+      if (getResponse.ok) {
+        // Mevcut StudentList var, onu kullan
+        studentListData = await getResponse.json();
+        console.log('Mevcut StudentList bulundu:', studentListData);
+      } else {
+        // StudentList yok, yeni bir tane oluştur
+        const postBody = {
+          name: `${ders.name} yoklama listesi`,
+          section_id: ders.section_id,
+          student_numbers: []
+        };
+        
+        const postUrl = `http://127.0.0.1:8000/yoklama_data/student_list/${ders.section_id}/`;
+        const postResponse = await makeAuthenticatedRequest(postUrl, {
+          method: 'POST',
+          body: JSON.stringify(postBody)
+        });
+        
+        if (!postResponse.ok) {
+          const errorText = await postResponse.text();
+          console.error('StudentList oluşturma hatası:', errorText);
+          alert('Öğrenci listesi oluşturulamadı!');
+          return;
+        }
+        studentListData = await postResponse.json();
+        console.log('Yeni StudentList oluşturuldu:', studentListData);
+      }
+
+      const studentListId = studentListData.id;
+      if (!studentListId) {
+        alert('StudentList ID bulunamadı!');
+        return;
+      }
+
+      // 2. Bu section için mevcut hour'ları bul veya oluştur
+      console.log('Section hours kontrol ediliyor...');
+      let hourId = null;
+      
+      // Önce tüm hours'ları listele
+      const allHoursEndpoints = [
+        `http://127.0.0.1:8000/lecturer_data/hours/`,
+        `http://127.0.0.1:8000/lecturer_data/hours/section/${ders.section_id}/`,
+        `http://127.0.0.1:8000/yoklama_data/hours/`,
+        `http://127.0.0.1:8000/schedule/hours/`
+      ];
+
+      for (const endpoint of allHoursEndpoints) {
+        try {
+          console.log('Denenen hours endpoint:', endpoint);
+          const hoursResponse = await makeAuthenticatedRequest(endpoint, {
+            method: 'GET'
+          });
+          
+          if (hoursResponse.ok) {
+            const hoursData = await hoursResponse.json();
+            console.log('Hours data:', hoursData);
+            
+            // Section'a ait hour'ı bul veya ilk hour'ı al
+            if (hoursData && Array.isArray(hoursData) && hoursData.length > 0) {
+              // Section'a ait hour'ı arayalım
+              const sectionHour = hoursData.find(hour => 
+                hour.section_id === ders.section_id || 
+                hour.section === ders.section_id
+              );
+              hourId = sectionHour ? (sectionHour.id || sectionHour.hour_id) : hoursData[0].id || hoursData[0].hour_id;
+            } else if (hoursData && hoursData.results && hoursData.results.length > 0) {
+              const sectionHour = hoursData.results.find(hour => 
+                hour.section_id === ders.section_id || 
+                hour.section === ders.section_id
+              );
+              hourId = sectionHour ? (sectionHour.id || sectionHour.hour_id) : hoursData.results[0].id || hoursData.results[0].hour_id;
+            }
+            
+            if (hourId) {
+              console.log('Hour ID bulundu:', hourId);
+              break;
+            }
+          }
+        } catch (error) {
+          console.log(`Hours endpoint hatası (${endpoint}):`, error);
+        }
+      }
+
+      // Eğer hour bulunamadıysa, yeni hour oluştur
+      if (!hourId) {
+        console.log('Hour bulunamadı, yeni hour oluşturuluyor...');
+        
+        try {
+          // Hour oluşturmak için gerekli bilgiler
+          const currentTime = new Date();
+          const timeStart = currentTime.toTimeString().slice(0, 8); // HH:MM:SS format
+          const endTime = new Date(currentTime.getTime() + 50 * 60 * 1000); // 50 dakika sonra
+          const timeEnd = endTime.toTimeString().slice(0, 8);
+          
+          // Gün hesaplama: JavaScript 0=Pazar, 1=Pazartesi... Backend için ayarlama
+          let dayOfWeek = currentTime.getDay();
+          if (dayOfWeek === 0) dayOfWeek = 7; // Pazar = 7
+          
+          const createHourUrl = `http://127.0.0.1:8000/lecturer_data/hours/`;
+          const createHourBody = {
+            order: 1, // İlk ders saati
+            day: dayOfWeek, // 1=Pazartesi, 2=Salı, ..., 7=Pazar
+            time_start: timeStart,
+            time_end: timeEnd,
+            section: ders.section_id, // section_id yerine section kullanıyoruz
+            classroom_id: null // Classroom bilgisi yoksa null gönder
+          };
+          
+          console.log('Hour oluşturuluyor:', createHourUrl);
+          console.log('Gönderilen hour verisi:', createHourBody);
+          
+          const createHourResponse = await makeAuthenticatedRequest(createHourUrl, {
+            method: 'POST',
+            body: JSON.stringify(createHourBody)
+          });
+          
+          if (createHourResponse.ok) {
+            const newHour = await createHourResponse.json();
+            hourId = newHour.id || newHour.hour_id;
+            console.log('Yeni hour oluşturuldu:', newHour);
+            console.log('Oluşturulan Hour ID:', hourId);
+          } else {
+            const errorText = await createHourResponse.text();
+            console.error('Hour oluşturma hatası:', errorText);
+            
+            // Hala hour yoksa varsayılan UUID kullan
+            console.log('Hour oluşturulamadı, varsayılan hour ID kullanılıyor...');
+            hourId = '1f212ecf-07fa-4667-94cd-8ecf3ff44d34';
+          }
+        } catch (error) {
+          console.error('Hour oluşturma exception:', error);
+          // Hata durumunda tekrar mevcut hour'ları listele ve birini seç
+          console.log('Mevcut hour\'lardan birini seçmeye çalışıyor...');
+          try {
+            const hoursResponse = await makeAuthenticatedRequest('http://127.0.0.1:8000/lecturer_data/hours/', {
+              method: 'GET'
+            });
+            if (hoursResponse.ok) {
+              const hoursData = await hoursResponse.json();
+              if (hoursData && Array.isArray(hoursData) && hoursData.length > 0) {
+                hourId = hoursData[0].id || hoursData[0].hour_id;
+                console.log('Mevcut hour\'dan seçilen ID:', hourId);
+              } else if (hoursData && hoursData.results && hoursData.results.length > 0) {
+                hourId = hoursData.results[0].id || hoursData.results[0].hour_id;
+                console.log('Mevcut hour\'dan seçilen ID:', hourId);
+              }
+            }
+          } catch (listError) {
+            console.error('Hour listesi alınamadı:', listError);
+          }
+          
+          // Son çare olarak varsayılan ID kullan
+          if (!hourId) {
+            hourId = '1f212ecf-07fa-4667-94cd-8ecf3ff44d34';
+            console.log('Varsayılan hour ID kullanılıyor:', hourId);
+          }
+        }
+      }
+
+      // 3. Backend API'sine göre attendance_list oluştur
+      console.log('Attendance list oluşturuluyor...');
+      console.log('Kullanılacak Hour ID:', hourId);
+      console.log('Kullanılacak Student List ID:', studentListId);
+      
+      // Farklı endpoint'leri dene
+      const attendanceEndpoints = [
+        `http://127.0.0.1:8000/yoklama_data/attendance_list/`,
+        `http://127.0.0.1:8000/yoklama_data/attendance_list/hour/${hourId}/`,
+        `http://127.0.0.1:8000/lecturer_data/attendance_list/`,
+        `http://127.0.0.1:8000/attendance_list/`
+      ];
+      
+      const attendanceListBody = {
+        "hour_id": hourId,
+        "Student_list_id": studentListId,
+        "hour": hourId,
+        "student_list": studentListId
+      };
+      
+      let attendanceList = null;
+      let successfulEndpoint = null;
+      
+      for (const endpoint of attendanceEndpoints) {
+        try {
+          console.log('Attendance list endpoint deneniyor:', endpoint);
+          console.log('Gönderilen veri:', attendanceListBody);
+          
+          const attendanceResponse = await makeAuthenticatedRequest(endpoint, {
+            method: 'POST',
+            body: JSON.stringify(attendanceListBody)
+          });
+          
+          if (attendanceResponse.ok) {
+            attendanceList = await attendanceResponse.json();
+            successfulEndpoint = endpoint;
+            console.log('Attendance list başarıyla oluşturuldu:', attendanceList);
+            break;
+          } else {
+            const errorText = await attendanceResponse.text();
+            console.log(`Attendance endpoint hatası (${endpoint}):`, errorText);
+          }
+        } catch (error) {
+          console.log(`Attendance endpoint exception (${endpoint}):`, error);
+        }
+      }
+      
+      if (!attendanceList) {
+        alert('Yoklama listesi oluşturulamadı. Tüm endpoint\'ler denendi.');
+        return;
+      }
+      
+      // QR token al ve modal aç
+      const attendanceListId = attendanceList.id;
+      if (attendanceListId) {
+        setCurrentAttendanceListId(attendanceListId);
+        setQrModalOpen(true);
+        await fetchQrToken(attendanceListId);
+        console.log('QR modal açıldı, attendance_list_id:', attendanceListId);
+      } else {
+        alert('Attendance List ID bulunamadı!');
+      }
+      
+    } catch (error) {
+      console.error('Yoklama alma genel hatası:', error);
+      alert('Yoklama alınırken bir hata oluştu: ' + error.message);
+    }
   };
 
   const handleTelafiDers = () => {
@@ -388,6 +750,25 @@ const DersDetay = ({ ders, onBack }) => {
       />
     );
   }
+
+  // Interval yönetimi
+  React.useEffect(() => {
+    let intervalId;
+    if (qrModalOpen && currentAttendanceListId) {
+      fetchQrToken(currentAttendanceListId);
+      intervalId = setInterval(() => {
+        fetchQrToken(currentAttendanceListId);
+      }, 5000);
+    }
+    return () => {
+      if (intervalId) clearInterval(intervalId);
+    };
+  }, [qrModalOpen, currentAttendanceListId]);
+
+  // Yoklama yenileme onayı için fonksiyon
+  const handleConfirmYoklamaYenile = () => {
+    setOpenYoklamaYenileDialog(false);
+  };
 
   return (
     <Container 
@@ -1442,6 +1823,40 @@ const DersDetay = ({ ders, onBack }) => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* QR kod modalı */}
+      {qrModalOpen && (
+        <Dialog open={qrModalOpen} onClose={() => setQrModalOpen(false)} maxWidth="sm" fullWidth>
+          <DialogTitle>QR Yoklama Aktif</DialogTitle>
+          <DialogContent>
+            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+              <Typography variant="h6" sx={{ color: 'primary.main', mb: 2 }}>QR Kodu Öğrencilere Gösterin</Typography>
+              <QRCodeCanvas value={qrToken} size={200} />
+              <Button variant="outlined" sx={{ mt: 2 }} onClick={() => fetchQrToken(currentAttendanceListId)}>
+                QR Kodunu Yenile
+              </Button>
+              <Box sx={{ mt: 2, bgcolor: '#e8f5e9', p: 2, borderRadius: 2, width: '100%' }}>
+                <Typography variant="body2" sx={{ color: '#388e3c', fontWeight: 600 }}>
+                  <span style={{ display: 'inline-block', marginRight: 8 }}>✔️</span> Yoklama sistemi aktif
+                </Typography>
+                <Typography variant="body2" sx={{ color: '#1976d2', mt: 1 }}>
+                  <span style={{ display: 'inline-block', marginRight: 8 }}>🔄</span> QR kod otomatik yenileniyor
+                </Typography>
+                <Typography variant="body2" sx={{ color: '#333', mt: 1 }}>
+                  <span style={{ display: 'inline-block', marginRight: 8 }}>📱</span> Öğrenciler telefonlarıyla okutabilir
+                </Typography>
+              </Box>
+              <Typography variant="caption" sx={{ mt: 2, color: '#666' }}>
+                Son güncelleme: {qrLastUpdate}
+              </Typography>
+            </Box>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setQrModalOpen(false)} color="error" variant="contained">Yoklamayı Durdur</Button>
+          </DialogActions>
+        </Dialog>
+      )
+      }
     </Container>
   );
 };

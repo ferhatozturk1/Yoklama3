@@ -40,6 +40,7 @@ import {
 } from "@mui/icons-material";
 
 import DersDetay from "./DersDetay";
+import { QRCodeCanvas } from 'qrcode.react';
 
 const Derslerim = () => {
   const { user, accessToken, loadUserProfile, isLoading: authLoading, setUser } = useAuth();
@@ -100,6 +101,12 @@ const Derslerim = () => {
     endTime: "",
     room: "",
   });
+
+  // QR code state
+  const [qrModalOpen, setQrModalOpen] = useState(false);
+  const [qrToken, setQrToken] = useState("");
+  const [qrLastUpdate, setQrLastUpdate] = useState("");
+  const [currentAttendanceListId, setCurrentAttendanceListId] = useState(null);
 
   // Days of the week
   const daysOfWeek = ["Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma"];
@@ -1052,7 +1059,6 @@ const Derslerim = () => {
                 <Box sx={{ mt: "auto" }}>
                   <Button
                     variant="contained"
-                    
                     fullWidth
                     sx={{
                       bgcolor: "#1a237e",
@@ -1069,6 +1075,7 @@ const Derslerim = () => {
                         boxShadow: "0 4px 12px rgba(26, 35, 126, 0.4)",
                       },
                     }}
+                    onClick={() => handleDersClick(ders)}
                   >
                     Derse Git
                   </Button>
