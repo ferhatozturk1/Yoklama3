@@ -193,24 +193,15 @@ const DersDetay = ({ ders, onBack }) => {
     setStudentsError(null);
 
     try {
-      // Farklı endpoint formatlarını dene
+      
       const endpoints = [
         `http://127.0.0.1:8000/yoklama_data/student_list/${ders.section_id}/`,
-        `http://127.0.0.1:8000/student_data/student_list/${ders.section_id}/`,
-        `http://127.0.0.1:8000/api/yoklama_data/student_list/${ders.section_id}/`,
-        `http://127.0.0.1:8000/api/student_data/student_list/${ders.section_id}/`,
-        `http://127.0.0.1:8000/yoklama_data/students/${ders.section_id}/`,
-        `http://127.0.0.1:8000/student_data/students/${ders.section_id}/`,
-        `http://127.0.0.1:8000/yoklama/student_list/${ders.section_id}/`,
-        `http://127.0.0.1:8000/yoklama/students/${ders.section_id}/`,
-        `http://127.0.0.1:8000/course/students/${ders.section_id}/`,
-        `http://127.0.0.1:8000/section/students/${ders.section_id}/`,
       ];
       
       let response = null;
       let successUrl = null;
       
-      // Her endpoint'i sırayla dene
+    
       for (const url of endpoints) {
         try {
           console.log('Denenen URL:', url);
@@ -385,10 +376,9 @@ const DersDetay = ({ ders, onBack }) => {
       
       // Önce tüm hours'ları listele
       const allHoursEndpoints = [
-        `http://127.0.0.1:8000/lecturer_data/hours/`,
+       
         `http://127.0.0.1:8000/lecturer_data/hours/section/${ders.section_id}/`,
-        `http://127.0.0.1:8000/yoklama_data/hours/`,
-        `http://127.0.0.1:8000/schedule/hours/`
+        
       ];
 
       for (const endpoint of allHoursEndpoints) {
@@ -508,20 +498,14 @@ const DersDetay = ({ ders, onBack }) => {
       console.log('Attendance list oluşturuluyor...');
       console.log('Kullanılacak Hour ID:', hourId);
       console.log('Kullanılacak Student List ID:', studentListId);
-      
-      // Farklı endpoint'leri dene
+    
       const attendanceEndpoints = [
-        `http://127.0.0.1:8000/yoklama_data/attendance_list/`,
-        `http://127.0.0.1:8000/yoklama_data/attendance_list/hour/${hourId}/`,
-        `http://127.0.0.1:8000/lecturer_data/attendance_list/`,
-        `http://127.0.0.1:8000/attendance_list/`
+        `http://127.0.0.1:8000/yoklama_data/attendance_list/hour/${hourId}/`
       ];
       
       const attendanceListBody = {
         "hour_id": hourId,
-        "Student_list_id": studentListId,
-        "hour": hourId,
-        "student_list": studentListId
+        "student_list_id": studentListId
       };
       
       let attendanceList = null;
