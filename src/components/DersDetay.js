@@ -173,6 +173,21 @@ const DersDetay = ({ ders, onBack }) => {
   const [qrLastUpdate, setQrLastUpdate] = useState("");
   const [currentAttendanceListId, setCurrentAttendanceListId] = useState(null);
 
+  // Token değişiklik kontrolü için
+  let lastToken = null;
+
+  function handleNewToken(token) {
+    console.log("Yeni QR token alındı:", token);
+    if (lastToken) {
+      if (lastToken === token) {
+        console.log("⚠️ Token aynı kaldı!");
+      } else {
+        console.log("✅ Token değişti!");
+      }
+    }
+    lastToken = token;
+  }
+
   // API fonksiyonu - öğrenci listesini çekmek için
   const fetchStudentList = async () => {
     if (!ders?.section_id) {
@@ -249,7 +264,7 @@ const DersDetay = ({ ders, onBack }) => {
       if (qrResponse.ok) {
         const qrData = await qrResponse.json();
         const newToken = qrData.qr_token || qrData.token || qrData.jwt || "";
-        console.log('Yeni QR token alındı:', newToken.substring(0, 20) + '...');
+        handleNewToken(newToken);
         setQrToken(newToken);
         setQrLastUpdate(new Date().toLocaleTimeString());
         console.log('QR kod güncellendi:', new Date().toLocaleTimeString());
@@ -1880,7 +1895,30 @@ const DersDetay = ({ ders, onBack }) => {
                 </Box>
               </DialogContent>
               <DialogActions>
-                <Button onClick={() => setQrModalOpen(false)} color="error" variant="contained">Yoklamayı Durdur</Button>
+                <Button onClick={async () => {
+                  // Backend'e yoklama durdurma isteği gönder
+                  if (currentAttendanceListId) {
+                    try {
+                      const stopUrl = `http://127.0.0.1:8000/yoklama_data/attendance_list/${currentAttendanceListId}/stop/`;
+                      const stopResponse = await makeAuthenticatedRequest(stopUrl, {
+                        method: 'POST',
+                        body: JSON.stringify({ is_active: false })
+                      });
+
+                      if (stopResponse.ok) {
+                        console.log('Yoklama başarıyla durduruldu');
+                      } else {
+                        console.error('Yoklama durdurma hatası:', stopResponse.status);
+                      }
+                    } catch (error) {
+                      console.error('Yoklama durdurma API hatası:', error);
+                    }
+                  }
+
+                  // Frontend state'lerini güncelle
+                  setQrModalOpen(false);
+                  setIsAttendanceActive(false);
+                }} color="error" variant="contained">Yoklamayı Durdur</Button>
               </DialogActions>
             </Dialog>
           )}
