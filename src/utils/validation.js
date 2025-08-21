@@ -21,14 +21,7 @@ export const validateRequired = (value, fieldName) => {
  * Validates email format
  */
 export const validateEmail = (email) => {
-  if (!email) {
-    return getLocalizedText('requiredField');
-  }
-  
-  if (!EMAIL_REGEX.test(email.trim())) {
-    return getLocalizedText('invalidEmail');
-  }
-  
+  // E-posta doğrulaması kaldırıldı - her türlü e-posta kabul edilir
   return null;
 };
 

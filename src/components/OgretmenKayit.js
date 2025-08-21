@@ -158,7 +158,6 @@ const OgretmenKayit = () => {
       if (name === 'university') {
         newForm.faculty = '';
         newForm.department_id = '';
-        newForm.email = ''; // E-posta alanını da temizle
       } else if (name === 'faculty') {
         newForm.department_id = '';
       }
@@ -169,22 +168,7 @@ const OgretmenKayit = () => {
   };
 
   const validateEmail = (email) => {
-    const selectedUniversity = universities.find(u => u.id === form.university);
-    if (!selectedUniversity) {
-      return "Lütfen önce üniversite seçin!";
-    }
-    
-    // ODTÜ için e-posta uzantısı
-    const requiredDomain = "@metu.edu.tr";
-    if (!email.endsWith(requiredDomain)) {
-      return `E-posta adresi ${requiredDomain} uzantısı ile bitmelidir!`;
-    }
-    
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return "Geçerli bir e-posta adresi girin!";
-    }
-    
+    // E-posta doğrulaması kaldırıldı - her türlü e-posta kabul edilir
     return null;
   };
 
@@ -827,21 +811,6 @@ const OgretmenKayit = () => {
           >
             E-posta Adresi
           </Typography>
-          {form.university && (
-            <Typography
-              variant="body2"
-              sx={{
-                color: "#4F46E5",
-                fontFamily: '"Inter", "Roboto", sans-serif',
-                fontWeight: 500,
-                fontSize: "12px",
-                mb: 1,
-                ml: 0.5,
-              }}
-            >
-              @metu.edu.tr uzantısı kullanınız
-            </Typography>
-          )}
           <TextField
             name="email"
             type="email"
@@ -849,12 +818,7 @@ const OgretmenKayit = () => {
             value={form.email}
             onChange={handleChange}
             required
-            placeholder={
-              form.university 
-                ? "ornek@metu.edu.tr"
-                : "Üniversite seçtikten sonra e-posta giriniz"
-            }
-            disabled={!form.university}
+            placeholder="E-posta adresinizi girin"
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">

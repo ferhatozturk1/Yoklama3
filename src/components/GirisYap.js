@@ -237,15 +237,15 @@ const GirisYap = () => {
                         ml: 0.5,
                       }}
                     >
-                      E-posta Adresi
+                      Kullanıcı Adı
                     </Typography>
                     <TextField
-                      type="email"
+                      type="text"
                       fullWidth
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       required
-                      placeholder="ornek@cbu.edu.tr"
+                      placeholder="Kullanıcı adınızı girin"
                       InputProps={{
                         startAdornment: (
                           <InputAdornment position="start">
