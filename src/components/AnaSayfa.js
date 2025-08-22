@@ -934,33 +934,104 @@ const AnaSayfa = ({
                   </>
                 );
               } else {
-                return (
-                  <>
-                    <Typography
-                      variant="body2"
-                      sx={{
-                        fontWeight: 600,
-                        fontSize: isMobile ? "0.7rem" : "0.85rem",
-                        lineHeight: 1.1,
-                        mb: 0.2,
-                        color: "white",
-                      }}
-                    >
-                      MATH113/3
-                    </Typography>
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        opacity: 0.9,
-                        fontSize: isMobile ? "0.6rem" : "0.7rem",
-                        lineHeight: 1.1,
-                        display: "block",
-                      }}
-                    >
-                      Matematik Dersi
-                    </Typography>
-                  </>
-                );
+                // Bugün ders yoksa gelecek 7 gün içindeki ilk dersi bul
+                let nextDayClass = null;
+                
+                // Gelecek 7 günü kontrol et
+                for (let i = 1; i <= 7; i++) {
+                  const futureDate = new Date(currentTime);
+                  futureDate.setDate(futureDate.getDate() + i);
+                  const futureDayIndex = futureDate.getDay() - 1; // 0=Pazartesi, 1=Salı, ...
+                  
+                  // Hafta sonu günlerini atla (Cumartesi=5, Pazar=6)
+                  if (futureDayIndex < 0 || futureDayIndex > 4) continue;
+                  
+                  const futureDayKey = dayKeys[futureDayIndex];
+                  
+                  if (futureDayKey && weeklySchedule) {
+                    for (const timeSlot of timeSlots) {
+                      const lesson = weeklySchedule[timeSlot][futureDayKey];
+                      if (lesson && !lesson.includes("Bayram")) {
+                        nextDayClass = {
+                          lesson,
+                          time: timeSlot,
+                          day: futureDayKey,
+                          daysAhead: i
+                        };
+                        break;
+                      }
+                    }
+                    if (nextDayClass) break; // İlk dersi bulduğumuzda dur
+                  }
+                }
+                
+                if (nextDayClass) {
+                  const courseName = nextDayClass.lesson?.split("\\n")?.[0] || nextDayClass.lesson || "Ders";
+                  const dayNames = {
+                    'pazartesi': 'Pazartesi',
+                    'sali': 'Salı', 
+                    'carsamba': 'Çarşamba',
+                    'persembe': 'Perşembe',
+                    'cuma': 'Cuma'
+                  };
+                  const dayName = dayNames[nextDayClass.day] || 'Gelecek';
+                  
+                  return (
+                    <>
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          fontWeight: 600,
+                          fontSize: isMobile ? "0.7rem" : "0.85rem",
+                          lineHeight: 1.1,
+                          mb: 0.2,
+                          color: "white",
+                        }}
+                      >
+                        {courseName}
+                      </Typography>
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          opacity: 0.9,
+                          fontSize: isMobile ? "0.6rem" : "0.7rem",
+                          lineHeight: 1.1,
+                          display: "block",
+                        }}
+                      >
+                        {dayName} - {nextDayClass.time}
+                      </Typography>
+                    </>
+                  );
+                } else {
+                  return (
+                    <>
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          fontWeight: 600,
+                          fontSize: isMobile ? "0.7rem" : "0.85rem",
+                          lineHeight: 1.1,
+                          mb: 0.2,
+                          color: "white",
+                        }}
+                      >
+                        Ders Yok
+                      </Typography>
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          opacity: 0.9,
+                          fontSize: isMobile ? "0.6rem" : "0.7rem",
+                          lineHeight: 1.1,
+                          display: "block",
+                        }}
+                      >
+                        Bu hafta ders yok
+                      </Typography>
+                    </>
+                  );
+                }
               }
             })()}
           </Box>
