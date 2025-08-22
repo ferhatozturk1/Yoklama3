@@ -903,7 +903,7 @@ const DersDetay = ({ ders, onBack }) => {
                   <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                     <Groups sx={{ fontSize: 16, color: "#666" }} />
                     <Typography variant="body2">
-                      {ders?.studentCount || 0} öğrenci
+                      {students.length || 0} öğrenci
                     </Typography>
                   </Box>
                 </Box>
@@ -1160,7 +1160,7 @@ const DersDetay = ({ ders, onBack }) => {
                       py: 1,
                     }}
                   >
-                    Öğrenciler ({ders?.studentCount || 0})
+                    Öğrenciler ({students.length || 0})
                   </Button>
 
                   <Button

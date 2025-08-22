@@ -288,6 +288,7 @@ const Derslerim = () => {
         let building = course.building?.name || course.building || null;
         let room = course.room?.name || course.room || null;
         let scheduleInfo = {}; // Ders saatleri bilgisi
+        let studentCount = 0; // Gerçek öğrenci sayısı
         
         // Eğer section_id varsa, section detaylarını ve hours bilgilerini çek
         if (course.section_id && accessToken) {
@@ -351,6 +352,32 @@ const Derslerim = () => {
           }
         }
         
+        // Öğrenci sayısını çek
+        if (course.section_id && accessToken) {
+          try {
+            console.log('👥 Fetching student count for section:', course.section_id);
+            const studentListResponse = await fetch(`http://127.0.0.1:8000/yoklama_data/student_list/${course.section_id}/`, {
+              method: 'GET',
+              headers: {
+                'Authorization': `Bearer ${accessToken}`,
+                'Content-Type': 'application/json',
+              },
+            });
+            
+            if (studentListResponse.ok) {
+              const studentListData = await studentListResponse.json();
+              studentCount = studentListData.students ? studentListData.students.length : 0;
+              console.log('✅ Student count received:', studentCount);
+            } else {
+              console.log('⚠️ Student list not found, using 0');
+              studentCount = 0;
+            }
+          } catch (studentError) {
+            console.error('❌ Student count fetch error:', studentError);
+            studentCount = 0;
+          }
+        }
+        
         const transformedCourse = {
           id: course.id,
           name: course.explicit_name || course.name || course.course_name || course.lecture_name || "Ders",
@@ -366,7 +393,7 @@ const Derslerim = () => {
           instructor: course.instructor?.name || `${user?.first_name || ''} ${user?.last_name || ''}`.trim() || "Öğretim Üyesi",
           totalWeeks: 15,
           currentWeek: 1,
-          studentCount: Math.floor(Math.random() * 30) + 20,
+          studentCount: studentCount, // Gerçek öğrenci sayısı API'den geldi
           attendanceStatus: "not_taken",
           lastAttendance: null,
           attendanceRate: 0,
@@ -523,7 +550,7 @@ const Derslerim = () => {
           },
           totalWeeks: 15,
           currentWeek: 8,
-          studentCount: Math.floor(Math.random() * 30) + 20, // Random student count
+          studentCount: 0, // Gerçek öğrenci sayısı API'den gelecek
           attendanceStatus: "not_taken",
           lastAttendance: null,
           attendanceRate: 0,

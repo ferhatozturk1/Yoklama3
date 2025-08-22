@@ -1133,6 +1133,9 @@ const AnaSayfa = ({
     // Lesson string'ini temizle
     const lessonText = typeof lesson === 'string' ? lesson : (lesson.name || lesson.code || 'Ders');
 
+    // Gerçek öğrenci sayısını al
+    const studentCount = typeof lesson === 'object' && lesson.studentCount ? lesson.studentCount : 0;
+
     // Parse lesson info
     const [courseName, roomInfo] = lessonText.split("\n");
 
