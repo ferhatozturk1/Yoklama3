@@ -175,7 +175,7 @@ const Sidebar = ({ open, onToggle, isMobile, onNavigate, userProfile }) => {
                 fontWeight: 600,
               }}
             >
-              {userProfile?.name ? userProfile.name.charAt(0).toUpperCase() : 'K'}
+              {userProfile?.name ? (userProfile.name + "").charAt(0).toUpperCase() : 'K'}
             </Avatar>
           </Box>
           <Box sx={{ flex: 1 }}>

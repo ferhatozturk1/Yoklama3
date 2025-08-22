@@ -119,8 +119,8 @@ const Profilim = ({
 
   // User'daki önemli alanları kontrol et
   useEffect(() => {
-    if (user) {
-      // User data available
+    if (user && typeof user === 'object') {
+      // User data available and is valid object
     }
   }, [user]);
 
@@ -132,7 +132,7 @@ const Profilim = ({
     if (hasFetchedProfileRef.current) return;
 
     // Gerekli bilgiler yoksa çalıştırma
-    if (!user || !accessToken) return;
+    if (!user || typeof user !== 'object' || !accessToken) return;
 
     hasFetchedProfileRef.current = true;
 
@@ -339,7 +339,7 @@ const Profilim = ({
     setApiError("");
 
     try {
-      if (!user || !accessToken) {
+      if (!user || typeof user !== 'object' || !accessToken) {
         throw new Error("Kullanıcı oturumu bulunamadı. Lütfen tekrar giriş yapın.");
       }
 

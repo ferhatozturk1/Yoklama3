@@ -107,8 +107,8 @@ const DersDetay = ({ ders, onBack }) => {
     }
   };
 
-  // Ders null ise early return yap
-  if (!ders) {
+  // Ders null veya undefined ise early return yap
+  if (!ders || typeof ders !== 'object') {
     return (
       <Container maxWidth="lg" sx={{ mt: 2, mb: 4 }}>
         <Box sx={{ textAlign: 'center', py: 4 }}>
@@ -190,7 +190,7 @@ const DersDetay = ({ ders, onBack }) => {
 
   // API fonksiyonu - öğrenci listesini çekmek için
   const fetchStudentList = async () => {
-    if (!ders?.section_id) {
+    if (!ders || typeof ders !== 'object' || !ders.section_id) {
       setStudentsError('Section ID bulunamadı');
       return;
     }
@@ -282,7 +282,7 @@ const DersDetay = ({ ders, onBack }) => {
   };
 
   const handleStartAttendance = async () => {
-    if (!ders?.section_id) {
+    if (!ders || typeof ders !== 'object' || !ders.section_id) {
       alert('Bu ders için section_id bulunamadı!');
       return;
     }
@@ -887,13 +887,13 @@ const DersDetay = ({ ders, onBack }) => {
                   <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                     <School sx={{ fontSize: 16, color: "#666" }} />
                     <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                      {ders.code} - {ders.section}
+                      {(ders?.code || 'DERS')} - {(ders?.section || 'A1')}
                     </Typography>
                   </Box>
                   <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                     <LocationOn sx={{ fontSize: 16, color: "#666" }} />
                     <Typography variant="body2">
-                      {ders.building && ders.room
+                      {ders?.building && ders?.room
                         ? `${ders.building} - ${ders.room}`
                         : "Konum bilgisi güncelleniyor..."
                       }
@@ -903,7 +903,7 @@ const DersDetay = ({ ders, onBack }) => {
                   <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                     <Groups sx={{ fontSize: 16, color: "#666" }} />
                     <Typography variant="body2">
-                      {ders.studentCount} öğrenci
+                      {ders?.studentCount || 0} öğrenci
                     </Typography>
                   </Box>
                 </Box>
@@ -930,7 +930,7 @@ const DersDetay = ({ ders, onBack }) => {
                   </Typography>
                 </Box>
 
-                {ders.schedule && Object.keys(ders.schedule).length > 0 ? (
+                {ders?.schedule && typeof ders.schedule === 'object' && Object.keys(ders.schedule).length > 0 ? (
                   Object.entries(ders.schedule).map(([day, times]) => (
                     <Box
                       key={day}
@@ -990,7 +990,7 @@ const DersDetay = ({ ders, onBack }) => {
                       color="text.secondary"
                       sx={{ fontStyle: "italic" }}
                     >
-                      {ders.scheduleText || "Ders saati atanmamış"}
+                      {ders?.scheduleText || "Ders saati atanmamış"}
                     </Typography>
                   </Box>
                 )}
@@ -1035,13 +1035,13 @@ const DersDetay = ({ ders, onBack }) => {
                     Son Durum:
                   </Typography>
                   <Chip
-                    label={getAttendanceStatusText(ders.attendanceStatus)}
-                    color={getAttendanceStatusColor(ders.attendanceStatus)}
+                    label={getAttendanceStatusText(ders?.attendanceStatus)}
+                    color={getAttendanceStatusColor(ders?.attendanceStatus)}
                     size="small"
                   />
                 </Box>
 
-                {ders.lastAttendance && (
+                {ders?.lastAttendance && (
                   <Typography
                     variant="caption"
                     color="text.secondary"
@@ -1067,7 +1067,7 @@ const DersDetay = ({ ders, onBack }) => {
                     variant="body2"
                     sx={{ fontWeight: 600, color: "#1976d2" }}
                   >
-                    %{ders.attendanceRate}
+                    %{ders?.attendanceRate || 0}
                   </Typography>
                 </Box>
 
@@ -1099,12 +1099,12 @@ const DersDetay = ({ ders, onBack }) => {
                       </Typography>
                     </Box>
                     <Typography variant="caption" sx={{ fontWeight: 600 }}>
-                      {ders.currentWeek}/{ders.totalWeeks}
+                      {ders?.currentWeek || 1}/{ders?.totalWeeks || 15}
                     </Typography>
                   </Box>
                   <LinearProgress
                     variant="determinate"
-                    value={(ders.currentWeek / ders.totalWeeks) * 100}
+                    value={((ders?.currentWeek || 1) / (ders?.totalWeeks || 15)) * 100}
                     sx={{
                       height: 6,
                       borderRadius: 3,
@@ -1119,7 +1119,7 @@ const DersDetay = ({ ders, onBack }) => {
                     color="text.secondary"
                     sx={{ mt: 0.5, display: "block" }}
                   >
-                    %{Math.round((ders.currentWeek / ders.totalWeeks) * 100)}{" "}
+                    %{Math.round(((ders?.currentWeek || 1) / (ders?.totalWeeks || 15)) * 100)}{" "}
                     tamamlandı
                   </Typography>
                 </Box>
@@ -1160,7 +1160,7 @@ const DersDetay = ({ ders, onBack }) => {
                       py: 1,
                     }}
                   >
-                    Öğrenciler ({ders.studentCount})
+                    Öğrenciler ({ders?.studentCount || 0})
                   </Button>
 
                   <Button
@@ -1404,16 +1404,16 @@ const DersDetay = ({ ders, onBack }) => {
                                 fontSize: "0.875rem",
                               }}
                             >
-                              {(student.first_name || student.name || 'X').charAt(0)}
+                              {((student?.first_name || student?.name || 'X') + '').charAt(0)}
                             </Avatar>
                             <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                              {`${student.first_name || ''} ${student.last_name || ''}`.trim() || student.name || 'İsimsiz Öğrenci'}
+                              {`${student?.first_name || ''} ${student?.last_name || ''}`.trim() || student?.name || 'İsimsiz Öğrenci'}
                             </Typography>
                           </Box>
                         </TableCell>
                         <TableCell sx={{ py: 1 }}>
                           <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                            {student.student_number || student.number || '-'}
+                            {student?.student_number || student?.number || '-'}
                           </Typography>
                         </TableCell>
                         <TableCell sx={{ py: 1 }}>

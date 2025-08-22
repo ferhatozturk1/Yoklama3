@@ -72,7 +72,7 @@ const AnaSayfa = ({
     "09:30",
     "09:40", // Programming Language Concepts - Salı
     "09:50",
-    "10:40",  
+    "10:40",
     "11:00",
     "11:40", // Programming Language Concepts - Çarşamba
     "11:50",
@@ -96,9 +96,9 @@ const AnaSayfa = ({
     // API response'u normalize etmek için Derslerim ile aynı fonksiyon
     const normalizeLectures = (data) => {
       console.log('🔄 ANASAYFA normalizeLectures - Input data:', data);
-      
+
       if (!data) return [];
-      
+
       // Yeni API formatı: { id: "...", sections: [...] }
       if (data.sections && Array.isArray(data.sections)) {
         console.log('📋 ANASAYFA: New API format detected - sections array found');
@@ -123,7 +123,7 @@ const AnaSayfa = ({
         console.log('✅ ANASAYFA: Converted sections to lectures:', lectures);
         return lectures;
       }
-      
+
       // Eski format backward compatibility
       if (Array.isArray(data)) return data;
       if (Array.isArray(data?.results)) return data.results;
@@ -136,38 +136,38 @@ const AnaSayfa = ({
           return values;
         }
       }
-      
+
       console.warn('⚠️ ANASAYFA: Unknown data format, returning empty array');
       return [];
     };
 
     const loadSchedule = async () => {
-      console.log('🔄 ANASAYFA: loadSchedule çağırıldı!', { 
-        lecturerId: user?.lecturer_id, 
+      console.log('🔄 ANASAYFA: loadSchedule çağırıldı!', {
+        lecturerId: user?.lecturer_id,
         hasToken: !!accessToken,
         timestamp: new Date().toISOString()
       });
-      
+
       if (!user?.lecturer_id || !accessToken) {
         console.log('❌ Lecturer ID veya accessToken eksik:', { lecturerId: user?.lecturer_id, hasToken: !!accessToken });
         return;
       }
-      
+
       try {
         setScheduleLoading(true);
         setScheduleError(null);
-        
+
         console.log('🎯 ANASAYFA: Derslerim ile aynı API kullanılıyor - fetchLecturerLecturesNew');
         console.log('👨‍🏫 Lecturer ID:', user.lecturer_id);
-        
+
         // Derslerim ile aynı API kullan
         const lecturesRaw = await fetchLecturerLecturesNew(user.lecturer_id, accessToken);
         console.log('✅ ANASAYFA: Raw lectures data received:', lecturesRaw);
-        
+
         // API response'u normalize et
         const lecturesArray = normalizeLectures(lecturesRaw);
         console.log('✅ ANASAYFA: Normalized lectures array:', lecturesArray);
-        
+
         // Derslerden haftalık program oluştur
         const weeklySchedule = {
           Pazartesi: [],
@@ -178,28 +178,28 @@ const AnaSayfa = ({
           Cumartesi: [],
           Pazar: []
         };
-        
+
         // Her ders için section detaylarını çek ve program oluştur
         for (const course of lecturesArray) {
           if (course.section_id && accessToken) {
             try {
               console.log('🔍 ANASAYFA: Fetching section hours for:', course.section_id);
               const hoursData = await getSectionHours(course.section_id, accessToken);
-              
+
               if (hoursData && hoursData.length > 0) {
                 const dayMapping = {
                   'monday': 'Pazartesi',
-                  'tuesday': 'Salı', 
+                  'tuesday': 'Salı',
                   'wednesday': 'Çarşamba',
                   'thursday': 'Perşembe',
                   'friday': 'Cuma',
                   'saturday': 'Cumartesi',
                   'sunday': 'Pazar'
                 };
-                
+
                 hoursData.forEach(hour => {
                   const dayName = dayMapping[hour.day?.toLowerCase()] || hour.day;
-                  
+
                   if (dayName && weeklySchedule[dayName]) {
                     let timeSlot = '';
                     if (hour.time_start && hour.time_end) {
@@ -207,7 +207,7 @@ const AnaSayfa = ({
                       const endTime = hour.time_end.length > 5 ? hour.time_end.substring(0, 5) : hour.time_end;
                       timeSlot = `${startTime} - ${endTime}`;
                     }
-                    
+
                     // Ders bilgisini program slot'una ekle
                     weeklySchedule[dayName].push({
                       id: course.id,
@@ -228,17 +228,17 @@ const AnaSayfa = ({
             }
           }
         }
-        
+
         console.log('✅ ANASAYFA: Weekly schedule created:', weeklySchedule);
         setApiWeeklySchedule(weeklySchedule);
-        
+
         // Debug: Veri var mı kontrol et
         const hasData = weeklySchedule && Object.values(weeklySchedule).some(dayEntries => dayEntries.length > 0);
         console.log('📊 ANASAYFA: Program verisi var mı?', hasData);
         if (!hasData) {
           console.warn('⚠️ ANASAYFA: Hiç ders verisi yok!');
         }
-        
+
       } catch (e) {
         console.error("❌ ANASAYFA: Ders programı yükleme hatası:", e);
         setScheduleError(e.message);
@@ -254,15 +254,15 @@ const AnaSayfa = ({
 
   // Debug: user ve accessToken değişimlerini logla
   useEffect(() => {
-    console.log('👤 ANASAYFA: User değişti:', { 
-      lecturer_id: user?.lecturer_id, 
+    console.log('👤 ANASAYFA: User değişti:', {
+      lecturer_id: user?.lecturer_id,
       name: user?.name,
       timestamp: new Date().toISOString()
     });
   }, [user]);
 
   useEffect(() => {
-    console.log('🔑 ANASAYFA: AccessToken değişti:', { 
+    console.log('🔑 ANASAYFA: AccessToken değişti:', {
       hasToken: !!accessToken,
       tokenLength: accessToken?.length,
       timestamp: new Date().toISOString()
@@ -364,7 +364,17 @@ const AnaSayfa = ({
   // Generate new QR code
   const generateNewQRCode = () => {
     const timestamp = Date.now();
-    const lessonId = activeLesson?.lesson.split("\n")[0] || "LESSON";
+    let lessonText = 'LESSON';
+
+    if (activeLesson?.lesson) {
+      if (typeof activeLesson.lesson === 'string') {
+        lessonText = activeLesson.lesson;
+      } else if (typeof activeLesson.lesson === 'object') {
+        lessonText = activeLesson.lesson.name || activeLesson.lesson.code || 'LESSON';
+      }
+    }
+
+    const lessonId = lessonText.split("\n")[0] || "LESSON";
     const qrData = `ATTENDANCE_${lessonId}_${timestamp}`;
     setCurrentQRCode(qrData);
   };
@@ -423,24 +433,24 @@ const AnaSayfa = ({
       if (!hasData) {
         console.log('📅 API verisi boş, boş tablo döndürülüyor');
       }
-      
-      const dayMap = { 
-        'Pazartesi': 'pazartesi', 
-        'Salı': 'sali', 
-        'Çarşamba': 'carsamba', 
-        'Perşembe': 'persembe', 
-        'Cuma': 'cuma' 
+
+      const dayMap = {
+        'Pazartesi': 'pazartesi',
+        'Salı': 'sali',
+        'Çarşamba': 'carsamba',
+        'Perşembe': 'persembe',
+        'Cuma': 'cuma'
       };
-      
+
       // Boş tablo yapısı oluştur
       const base = {};
       timeSlots.forEach(ts => {
-        base[ts] = { 
-          pazartesi: '', 
-          sali: '', 
-          carsamba: '', 
-          persembe: '', 
-          cuma: '' 
+        base[ts] = {
+          pazartesi: '',
+          sali: '',
+          carsamba: '',
+          persembe: '',
+          cuma: ''
         };
       });
 
@@ -448,32 +458,32 @@ const AnaSayfa = ({
       Object.entries(apiWeeklySchedule).forEach(([dayTr, items]) => {
         const dayKey = dayMap[dayTr];
         if (!dayKey) return;
-        
+
         console.log(`🔍 ${dayTr} günü için ${items?.length || 0} ders bulundu:`, items);
-        
+
         (items || []).forEach(item => {
           // API'den gelen startTime'ı kullan
           const startTime = item.startTime;
-          
+
           console.log(`🕐 Processing course: ${item.name}, startTime: ${startTime}, endTime: ${item.endTime}`);
-          
+
           if (startTime) {
             // startTime'ı timeSlots'ta ara
             const cleanStartTime = startTime.length > 5 ? startTime.substring(0, 5) : startTime;
             const matchingSlot = timeSlots.find(slot => {
               return slot === cleanStartTime;
             });
-            
+
             console.log(`🔍 Looking for slot "${cleanStartTime}" in timeSlots:`, timeSlots);
             console.log(`🎯 Matching slot found: ${matchingSlot}`);
-            
+
             if (matchingSlot) {
               // Sadece ders adını göster, saat bilgisini kaldır
               const courseName = item.name || item.code || 'Bilinmeyen Ders';
               const room = item.room ? ` - ${item.room}` : '';
-              
+
               base[matchingSlot][dayKey] = `${courseName}${room}`;
-              
+
               console.log(`✅ AnaSayfa Program: ${dayTr} ${matchingSlot} -> ${courseName}${room}`);
             } else {
               console.warn(`❌ Time slot bulunamadı: "${cleanStartTime}" for ${item.name}`);
@@ -485,7 +495,7 @@ const AnaSayfa = ({
           }
         });
       });
-      
+
       return base;
     }
 
@@ -493,12 +503,12 @@ const AnaSayfa = ({
     if (scheduleLoading) {
       const base = {};
       timeSlots.forEach(ts => {
-        base[ts] = { 
-          pazartesi: '', 
-          sali: '', 
-          carsamba: '', 
-          persembe: '', 
-          cuma: '' 
+        base[ts] = {
+          pazartesi: '',
+          sali: '',
+          carsamba: '',
+          persembe: '',
+          cuma: ''
         };
       });
       return base;
@@ -508,12 +518,12 @@ const AnaSayfa = ({
     if (scheduleError) {
       const base = {};
       timeSlots.forEach(ts => {
-        base[ts] = { 
-          pazartesi: '', 
-          sali: '', 
-          carsamba: '', 
-          persembe: '', 
-          cuma: '' 
+        base[ts] = {
+          pazartesi: '',
+          sali: '',
+          carsamba: '',
+          persembe: '',
+          cuma: ''
         };
       });
       return base;
@@ -522,12 +532,12 @@ const AnaSayfa = ({
     // Fallback: boş tablo
     const base = {};
     timeSlots.forEach(ts => {
-      base[ts] = { 
-        pazartesi: '', 
-        sali: '', 
-        carsamba: '', 
-        persembe: '', 
-        cuma: '' 
+      base[ts] = {
+        pazartesi: '',
+        sali: '',
+        carsamba: '',
+        persembe: '',
+        cuma: ''
       };
     });
     return base;
@@ -552,7 +562,7 @@ const AnaSayfa = ({
         }
       });
     });
-    
+
     return schedule;
   }, [baseSchedule]);
 
@@ -585,15 +595,23 @@ const AnaSayfa = ({
     const lesson = weeklySchedule[timeSlot][dayKey];
 
     if (!lesson) return "empty";
+
+    let lessonText = '';
+    if (typeof lesson === 'string') {
+      lessonText = lesson;
+    } else if (typeof lesson === 'object' && lesson !== null) {
+      lessonText = lesson.name || lesson.code || '';
+    }
+
     if (
-      lesson.includes("Bayram") ||
-      lesson.includes("Tatil") ||
-      lesson.includes("Nisan") ||
-      lesson.includes("Mayıs") ||
-      lesson.includes("Ağustos") ||
-      lesson.includes("Ekim") ||
-      lesson.includes("Kasım") ||
-      lesson.includes("Yılbaşı")
+      lessonText.includes("Bayram") ||
+      lessonText.includes("Tatil") ||
+      lessonText.includes("Nisan") ||
+      lessonText.includes("Mayıs") ||
+      lessonText.includes("Ağustos") ||
+      lessonText.includes("Ekim") ||
+      lessonText.includes("Kasım") ||
+      lessonText.includes("Yılbaşı")
     )
       return "holiday";
     if (currentDay !== dayKey) return "regular";
@@ -622,7 +640,14 @@ const AnaSayfa = ({
 
       if (currentTimeNum >= slotTime && currentTimeNum <= endTime) {
         const lesson = weeklySchedule[timeSlot][currentDay];
-        if (lesson && !lesson.includes("Bayram")) {
+        let lessonText = '';
+        if (typeof lesson === 'string') {
+          lessonText = lesson;
+        } else if (typeof lesson === 'object' && lesson !== null) {
+          lessonText = lesson.name || lesson.code || '';
+        }
+
+        if (lesson && !lessonText.includes("Bayram")) {
           const remainingMinutes =
             Math.floor((endTime - currentTimeNum) / 100) * 60 +
             ((endTime - currentTimeNum) % 100);
@@ -653,7 +678,14 @@ const AnaSayfa = ({
 
       if (currentTimeNum < slotTime) {
         const lesson = weeklySchedule[timeSlot][currentDay];
-        if (lesson && !lesson.includes("Bayram")) {
+        let lessonText = '';
+        if (typeof lesson === 'string') {
+          lessonText = lesson;
+        } else if (typeof lesson === 'object' && lesson !== null) {
+          lessonText = lesson.name || lesson.code || '';
+        }
+
+        if (lesson && !lessonText.includes("Bayram")) {
           const minutesUntil =
             Math.floor((slotTime - currentTimeNum) / 100) * 60 +
             ((slotTime - currentTimeNum) % 100);
@@ -727,8 +759,8 @@ const AnaSayfa = ({
                   ? "0.75rem"
                   : "0.95rem"
                 : isMobile
-                ? "0.85rem"
-                : "1rem",
+                  ? "0.85rem"
+                  : "1rem",
               lineHeight: 1.2,
             }}
           >
@@ -876,7 +908,13 @@ const AnaSayfa = ({
           <Box sx={{ textAlign: "center", width: "100%" }}>
             {(() => {
               if (currentClass) {
-                const courseName = currentClass.lesson?.split("\\n")?.[0] || currentClass.lesson || "Ders";
+                let lessonText = 'Ders';
+                if (typeof currentClass.lesson === 'string') {
+                  lessonText = currentClass.lesson;
+                } else if (typeof currentClass.lesson === 'object' && currentClass.lesson !== null) {
+                  lessonText = currentClass.lesson.name || currentClass.lesson.code || 'Ders';
+                }
+                const courseName = lessonText?.split("\\n")?.[0] || lessonText || "Ders";
                 return (
                   <>
                     <Typography
@@ -905,7 +943,13 @@ const AnaSayfa = ({
                   </>
                 );
               } else if (nextClass) {
-                const courseName = nextClass.lesson?.split("\\n")?.[0] || nextClass.lesson || "Ders";
+                let lessonText = 'Ders';
+                if (typeof nextClass.lesson === 'string') {
+                  lessonText = nextClass.lesson;
+                } else if (typeof nextClass.lesson === 'object' && nextClass.lesson !== null) {
+                  lessonText = nextClass.lesson.name || nextClass.lesson.code || 'Ders';
+                }
+                const courseName = lessonText?.split("\\n")?.[0] || lessonText || "Ders";
                 return (
                   <>
                     <Typography
@@ -936,22 +980,29 @@ const AnaSayfa = ({
               } else {
                 // Bugün ders yoksa gelecek 7 gün içindeki ilk dersi bul
                 let nextDayClass = null;
-                
+
                 // Gelecek 7 günü kontrol et
                 for (let i = 1; i <= 7; i++) {
                   const futureDate = new Date(currentTime);
                   futureDate.setDate(futureDate.getDate() + i);
                   const futureDayIndex = futureDate.getDay() - 1; // 0=Pazartesi, 1=Salı, ...
-                  
+
                   // Hafta sonu günlerini atla (Cumartesi=5, Pazar=6)
                   if (futureDayIndex < 0 || futureDayIndex > 4) continue;
-                  
+
                   const futureDayKey = dayKeys[futureDayIndex];
-                  
+
                   if (futureDayKey && weeklySchedule) {
                     for (const timeSlot of timeSlots) {
                       const lesson = weeklySchedule[timeSlot][futureDayKey];
-                      if (lesson && !lesson.includes("Bayram")) {
+                      let lessonText = '';
+                      if (typeof lesson === 'string') {
+                        lessonText = lesson;
+                      } else if (typeof lesson === 'object' && lesson !== null) {
+                        lessonText = lesson.name || lesson.code || '';
+                      }
+
+                      if (lesson && !lessonText.includes("Bayram")) {
                         nextDayClass = {
                           lesson,
                           time: timeSlot,
@@ -964,18 +1015,24 @@ const AnaSayfa = ({
                     if (nextDayClass) break; // İlk dersi bulduğumuzda dur
                   }
                 }
-                
+
                 if (nextDayClass) {
-                  const courseName = nextDayClass.lesson?.split("\\n")?.[0] || nextDayClass.lesson || "Ders";
+                  let lessonText = 'Ders';
+                  if (typeof nextDayClass.lesson === 'string') {
+                    lessonText = nextDayClass.lesson;
+                  } else if (typeof nextDayClass.lesson === 'object' && nextDayClass.lesson !== null) {
+                    lessonText = nextDayClass.lesson.name || nextDayClass.lesson.code || 'Ders';
+                  }
+                  const courseName = lessonText?.split("\\n")?.[0] || lessonText || "Ders";
                   const dayNames = {
                     'pazartesi': 'Pazartesi',
-                    'sali': 'Salı', 
+                    'sali': 'Salı',
                     'carsamba': 'Çarşamba',
                     'persembe': 'Perşembe',
                     'cuma': 'Cuma'
                   };
                   const dayName = dayNames[nextDayClass.day] || 'Gelecek';
-                  
+
                   return (
                     <>
                       <Typography
@@ -1073,31 +1130,32 @@ const AnaSayfa = ({
     if (!lesson || lesson.includes("Bayram") || lesson.includes("Tatil"))
       return;
 
-    // Parse lesson info
-    const [courseName, roomInfo] = lesson.split("\n");
+    // Lesson string'ini temizle
+    const lessonText = typeof lesson === 'string' ? lesson : (lesson.name || lesson.code || 'Ders');
 
-    // Create course data for navigation (data will come from backend in future)
+    // Parse lesson info
+    const [courseName, roomInfo] = lessonText.split("\n");
+
+    // Create course data for navigation
     const courseData = {
       id: `${courseName}_${timeSlot}_${dayKey}`,
-      name: courseName,
-      code: courseName.split("/")[0] || courseName,
-      section: courseName.split("/")[1] || "1",
+      name: courseName || 'Ders',
+      code: courseName ? (courseName.split("/")[0] || courseName) : 'DERS',
+      section: courseName ? (courseName.split("/")[1] || "1") : "1",
       room: roomInfo || "Belirtilmemiş",
-      building: "Backend'den gelecek",
-      instructor: "Backend'den gelecek",
-      studentCount: 0, // Backend'den gelecek
-      attendanceStatus: "pending", // Backend'den gelecek
-      attendanceRate: 0, // Backend'den gelecek
-      lastAttendance: null, // Backend'den gelecek
+      building: "Belirtilmemiş",
+      instructor: user?.name || "Öğretim Görevlisi",
+      studentCount: 0,
+      attendanceStatus: "pending",
+      attendanceRate: 0,
+      lastAttendance: null,
       currentWeek: currentWeek,
-      totalWeeks: 14, // Backend'den gelecek
+      totalWeeks: 14,
       schedule: {
         [dayKey]: [
           {
             startTime: timeSlot,
-            endTime: `${parseInt(timeSlot.split(":")[0]) + 1}:${
-              timeSlot.split(":")[1]
-            }`,
+            endTime: `${parseInt(timeSlot.split(":")[0]) + 1}:${timeSlot.split(":")[1]}`,
             room: roomInfo || "Belirtilmemiş",
           },
         ],
@@ -1105,9 +1163,13 @@ const AnaSayfa = ({
       files: [],
     };
 
+    console.log('🔄 Ders detayına yönlendiriliyor:', courseData);
+
     // Navigate to course detail
     if (onNavigate) {
       onNavigate("ders-detay", courseData);
+    } else {
+      console.error('❌ onNavigate prop bulunamadı!');
     }
   };
 
@@ -1125,10 +1187,10 @@ const AnaSayfa = ({
       "&:hover":
         lesson && !lesson.includes("Bayram") && !lesson.includes("Tatil")
           ? {
-              transform: "scale(1.05)",
-              boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
-              zIndex: 1,
-            }
+            transform: "scale(1.05)",
+            boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
+            zIndex: 1,
+          }
           : {},
     };
 
@@ -1183,7 +1245,7 @@ const AnaSayfa = ({
   // Create schedule data from API response (memoized to prevent unnecessary re-renders)
   const scheduleData = React.useMemo(() => {
     if (!apiWeeklySchedule) return [];
-    
+
     const allScheduleEntries = [];
     Object.entries(apiWeeklySchedule).forEach(([day, entries]) => {
       entries.forEach(entry => {
@@ -1202,7 +1264,7 @@ const AnaSayfa = ({
         });
       });
     });
-    
+
     return allScheduleEntries;
   }, [apiWeeklySchedule]);
 
@@ -1229,8 +1291,8 @@ const AnaSayfa = ({
           <Typography variant="body2" sx={{ color: 'text.secondary', mb: 2 }}>
             {scheduleError}
           </Typography>
-          <Button 
-            variant="outlined" 
+          <Button
+            variant="outlined"
             onClick={() => window.location.reload()}
             sx={{ mt: 1 }}
           >
@@ -1262,225 +1324,257 @@ const AnaSayfa = ({
     }
 
     return (
-    <Box sx={{ mt: 1 }}>
-      <TableContainer
-        component={Paper}
-        elevation={2}
-        sx={{ borderRadius: 2, border: "1px solid #DEE2E6" }}
-      >
-        <Table
-          sx={{ "& .MuiTableCell-root": { borderRight: "1px solid #DEE2E6" } }}
+      <Box sx={{ mt: 1 }}>
+        <TableContainer
+          component={Paper}
+          elevation={2}
+          sx={{
+            borderRadius: 2,
+            border: "1px solid #DEE2E6"
+          }}
         >
-          <TableHead>
-            <TableRow
-              sx={{ bgcolor: "#F8F9FA", borderBottom: "2px solid #DEE2E6" }}
-            >
-              <TableCell
-                sx={{
-                  fontWeight: 600,
-                  color: "#2C3E50",
-                  fontSize: "0.9rem",
-                  py: 1,
-                  textAlign: "center",
-                  minWidth: "120px",
-                }}
+          <Table
+            size="small"
+            sx={{
+              "& .MuiTableCell-root": {
+                borderRight: "1px solid #DEE2E6",
+                padding: "4px 8px",
+                fontSize: "0.75rem",
+                width: "16.66%",
+                maxWidth: "120px",
+                minWidth: "80px"
+              }
+            }}
+          >
+            <TableHead>
+              <TableRow
+                sx={{ bgcolor: "#F8F9FA", borderBottom: "2px solid #DEE2E6" }}
               >
-                Saat Aralığı
-              </TableCell>
-              {days.map((day, index) => (
                 <TableCell
-                  key={day}
                   sx={{
                     fontWeight: 600,
                     color: "#2C3E50",
-                    fontSize: "0.9rem",
-                    py: 1,
+                    fontSize: "0.7rem",
+                    py: 0.5,
                     textAlign: "center",
+                    width: "16.66%",
+                    maxWidth: "120px",
+                    minWidth: "80px",
                   }}
                 >
-                  {day}
+                  Saat Aralığı
                 </TableCell>
-              ))}
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {timeSlots.map((timeSlot, rowIndex) => {
-              return (
-                <TableRow
-                  key={timeSlot}
-                  sx={{
-                    "&:hover": { bgcolor: "#F8F9FA" },
-                    borderBottom:
-                      rowIndex < timeSlots.length - 1
-                        ? "1px solid #DEE2E6"
-                        : "none",
-                  }}
-                >
+                {days.map((day, index) => (
                   <TableCell
+                    key={day}
                     sx={{
-                      fontWeight: 500,
-                      color: "#1B2E6D",
-                      bgcolor: "#F8F9FA",
-                      fontSize: "0.8rem",
-                      py: 0.75,
+                      fontWeight: 600,
+                      color: "#2C3E50",
+                      fontSize: "0.7rem",
+                      py: 0.5,
                       textAlign: "center",
+                      width: "16.66%",
+                      maxWidth: "120px",
+                      minWidth: "80px",
                     }}
                   >
-                    {timeSlot} - {getEndTime(timeSlot)}
+                    {day}
                   </TableCell>
-                  {dayKeys.map((dayKey, index) => {
-                    const lesson = weeklySchedule[timeSlot][dayKey];
-                    const chipStyling = getChipStyling(timeSlot, dayKey);
-                    const dayHoliday = isDayHoliday(index);
+                ))}
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {timeSlots.map((timeSlot, rowIndex) => {
+                return (
+                  <TableRow
+                    key={timeSlot}
+                    sx={{
+                      "&:hover": { bgcolor: "#F8F9FA" },
+                      borderBottom:
+                        rowIndex < timeSlots.length - 1
+                          ? "1px solid #DEE2E6"
+                          : "none",
+                      minHeight: "55px",
+                      maxHeight: "55px",
+                    }}
+                  >
+                    <TableCell
+                      sx={{
+                        fontWeight: 500,
+                        color: "#1B2E6D",
+                        bgcolor: "#F8F9FA",
+                        fontSize: "0.65rem",
+                        py: 0.5,
+                        textAlign: "center",
+                        width: "16.66%",
+                        maxWidth: "120px",
+                        minWidth: "80px",
+                      }}
+                    >
+                      {timeSlot} - {getEndTime(timeSlot)}
+                    </TableCell>
+                    {dayKeys.map((dayKey, index) => {
+                      const lesson = weeklySchedule[timeSlot][dayKey];
+                      const chipStyling = getChipStyling(timeSlot, dayKey);
+                      const dayHoliday = isDayHoliday(index);
 
-                    // For holiday columns, show horizontal holiday name in each cell
-                    if (dayHoliday) {
+                      // For holiday columns, show horizontal holiday name in each cell
+                      if (dayHoliday) {
+                        return (
+                          <TableCell
+                            key={dayKey}
+                            align="center"
+                            sx={{
+                              p: 0.3,
+                              width: "16.66%",
+                              maxWidth: "120px",
+                              minWidth: "80px",
+                              minHeight: "35px",
+                              bgcolor: "#FFFDE7",
+                              border: "1px solid #FFEB3B",
+                            }}
+                          >
+                            <Typography
+                              sx={{
+                                color: "#F57F17",
+                                fontWeight: 600,
+                                fontSize: "0.6rem",
+                                textAlign: "center",
+                                lineHeight: 1.1,
+                                whiteSpace: "normal",
+                                wordBreak: "break-word",
+                              }}
+                            >
+                              {dayHoliday}
+                            </Typography>
+                          </TableCell>
+                        );
+                      }
+
+                      // Normal cells for non-holiday days
                       return (
                         <TableCell
                           key={dayKey}
                           align="center"
                           sx={{
-                            p: 0.5,
-                            minHeight: "35px",
-                            bgcolor: "#FFFDE7",
-                            border: "1px solid #FFEB3B",
+                            p: 0.3,
+                            minHeight: "50px",
+                            maxHeight: "50px",
+                            verticalAlign: "middle",
+                            width: "16.66%",
+                            maxWidth: "120px",
+                            minWidth: "80px",
                           }}
                         >
-                          <Typography
-                            sx={{
-                              color: "#F57F17",
-                              fontWeight: 600,
-                              fontSize: "0.75rem",
-                              textAlign: "center",
-                              lineHeight: 1.2,
-                              whiteSpace: "normal",
-                              wordBreak: "break-word",
-                            }}
-                          >
-                            {dayHoliday}
-                          </Typography>
+                          {lesson ? (
+                            <Chip
+                              label={(() => {
+                                const lessonText = typeof lesson === 'string' ? lesson.replace("\n", " - ") : (lesson.name || lesson.code || 'Ders');
+                                return lessonText.length > 15 ? lessonText.substring(0, 15) + '...' : lessonText;
+                              })()}
+                              size="small"
+                              onClick={() =>
+                                handleLessonClick(typeof lesson === 'string' ? lesson : (lesson.name || lesson.code || 'Ders'), timeSlot, dayKey)
+                              }
+                              sx={{
+                                maxWidth: "100%",
+                                width: "100%",
+                                height: "auto",
+                                minHeight: "35px",
+                                maxHeight: "40px",
+                                "& .MuiChip-label": {
+                                  display: "block",
+                                  whiteSpace: "normal",
+                                  textAlign: "center",
+                                  padding: "4px 6px",
+                                  fontSize: "0.6rem",
+                                  lineHeight: 1.1,
+                                  wordBreak: "break-word",
+                                  overflow: "hidden",
+                                  textOverflow: "ellipsis",
+                                  display: "-webkit-box",
+                                  WebkitLineClamp: lesson.length > 40 ? 2 : lesson.length > 25 ? 2 : 1,
+                                  WebkitBoxOrient: "vertical",
+                                },
+                                ...chipStyling,
+                              }}
+                            />
+                          ) : (
+                            <Typography
+                              variant="body2"
+                              color="text.disabled"
+                              sx={{ py: 0.15, fontSize: "0.6rem" }}
+                            >
+                              -
+                            </Typography>
+                          )}
                         </TableCell>
                       );
-                    }
+                    })}
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        </TableContainer>
 
-                    // Normal cells for non-holiday days
-                    return (
-                      <TableCell
-                        key={dayKey}
-                        align="center"
-                        sx={{
-                          p: 0.5,
-                          minHeight: "75px",
-                          maxHeight: "75px",
-                          verticalAlign: "middle",
-                        }}
-                      >
-                        {lesson ? (
-                          <Chip
-                            label={lesson.replace("\n", " - ")}
-                            size="small"
-                            onClick={() =>
-                              handleLessonClick(lesson, timeSlot, dayKey)
-                            }
-                            sx={{
-                              maxWidth: "100%",
-                              width: "100%",
-                              height: "auto",
-                              minHeight: "50px",
-                              maxHeight: "65px",
-                              "& .MuiChip-label": {
-                                display: "block",
-                                whiteSpace: "normal",
-                                textAlign: "center",
-                                padding: "10px 12px",
-                                fontSize: lesson.length > 30 ? "0.6rem" : "0.65rem",
-                                lineHeight: lesson.length > 30 ? 1.0 : 1.1,
-                                wordBreak: "break-word",
-                                overflow: "hidden",
-                                textOverflow: "ellipsis",
-                                display: "-webkit-box",
-                                WebkitLineClamp: lesson.length > 40 ? 2 : lesson.length > 25 ? 2 : 1,
-                                WebkitBoxOrient: "vertical",
-                              },
-                              ...chipStyling,
-                            }}
-                          />
-                        ) : (
-                          <Typography
-                            variant="body2"
-                            color="text.disabled"
-                            sx={{ py: 0.25 }}
-                          >
-                            -
-                          </Typography>
-                        )}
-                      </TableCell>
-                    );
-                  })}
-                </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
-      </TableContainer>
-
-      {/* Legend */}
-      <Box
-        sx={{
-          mt: 2,
-          display: "flex",
-          flexWrap: "wrap",
-          gap: 1.5,
-          justifyContent: "center",
-        }}
-      >
-        <Chip
-          size="small"
-          label="Şu Andaki Ders"
+        {/* Legend */}
+        <Box
           sx={{
-            bgcolor: "#E8F5E8",
-            color: "#27AE60",
-            border: "2px solid #27AE60",
+            mt: 2,
+            display: "flex",
+            flexWrap: "wrap",
+            gap: 1.5,
+            justifyContent: "center",
           }}
-        />
-        <Chip
-          size="small"
-          label="Sonraki Ders"
-          sx={{
-            bgcolor: "#FFFBF0",
-            color: "#B8860B",
-            border: "1px solid #DAA520",
-          }}
-        />
-        <Chip
-          size="small"
-          label="Tamamlanmış Ders"
-          sx={{
-            bgcolor: "#FAFAFA",
-            color: "#9E9E9E",
-            border: "1px solid #BDBDBD",
-          }}
-        />
-        <Chip
-          size="small"
-          label="Düzenli Ders"
-          sx={{
-            bgcolor: "#E3F2FD",
-            color: "#1565C0",
-            border: "1px solid #90CAF9",
-          }}
-        />
-        <Chip
-          size="small"
-          label="Özel Gün ve Tatil"
-          sx={{
-            bgcolor: "	#FFECB3",
-            color: "#1565C0",
-            border: "1px solid #FFEB3B",
-          }}
-        />
+        >
+          <Chip
+            size="small"
+            label="Şu Andaki Ders"
+            sx={{
+              bgcolor: "#E8F5E8",
+              color: "#27AE60",
+              border: "2px solid #27AE60",
+            }}
+          />
+          <Chip
+            size="small"
+            label="Sonraki Ders"
+            sx={{
+              bgcolor: "#FFFBF0",
+              color: "#B8860B",
+              border: "1px solid #DAA520",
+            }}
+          />
+          <Chip
+            size="small"
+            label="Tamamlanmış Ders"
+            sx={{
+              bgcolor: "#FAFAFA",
+              color: "#9E9E9E",
+              border: "1px solid #BDBDBD",
+            }}
+          />
+          <Chip
+            size="small"
+            label="Düzenli Ders"
+            sx={{
+              bgcolor: "#E3F2FD",
+              color: "#1565C0",
+              border: "1px solid #90CAF9",
+            }}
+          />
+          <Chip
+            size="small"
+            label="Özel Gün ve Tatil"
+            sx={{
+              bgcolor: "	#FFECB3",
+              color: "#1565C0",
+              border: "1px solid #FFEB3B",
+            }}
+          />
+        </Box>
       </Box>
-    </Box>
     );
   };
 
@@ -1506,8 +1600,8 @@ const AnaSayfa = ({
                 bgcolor: dayHoliday
                   ? "#FFFDE7"
                   : dayIndex === currentTime.getDay() - 1
-                  ? "#E3F2FD"
-                  : "#F8F9FA",
+                    ? "#E3F2FD"
+                    : "#F8F9FA",
                 borderRadius: 2,
               }}
             >
@@ -1577,10 +1671,11 @@ const AnaSayfa = ({
               ) : dayClasses.length > 0 ? (
                 dayClasses.map((slot) => {
                   const lesson = weeklySchedule[slot][dayKeys[dayIndex]];
+                  const lessonText = typeof lesson === 'string' ? lesson : (lesson.name || lesson.code || '');
                   const isClickable =
                     lesson &&
-                    !lesson.includes("Bayram") &&
-                    !lesson.includes("Tatil");
+                    !lessonText.includes("Bayram") &&
+                    !lessonText.includes("Tatil");
 
                   return (
                     <Card
@@ -1592,14 +1687,14 @@ const AnaSayfa = ({
                         transition: "all 0.2s ease-in-out",
                         "&:hover": isClickable
                           ? {
-                              transform: "translateY(-2px)",
-                              boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
-                            }
+                            transform: "translateY(-2px)",
+                            boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+                          }
                           : {},
                       }}
                       onClick={() =>
                         isClickable &&
-                        handleLessonClick(lesson, slot, dayKeys[dayIndex])
+                        handleLessonClick(typeof lesson === 'string' ? lesson : (lesson.name || lesson.code || 'Ders'), slot, dayKeys[dayIndex])
                       }
                     >
                       <Box
@@ -1623,7 +1718,7 @@ const AnaSayfa = ({
                               fontSize: isMobile ? "0.8rem" : "0.875rem",
                             }}
                           >
-                            {lesson.replace("\n", " - ")}
+                            {typeof lesson === 'string' ? lesson.replace("\n", " - ") : (lesson.name || lesson.code || 'Ders')}
                           </Typography>
                         </Box>
                       </Box>
@@ -1734,8 +1829,8 @@ const AnaSayfa = ({
                   </Typography>
                 </Box>
                 <Typography variant="caption" sx={{ color: "#64748b", mt: 0.5 }}>
-                  {user?.title ? `${user.title} ${user.first_name || ''} ${user.last_name || ''}`.trim() : 
-                   `${user?.first_name || ''} ${user?.last_name || ''}`.trim() || 'Öğretim Görevlisi'}
+                  {user?.title ? `${user.title} ${user.first_name || ''} ${user.last_name || ''}`.trim() :
+                    `${user?.first_name || ''} ${user?.last_name || ''}`.trim() || 'Öğretim Görevlisi'}
                 </Typography>
               </Box>
             </Box>
@@ -1748,7 +1843,7 @@ const AnaSayfa = ({
           </Box>
           {activeLesson && (
             <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-              {activeLesson.lesson.replace("\n", " - ")} • {activeLesson.time}
+              {typeof activeLesson.lesson === 'string' ? activeLesson.lesson.replace("\n", " - ") : (activeLesson.lesson.name || activeLesson.lesson.code || 'Ders')} • {activeLesson.time}
             </Typography>
           )}
         </DialogTitle>

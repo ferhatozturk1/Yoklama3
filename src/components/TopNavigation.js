@@ -303,10 +303,10 @@ const TopNavigation = ({
           <IconButton onClick={handleProfileClick} sx={{ p: 0 }}>
             <Avatar
               src={userProfile?.profilePhoto || undefined}
-              alt={userProfile?.name || "Kullanıcı"}
+              alt={(userProfile?.name || "Kullanıcı") + ""}
               sx={{ width: 32, height: 32, bgcolor: "#1565C0" }}
             >
-              {(userProfile?.name?.charAt(0) || userProfile?.title?.charAt(0) || "K").toUpperCase()}
+              {((userProfile?.name || userProfile?.title || "K") + "").charAt(0).toUpperCase()}
             </Avatar>
           </IconButton>
         </Box>
