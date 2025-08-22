@@ -32,7 +32,7 @@ const Profilim = ({
 }) => {
   const { t } = useLocalization();
   const { user, accessToken, loadUserProfile, setUser, isAuthenticated, isLoading: authLoading, updateUser } = useAuth();
-  
+
   // Profile photo URL helper function
   const getProfilePhotoUrl = (photoPath) => {
     if (!photoPath) {
@@ -41,11 +41,11 @@ const Profilim = ({
     if (photoPath.startsWith('http')) {
       return photoPath;
     }
-    
+
     const fullUrl = `http://127.0.0.1:8000${photoPath}`;
     return fullUrl;
   };
-  
+
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -68,19 +68,19 @@ const Profilim = ({
     try {
       // API bağlantılarını test et
       const universities = await getUniversities();
-      
+
       if (universities && universities.length > 0) {
         const firstUniversity = universities[0];
-        
+
         // 2. Fakülte listesi test et
         const faculties = await getFaculties(firstUniversity.id);
-        
+
         if (faculties && faculties.length > 0) {
           const firstFaculty = faculties[0];
-          
+
           // 3. Bölüm listesi test et
           const departments = await getDepartments(firstFaculty.id);
-          
+
           return {
             universities,
             faculties,
@@ -102,9 +102,9 @@ const Profilim = ({
         // Backend'den direkt ham veriyi çek
         const response = await fetch(`http://127.0.0.1:8000/lecturer_data/lecturers/${user.id}/`, {
           method: "GET",
-         
+
         });
-        
+
         if (response.ok) {
           const rawUserData = await response.json();
           return rawUserData;
@@ -123,7 +123,7 @@ const Profilim = ({
       // User data available
     }
   }, [user]);
-  
+
 
 
   // Profil bilgilerini AuthContext'ten yükle
@@ -137,12 +137,12 @@ const Profilim = ({
     hasFetchedProfileRef.current = true;
 
     const fetchUserProfile = async () => {
-  
+
 
       // Debug/test çağrılarını sadece dev modda yap
       if (isDev) {
-        try { await testRealUserData(); } catch {}
-        try { await testApiConnections(); } catch {}
+        try { await testRealUserData(); } catch { }
+        try { await testApiConnections(); } catch { }
       }
 
       if (initialUserProfile) {
@@ -156,10 +156,10 @@ const Profilim = ({
         setApiError("");
         setShowApiError(false);
 
-    
+
 
         // Timeout ile profil yükleme - 15 saniye sonra timeout
-        const timeoutPromise = new Promise((_, reject) => 
+        const timeoutPromise = new Promise((_, reject) =>
           setTimeout(() => reject(new Error('Profil yükleme zaman aşımına uğradı')), 15000)
         );
 
@@ -212,12 +212,12 @@ const Profilim = ({
         setUserProfile(fallbackProfile);
       } finally {
         setIsLoading(false);
-    
+
       }
     };
 
     fetchUserProfile();
-  // Bu efekt sadece user.id ve token değişince tetiklensin, loadUserProfile (memoized) değişime dahil değil
+    // Bu efekt sadece user.id ve token değişince tetiklensin, loadUserProfile (memoized) değişime dahil değil
   }, [user?.id, accessToken, initialUserProfile, isDev]);
 
   // Initialize form with user profile data - memoized to prevent recalculation
@@ -237,7 +237,7 @@ const Profilim = ({
         otherDetails: user?.other_details || userProfile?.otherDetails || "",
         profilePhoto: getProfilePhotoUrl(user?.profile_photo || userProfile?.profilePhoto),
       };
-      
+
       return formData;
     },
     [user, userProfile]
@@ -343,19 +343,22 @@ const Profilim = ({
         throw new Error("Kullanıcı oturumu bulunamadı. Lütfen tekrar giriş yapın.");
       }
 
-      // API'ye gönderilecek veriyi hazırla (yeni şemaya göre)
+      // API'ye gönderilecek veriyi hazırla (sadece temel bilgiler)
       const profileUpdateData = {
         title: values.title || userProfile.title || "",
         first_name: values.firstName,
         last_name: values.lastName,
         email: values.email,
-        department_id: userProfile.department_id || "", // Departman ID'si
-        phone: values.phone || null,
         // Ek bilgiler
         university: values.university || "",
-        faculty: values.faculty || "", 
+        faculty: values.faculty || "",
         department: values.department || "",
       };
+
+      // Telefon numarasını sadece dolu ise ekle
+      if (values.phone && values.phone.trim() !== "") {
+        profileUpdateData.phone = values.phone.trim();
+      }
 
       console.log("🔄 Profil güncelleme verisi (yeni şema):", profileUpdateData);
 
@@ -389,11 +392,11 @@ const Profilim = ({
 
       // Gerçek API kullanarak profili güncelle
       const savedProfile = await updateLecturerProfile(
-        user.id, 
-        profileUpdateData, 
+        user.id,
+        profileUpdateData,
         accessToken
       );
-      
+
       // Local state'i güncelle (yeni şemaya göre)
       const updatedUserProfile = {
         ...userProfile,
@@ -408,14 +411,14 @@ const Profilim = ({
         university: savedProfile.university || values.university || userProfile.university || "",
         faculty: savedProfile.faculty || values.faculty || userProfile.faculty || "",
         department: savedProfile.department || values.department || userProfile.department || "",
-        profilePhoto: isPhotoDeleted && !uploadedPhoto ? null : 
-                     uploadedPhoto ? getProfilePhotoUrl(savedProfile.profile_photo) :
-                     userProfile.profilePhoto, // Değişiklik yoksa mevcut fotoğrafı koru
+        profilePhoto: isPhotoDeleted && !uploadedPhoto ? null :
+          uploadedPhoto ? getProfilePhotoUrl(savedProfile.profile_photo) :
+            userProfile.profilePhoto, // Değişiklik yoksa mevcut fotoğrafı koru
         created_at: savedProfile.created_at || userProfile.created_at,
       };
-      
+
       setUserProfile(updatedUserProfile);
-      
+
       // AuthContext'teki kullanıcı bilgilerini de güncelle
       const updatedUser = {
         first_name: savedProfile.first_name || values.firstName,
@@ -428,10 +431,10 @@ const Profilim = ({
         department: savedProfile.department || values.department || user.department || "",
         profile_photo: isPhotoDeleted ? null : (savedProfile.profile_photo || user.profile_photo),
       };
-      
+
       // updateUser fonksiyonunu kullan ki tüm component'lar güncellensin
       updateUser(updatedUser);
-      
+
       console.log("✅ Profil başarıyla güncellendi:", updatedUserProfile);
       console.log("�� AuthContext user güncellendi:", updatedUser);
 
@@ -442,7 +445,7 @@ const Profilim = ({
 
       setIsEditing(false);
       setSaveMessage("Profil başarıyla kaydedildi!");
-      
+
       // Yüklenen fotoğraf ve preview'ı temizle
       setUploadedPhoto(null);
       setPhotoPreview(null);
@@ -515,10 +518,10 @@ const Profilim = ({
   // Konsol gürültüsünü azaltmak için debug logları kapatıldı
 
   return (
-          <Container maxWidth="lg" sx={{ py: { xs: 2, sm: 3, md: 4 } }}>
-        {/* Tüm TextField'larda metin belirginliği için global style */}
-        <style>
-          {`
+    <Container maxWidth="lg" sx={{ py: { xs: 2, sm: 3, md: 4 } }}>
+      {/* Tüm TextField'larda metin belirginliği için global style */}
+      <style>
+        {`
             .MuiInputBase-input {
               font-weight: 600 !important;
               color: #0f172a !important;
@@ -535,13 +538,13 @@ const Profilim = ({
               color: #374151 !important;
             }
           `}
-        </style>
+      </style>
       {/* Modern Page Title */}
       <Typography
         variant="h4"
-        sx={{ 
-          fontWeight: 600, 
-          color: "#1a237e", 
+        sx={{
+          fontWeight: 600,
+          color: "#1a237e",
           mb: 3,
           fontFamily: '"Inter", "Roboto", system-ui, sans-serif',
           letterSpacing: "-0.02em",
@@ -596,7 +599,7 @@ const Profilim = ({
           <Typography variant="body2" sx={{ color: "#64748b" }}>
             Lütfen bekleyin, verileriniz getiriliyor.
           </Typography>
-          
+
           {/* Hata durumunda yeniden yükleme butonu */}
           {showApiError && (
             <Button
@@ -619,509 +622,509 @@ const Profilim = ({
             </Box>
           )}
 
-      {/* Modern Card Layout */}
-      <Paper
-        elevation={0}
-        sx={{
-          p: { xs: 2, sm: 3 },
-          borderRadius: 3,
-          position: "relative",
-          background: "linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%)",
-          border: "1px solid rgba(26, 35, 126, 0.08)",
-          boxShadow: "0 4px 20px rgba(26, 35, 126, 0.08)",
-        }}
-      >
-        {/* Profile Header Section */}
-        <Box
-          sx={{
-            display: "flex",
-            flexDirection: { xs: "column", sm: "row" },
-            alignItems: { xs: "center", sm: "flex-start" },
-            gap: 2,
-            mb: 2,
-            mt: 1,
-          }}
-        >
-          {/* Profile Photo */}
-          <Box sx={{ textAlign: "center", flexShrink: 0 }}>
-            <Avatar
-              src={photoPreview || userProfile.profilePhoto || null}
-              alt={"Profil fotoğrafı: " + (userProfile.name || "Kullanıcı")}
-              sx={{
-                width: 80,
-                height: 80,
-                fontSize: "2rem",
-                bgcolor: "#1a237e",
-              }}
-              role="img"
-              aria-label={
-                "Profil fotoğrafı: " + (userProfile.name || "Kullanıcı")
-              }
-              onError={(e) => {
-                console.error('❌ Profilim Avatar - Profil fotoğrafı yüklenemedi:', {
-                  src: e.target.src,
-                  originalPath: userProfile.profilePhoto,
-                  error: e
-                });
-              }}
-            >
-              {userProfile.name
-                ? userProfile.name.charAt(0).toUpperCase()
-                : "?"}
-            </Avatar>
-          </Box>
-
-          {/* Modern Profile Info */}
-          <Box
+          {/* Modern Card Layout */}
+          <Paper
+            elevation={0}
             sx={{
-              flex: 1,
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "center",
-              alignItems: { xs: "center", sm: "flex-start" },
-              minHeight: 80,
-              gap: 0.5,
+              p: { xs: 2, sm: 3 },
+              borderRadius: 3,
+              position: "relative",
+              background: "linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%)",
+              border: "1px solid rgba(26, 35, 126, 0.08)",
+              boxShadow: "0 4px 20px rgba(26, 35, 126, 0.08)",
             }}
           >
-            <Typography
-              variant="h5"
-              component="div"
+            {/* Profile Header Section */}
+            <Box
               sx={{
-                fontWeight: 600,
-                color: "#1a237e",
-                textAlign: { xs: "center", sm: "left" },
-                fontFamily: '"Inter", "Roboto", system-ui, sans-serif',
-                letterSpacing: "-0.01em",
-                lineHeight: 1.2,
+                display: "flex",
+                flexDirection: { xs: "column", sm: "row" },
+                alignItems: { xs: "center", sm: "flex-start" },
+                gap: 2,
+                mb: 2,
+                mt: 1,
               }}
             >
-              {isEditing
-                ? `${values.firstName || ""} ${values.lastName || ""}`
-                : userProfile.name || "Kullanıcı"}
-            </Typography>
-            <Typography
-              variant="body2"
-              sx={{
-                color: "#64748b",
-                textAlign: { xs: "center", sm: "left" },
-                fontFamily: '"Inter", "Roboto", system-ui, sans-serif',
-                fontWeight: 500,
-              }}
-            >
-              {userProfile.title || ""}
-            </Typography>
-          </Box>
+              {/* Profile Photo */}
+              <Box sx={{ textAlign: "center", flexShrink: 0 }}>
+                <Avatar
+                  src={photoPreview || userProfile.profilePhoto || null}
+                  alt={"Profil fotoğrafı: " + (userProfile.name || "Kullanıcı")}
+                  sx={{
+                    width: 80,
+                    height: 80,
+                    fontSize: "2rem",
+                    bgcolor: "#1a237e",
+                  }}
+                  role="img"
+                  aria-label={
+                    "Profil fotoğrafı: " + (userProfile.name || "Kullanıcı")
+                  }
+                  onError={(e) => {
+                    console.error('❌ Profilim Avatar - Profil fotoğrafı yüklenemedi:', {
+                      src: e.target.src,
+                      originalPath: userProfile.profilePhoto,
+                      error: e
+                    });
+                  }}
+                >
+                  {userProfile.name
+                    ? userProfile.name.charAt(0).toUpperCase()
+                    : "?"}
+                </Avatar>
+              </Box>
 
-          {/* Edit/Save/Cancel Buttons */}
-          <Box
-            sx={{
-              display: "flex",
-              gap: 2,
-              flexShrink: 0,
-            }}
-          >
-            {!isEditing ? (
-              <Button
-                variant="contained"
-                startIcon={<Edit />}
-                onClick={handleEditClick}
-                disabled={isSaving}
+              {/* Modern Profile Info */}
+              <Box
                 sx={{
-                  background: "linear-gradient(135deg, #1a237e 0%, #283593 100%)",
-                  borderRadius: 2,
-                  px: 3,
-                  py: 1,
-                  fontFamily: '"Inter", "Roboto", system-ui, sans-serif',
-                  fontWeight: 500,
-                  textTransform: "none",
-                  boxShadow: "0 2px 8px rgba(26, 35, 126, 0.2)",
-                  "&:hover": {
-                    background: "linear-gradient(135deg, #0d1642 0%, #1a237e 100%)",
-                    boxShadow: "0 4px 12px rgba(26, 35, 126, 0.3)",
-                    transform: "translateY(-1px)",
-                  },
-                  transition: "all 0.2s ease-in-out",
+                  flex: 1,
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "center",
+                  alignItems: { xs: "center", sm: "flex-start" },
+                  minHeight: 80,
+                  gap: 0.5,
                 }}
-                ref={editButtonRef}
-                aria-label="Profil Düzenle"
               >
-                Düzenle
-              </Button>
-            ) : (
-              <>
-                <Button
-                  variant="contained"
-                  startIcon={<Save />}
-                  onClick={handleSaveClick}
-                  disabled={isSaving}
+                <Typography
+                  variant="h5"
+                  component="div"
                   sx={{
-                    background: "linear-gradient(135deg, #1a237e 0%, #283593 100%)",
-                    borderRadius: 2,
-                    px: 3,
-                    py: 1,
+                    fontWeight: 600,
+                    color: "#1a237e",
+                    textAlign: { xs: "center", sm: "left" },
                     fontFamily: '"Inter", "Roboto", system-ui, sans-serif',
-                    fontWeight: 500,
-                    textTransform: "none",
-                    boxShadow: "0 2px 8px rgba(26, 35, 126, 0.2)",
-                    "&:hover": {
-                      background: "linear-gradient(135deg, #0d1642 0%, #1a237e 100%)",
-                      boxShadow: "0 4px 12px rgba(26, 35, 126, 0.3)",
-                      transform: "translateY(-1px)",
-                    },
-                    transition: "all 0.2s ease-in-out",
+                    letterSpacing: "-0.01em",
+                    lineHeight: 1.2,
                   }}
                 >
-                  {isSaving ? "Kaydediliyor..." : "Kaydet"}
-                </Button>
-                <Button
-                  variant="outlined"
-                  startIcon={<Cancel />}
-                  onClick={handleCancelClick}
-                  disabled={isSaving}
+                  {isEditing
+                    ? `${values.firstName || ""} ${values.lastName || ""}`
+                    : userProfile.name || "Kullanıcı"}
+                </Typography>
+                <Typography
+                  variant="body2"
                   sx={{
-                    borderColor: "#cbd5e1",
                     color: "#64748b",
-                    borderRadius: 2,
-                    px: 3,
-                    py: 1,
+                    textAlign: { xs: "center", sm: "left" },
                     fontFamily: '"Inter", "Roboto", system-ui, sans-serif',
                     fontWeight: 500,
-                    textTransform: "none",
-                    "&:hover": {
-                      borderColor: "#94a3b8",
-                      backgroundColor: "#f8fafc",
-                    },
-                    transition: "all 0.2s ease-in-out",
                   }}
                 >
-                  İptal
-                </Button>
-              </>
-            )}
-          </Box>
-        </Box>
+                  {userProfile.title || ""}
+                </Typography>
+              </Box>
 
-        {/* Modern Form Fields */}
-        <Grid container spacing={2.5}>
-          {/* Ünvan Field */}
-          <Grid item xs={12} sm={6}>
-            <TextField
-              label="Ünvan"
-              value={values.title || ""}
-              onChange={(e) => handleChange("title", e.target.value)}
-              onBlur={() => handleBlur("title")}
-              fullWidth
-              variant="outlined"
-              size="medium"
-              disabled={!isEditing}
-              error={touched.title && !!errors.title}
-              helperText={touched.title && errors.title}
-              sx={{
-                ...textFieldStyles,
-                "& .MuiInputBase-root": {
-                  borderRadius: 2,
-                  fontFamily: '"Inter", "Roboto", system-ui, sans-serif',
-                  backgroundColor: isEditing ? "#ffffff" : "#f8fafc",
-                },
-              }}
-              inputRef={isEditing ? firstFieldRef : null}
-            />
-          </Grid>
+              {/* Edit/Save/Cancel Buttons */}
+              <Box
+                sx={{
+                  display: "flex",
+                  gap: 2,
+                  flexShrink: 0,
+                }}
+              >
+                {!isEditing ? (
+                  <Button
+                    variant="contained"
+                    startIcon={<Edit />}
+                    onClick={handleEditClick}
+                    disabled={isSaving}
+                    sx={{
+                      background: "linear-gradient(135deg, #1a237e 0%, #283593 100%)",
+                      borderRadius: 2,
+                      px: 3,
+                      py: 1,
+                      fontFamily: '"Inter", "Roboto", system-ui, sans-serif',
+                      fontWeight: 500,
+                      textTransform: "none",
+                      boxShadow: "0 2px 8px rgba(26, 35, 126, 0.2)",
+                      "&:hover": {
+                        background: "linear-gradient(135deg, #0d1642 0%, #1a237e 100%)",
+                        boxShadow: "0 4px 12px rgba(26, 35, 126, 0.3)",
+                        transform: "translateY(-1px)",
+                      },
+                      transition: "all 0.2s ease-in-out",
+                    }}
+                    ref={editButtonRef}
+                    aria-label="Profil Düzenle"
+                  >
+                    Düzenle
+                  </Button>
+                ) : (
+                  <>
+                    <Button
+                      variant="contained"
+                      startIcon={<Save />}
+                      onClick={handleSaveClick}
+                      disabled={isSaving}
+                      sx={{
+                        background: "linear-gradient(135deg, #1a237e 0%, #283593 100%)",
+                        borderRadius: 2,
+                        px: 3,
+                        py: 1,
+                        fontFamily: '"Inter", "Roboto", system-ui, sans-serif',
+                        fontWeight: 500,
+                        textTransform: "none",
+                        boxShadow: "0 2px 8px rgba(26, 35, 126, 0.2)",
+                        "&:hover": {
+                          background: "linear-gradient(135deg, #0d1642 0%, #1a237e 100%)",
+                          boxShadow: "0 4px 12px rgba(26, 35, 126, 0.3)",
+                          transform: "translateY(-1px)",
+                        },
+                        transition: "all 0.2s ease-in-out",
+                      }}
+                    >
+                      {isSaving ? "Kaydediliyor..." : "Kaydet"}
+                    </Button>
+                    <Button
+                      variant="outlined"
+                      startIcon={<Cancel />}
+                      onClick={handleCancelClick}
+                      disabled={isSaving}
+                      sx={{
+                        borderColor: "#cbd5e1",
+                        color: "#64748b",
+                        borderRadius: 2,
+                        px: 3,
+                        py: 1,
+                        fontFamily: '"Inter", "Roboto", system-ui, sans-serif',
+                        fontWeight: 500,
+                        textTransform: "none",
+                        "&:hover": {
+                          borderColor: "#94a3b8",
+                          backgroundColor: "#f8fafc",
+                        },
+                        transition: "all 0.2s ease-in-out",
+                      }}
+                    >
+                      İptal
+                    </Button>
+                  </>
+                )}
+              </Box>
+            </Box>
 
-          {/* Ad Field */}
-          <Grid item xs={12} sm={6}>
-            <TextField
-              label="Ad"
-              value={values.firstName || ""}
-              onChange={(e) => handleChange("firstName", e.target.value)}
-              onBlur={() => handleBlur("firstName")}
-              fullWidth
-              variant="outlined"
-              size="medium"
-              disabled={!isEditing}
-              error={touched.firstName && !!errors.firstName}
-              helperText={touched.firstName && errors.firstName}
-              sx={{
-                ...textFieldStyles,
-                "& .MuiInputBase-root": {
-                  borderRadius: 2,
-                  fontFamily: '"Inter", "Roboto", system-ui, sans-serif',
-                  backgroundColor: isEditing ? "#ffffff" : "#f8fafc",
-                },
-              }}
-            />
-          </Grid>
+            {/* Modern Form Fields */}
+            <Grid container spacing={2.5}>
+              {/* Ünvan Field */}
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  label="Ünvan"
+                  value={values.title || ""}
+                  onChange={(e) => handleChange("title", e.target.value)}
+                  onBlur={() => handleBlur("title")}
+                  fullWidth
+                  variant="outlined"
+                  size="medium"
+                  disabled={!isEditing}
+                  error={touched.title && !!errors.title}
+                  helperText={touched.title && errors.title}
+                  sx={{
+                    ...textFieldStyles,
+                    "& .MuiInputBase-root": {
+                      borderRadius: 2,
+                      fontFamily: '"Inter", "Roboto", system-ui, sans-serif',
+                      backgroundColor: isEditing ? "#ffffff" : "#f8fafc",
+                    },
+                  }}
+                  inputRef={isEditing ? firstFieldRef : null}
+                />
+              </Grid>
 
-          {/* Soyad Field */}
-          <Grid item xs={12} sm={6}>
-            <TextField
-              label="Soyad"
-              value={values.lastName || ""}
-              onChange={(e) => handleChange("lastName", e.target.value)}
-              onBlur={() => handleBlur("lastName")}
-              fullWidth
-              variant="outlined"
-              size="medium"
-              disabled={!isEditing}
-              error={touched.lastName && !!errors.lastName}
-              helperText={touched.lastName && errors.lastName}
-              InputProps={{
-                readOnly: !isEditing,
-                sx: {
-                  borderRadius: 2,
-                  fontFamily: '"Inter", "Roboto", system-ui, sans-serif',
-                  backgroundColor: isEditing ? "#ffffff" : "#f8fafc",
-                  "& .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "#e2e8f0",
-                  },
-                  "&:hover .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "#cbd5e1",
-                  },
-                  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "#1a237e",
-                    borderWidth: 2,
-                  },
-                },
-              }}
-              InputLabelProps={{
-                sx: {
-                  fontFamily: '"Inter", "Roboto", system-ui, sans-serif',
-                  fontWeight: 500,
-                  color: "#64748b",
-                  "&.Mui-focused": {
-                    color: "#1a237e",
-                  },
-                },
-              }}
-            />
-          </Grid>
+              {/* Ad Field */}
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  label="Ad"
+                  value={values.firstName || ""}
+                  onChange={(e) => handleChange("firstName", e.target.value)}
+                  onBlur={() => handleBlur("firstName")}
+                  fullWidth
+                  variant="outlined"
+                  size="medium"
+                  disabled={!isEditing}
+                  error={touched.firstName && !!errors.firstName}
+                  helperText={touched.firstName && errors.firstName}
+                  sx={{
+                    ...textFieldStyles,
+                    "& .MuiInputBase-root": {
+                      borderRadius: 2,
+                      fontFamily: '"Inter", "Roboto", system-ui, sans-serif',
+                      backgroundColor: isEditing ? "#ffffff" : "#f8fafc",
+                    },
+                  }}
+                />
+              </Grid>
 
-          {/* E-posta Field */}
-          <Grid item xs={12} sm={6}>
-            <TextField
-              label="E-posta"
-              value={values.email || ""}
-              onChange={(e) => handleChange("email", e.target.value)}
-              onBlur={() => handleBlur("email")}
-              fullWidth
-              variant="outlined"
-              size="medium"
-              disabled={!isEditing}
-              error={touched.email && !!errors.email}
-              helperText={touched.email && errors.email}
-              InputProps={{
-                readOnly: !isEditing,
-                sx: {
-                  borderRadius: 2,
-                  fontFamily: '"Inter", "Roboto", system-ui, sans-serif',
-                  backgroundColor: isEditing ? "#ffffff" : "#f8fafc",
-                  "& .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "#e2e8f0",
-                  },
-                  "&:hover .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "#cbd5e1",
-                  },
-                  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "#1a237e",
-                    borderWidth: 2,
-                  },
-                },
-              }}
-              InputLabelProps={{
-                sx: {
-                  fontFamily: '"Inter", "Roboto", system-ui, sans-serif',
-                  fontWeight: 500,
-                  color: "#64748b",
-                  "&.Mui-focused": {
-                    color: "#1a237e",
-                  },
-                },
-              }}
-              inputProps={{
-                type: "email",
-              }}
-            />
-          </Grid>
+              {/* Soyad Field */}
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  label="Soyad"
+                  value={values.lastName || ""}
+                  onChange={(e) => handleChange("lastName", e.target.value)}
+                  onBlur={() => handleBlur("lastName")}
+                  fullWidth
+                  variant="outlined"
+                  size="medium"
+                  disabled={!isEditing}
+                  error={touched.lastName && !!errors.lastName}
+                  helperText={touched.lastName && errors.lastName}
+                  InputProps={{
+                    readOnly: !isEditing,
+                    sx: {
+                      borderRadius: 2,
+                      fontFamily: '"Inter", "Roboto", system-ui, sans-serif',
+                      backgroundColor: isEditing ? "#ffffff" : "#f8fafc",
+                      "& .MuiOutlinedInput-notchedOutline": {
+                        borderColor: "#e2e8f0",
+                      },
+                      "&:hover .MuiOutlinedInput-notchedOutline": {
+                        borderColor: "#cbd5e1",
+                      },
+                      "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                        borderColor: "#1a237e",
+                        borderWidth: 2,
+                      },
+                    },
+                  }}
+                  InputLabelProps={{
+                    sx: {
+                      fontFamily: '"Inter", "Roboto", system-ui, sans-serif',
+                      fontWeight: 500,
+                      color: "#64748b",
+                      "&.Mui-focused": {
+                        color: "#1a237e",
+                      },
+                    },
+                  }}
+                />
+              </Grid>
 
-          {/* Telefon Field */}
-          <Grid item xs={12} sm={6}>
-            <TextField
-              label="Cep Telefonu"
-              value={values.phone || ""}
-              onChange={(e) => handleChange("phone", e.target.value)}
-              onBlur={() => handleBlur("phone")}
-              fullWidth
-              variant="outlined"
-              size="medium"
-              disabled={!isEditing}
-              error={touched.phone && !!errors.phone}
-              helperText={touched.phone && errors.phone}
-              InputProps={{
-                readOnly: !isEditing,
-                sx: {
-                  borderRadius: 2,
-                  fontFamily: '"Inter", "Roboto", system-ui, sans-serif',
-                  backgroundColor: isEditing ? "#ffffff" : "#f8fafc",
-                  "& .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "#e2e8f0",
-                  },
-                  "&:hover .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "#cbd5e1",
-                  },
-                  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "#1a237e",
-                    borderWidth: 2,
-                  },
-                },
-              }}
-              InputLabelProps={{
-                sx: {
-                  fontFamily: '"Inter", "Roboto", system-ui, sans-serif',
-                  fontWeight: 500,
-                  color: "#64748b",
-                  "&.Mui-focused": {
-                    color: "#1a237e",
-                  },
-                },
-              }}
-            />
-          </Grid>
+              {/* E-posta Field */}
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  label="E-posta"
+                  value={values.email || ""}
+                  onChange={(e) => handleChange("email", e.target.value)}
+                  onBlur={() => handleBlur("email")}
+                  fullWidth
+                  variant="outlined"
+                  size="medium"
+                  disabled={!isEditing}
+                  error={touched.email && !!errors.email}
+                  helperText={touched.email && errors.email}
+                  InputProps={{
+                    readOnly: !isEditing,
+                    sx: {
+                      borderRadius: 2,
+                      fontFamily: '"Inter", "Roboto", system-ui, sans-serif',
+                      backgroundColor: isEditing ? "#ffffff" : "#f8fafc",
+                      "& .MuiOutlinedInput-notchedOutline": {
+                        borderColor: "#e2e8f0",
+                      },
+                      "&:hover .MuiOutlinedInput-notchedOutline": {
+                        borderColor: "#cbd5e1",
+                      },
+                      "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                        borderColor: "#1a237e",
+                        borderWidth: 2,
+                      },
+                    },
+                  }}
+                  InputLabelProps={{
+                    sx: {
+                      fontFamily: '"Inter", "Roboto", system-ui, sans-serif',
+                      fontWeight: 500,
+                      color: "#64748b",
+                      "&.Mui-focused": {
+                        color: "#1a237e",
+                      },
+                    },
+                  }}
+                  inputProps={{
+                    type: "email",
+                  }}
+                />
+              </Grid>
 
-          {/* Üniversite Field */}
-          <Grid item xs={12} sm={6}>
-            <TextField
-              label="Üniversite"
-              value={values.university || ""}
-              onChange={(e) => handleChange("university", e.target.value)}
-              onBlur={() => handleBlur("university")}
-              fullWidth
-              variant="outlined"
-              size="medium"
-              disabled={!isEditing}
-              error={touched.university && !!errors.university}
-              helperText={touched.university && errors.university}
-              InputProps={{
-                readOnly: !isEditing,
-                sx: {
-                  borderRadius: 2,
-                  fontFamily: '"Inter", "Roboto", system-ui, sans-serif',
-                  backgroundColor: isEditing ? "#ffffff" : "#f8fafc",
-                  "& .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "#e2e8f0",
-                  },
-                  "&:hover .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "#cbd5e1",
-                  },
-                  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "#1a237e",
-                    borderWidth: 2,
-                  },
-                },
-              }}
-              InputLabelProps={{
-                sx: {
-                  fontFamily: '"Inter", "Roboto", system-ui, sans-serif',
-                  fontWeight: 500,
-                  color: "#64748b",
-                  "&.Mui-focused": {
-                    color: "#1a237e",
-                  },
-                },
-              }}
-            />
-          </Grid>
+              {/* Telefon Field */}
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  label="Cep Telefonu"
+                  value={values.phone || ""}
+                  onChange={(e) => handleChange("phone", e.target.value)}
+                  onBlur={() => handleBlur("phone")}
+                  fullWidth
+                  variant="outlined"
+                  size="medium"
+                  disabled={!isEditing}
+                  error={touched.phone && !!errors.phone}
+                  helperText={touched.phone && errors.phone}
+                  InputProps={{
+                    readOnly: !isEditing,
+                    sx: {
+                      borderRadius: 2,
+                      fontFamily: '"Inter", "Roboto", system-ui, sans-serif',
+                      backgroundColor: isEditing ? "#ffffff" : "#f8fafc",
+                      "& .MuiOutlinedInput-notchedOutline": {
+                        borderColor: "#e2e8f0",
+                      },
+                      "&:hover .MuiOutlinedInput-notchedOutline": {
+                        borderColor: "#cbd5e1",
+                      },
+                      "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                        borderColor: "#1a237e",
+                        borderWidth: 2,
+                      },
+                    },
+                  }}
+                  InputLabelProps={{
+                    sx: {
+                      fontFamily: '"Inter", "Roboto", system-ui, sans-serif',
+                      fontWeight: 500,
+                      color: "#64748b",
+                      "&.Mui-focused": {
+                        color: "#1a237e",
+                      },
+                    },
+                  }}
+                />
+              </Grid>
 
-          {/* Fakülte Field */}
-          <Grid item xs={12} sm={6}>
-            <TextField
-              label="Fakülte"
-              value={values.faculty || ""}
-              onChange={(e) => handleChange("faculty", e.target.value)}
-              onBlur={() => handleBlur("faculty")}
-              fullWidth
-              variant="outlined"
-              size="medium"
-              disabled={!isEditing}
-              error={touched.faculty && !!errors.faculty}
-              helperText={touched.faculty && errors.faculty}
-              InputProps={{
-                readOnly: !isEditing,
-                sx: {
-                  borderRadius: 2,
-                  fontFamily: '"Inter", "Roboto", system-ui, sans-serif',
-                  backgroundColor: isEditing ? "#ffffff" : "#f8fafc",
-                  "& .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "#e2e8f0",
-                  },
-                  "&:hover .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "#cbd5e1",
-                  },
-                  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "#1a237e",
-                    borderWidth: 2,
-                  },
-                },
-              }}
-              InputLabelProps={{
-                sx: {
-                  fontFamily: '"Inter", "Roboto", system-ui, sans-serif',
-                  fontWeight: 500,
-                  color: "#64748b",
-                  "&.Mui-focused": {
-                    color: "#1a237e",
-                  },
-                },
-              }}
-            />
-          </Grid>
+              {/* Üniversite Field */}
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  label="Üniversite"
+                  value={values.university || ""}
+                  onChange={(e) => handleChange("university", e.target.value)}
+                  onBlur={() => handleBlur("university")}
+                  fullWidth
+                  variant="outlined"
+                  size="medium"
+                  disabled={!isEditing}
+                  error={touched.university && !!errors.university}
+                  helperText={touched.university && errors.university}
+                  InputProps={{
+                    readOnly: !isEditing,
+                    sx: {
+                      borderRadius: 2,
+                      fontFamily: '"Inter", "Roboto", system-ui, sans-serif',
+                      backgroundColor: isEditing ? "#ffffff" : "#f8fafc",
+                      "& .MuiOutlinedInput-notchedOutline": {
+                        borderColor: "#e2e8f0",
+                      },
+                      "&:hover .MuiOutlinedInput-notchedOutline": {
+                        borderColor: "#cbd5e1",
+                      },
+                      "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                        borderColor: "#1a237e",
+                        borderWidth: 2,
+                      },
+                    },
+                  }}
+                  InputLabelProps={{
+                    sx: {
+                      fontFamily: '"Inter", "Roboto", system-ui, sans-serif',
+                      fontWeight: 500,
+                      color: "#64748b",
+                      "&.Mui-focused": {
+                        color: "#1a237e",
+                      },
+                    },
+                  }}
+                />
+              </Grid>
 
-          {/* Bölüm Field */}
-          <Grid item xs={12}>
-            <TextField
-              label="Bölüm"
-              value={values.department || ""}
-              onChange={(e) => handleChange("department", e.target.value)}
-              onBlur={() => handleBlur("department")}
-              fullWidth
-              variant="outlined"
-              size="medium"
-              disabled={!isEditing}
-              error={touched.department && !!errors.department}
-              helperText={touched.department && errors.department}
-              InputProps={{
-                readOnly: !isEditing,
-                sx: {
-                  borderRadius: 2,
-                  fontFamily: '"Inter", "Roboto", system-ui, sans-serif',
-                  backgroundColor: isEditing ? "#ffffff" : "#f8fafc",
-                  "& .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "#e2e8f0",
-                  },
-                  "&:hover .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "#cbd5e1",
-                  },
-                  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "#1a237e",
-                    borderWidth: 2,
-                  },
-                },
-              }}
-              InputLabelProps={{
-                sx: {
-                  fontFamily: '"Inter", "Roboto", system-ui, sans-serif',
-                  fontWeight: 500,
-                  color: "#64748b",
-                  "&.Mui-focused": {
-                    color: "#1a237e",
-                  },
-                },
-              }}
-            />
-          </Grid>
+              {/* Fakülte Field */}
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  label="Fakülte"
+                  value={values.faculty || ""}
+                  onChange={(e) => handleChange("faculty", e.target.value)}
+                  onBlur={() => handleBlur("faculty")}
+                  fullWidth
+                  variant="outlined"
+                  size="medium"
+                  disabled={!isEditing}
+                  error={touched.faculty && !!errors.faculty}
+                  helperText={touched.faculty && errors.faculty}
+                  InputProps={{
+                    readOnly: !isEditing,
+                    sx: {
+                      borderRadius: 2,
+                      fontFamily: '"Inter", "Roboto", system-ui, sans-serif',
+                      backgroundColor: isEditing ? "#ffffff" : "#f8fafc",
+                      "& .MuiOutlinedInput-notchedOutline": {
+                        borderColor: "#e2e8f0",
+                      },
+                      "&:hover .MuiOutlinedInput-notchedOutline": {
+                        borderColor: "#cbd5e1",
+                      },
+                      "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                        borderColor: "#1a237e",
+                        borderWidth: 2,
+                      },
+                    },
+                  }}
+                  InputLabelProps={{
+                    sx: {
+                      fontFamily: '"Inter", "Roboto", system-ui, sans-serif',
+                      fontWeight: 500,
+                      color: "#64748b",
+                      "&.Mui-focused": {
+                        color: "#1a237e",
+                      },
+                    },
+                  }}
+                />
+              </Grid>
 
-        </Grid>
-      </Paper>
-      </>
+              {/* Bölüm Field */}
+              <Grid item xs={12}>
+                <TextField
+                  label="Bölüm"
+                  value={values.department || ""}
+                  onChange={(e) => handleChange("department", e.target.value)}
+                  onBlur={() => handleBlur("department")}
+                  fullWidth
+                  variant="outlined"
+                  size="medium"
+                  disabled={!isEditing}
+                  error={touched.department && !!errors.department}
+                  helperText={touched.department && errors.department}
+                  InputProps={{
+                    readOnly: !isEditing,
+                    sx: {
+                      borderRadius: 2,
+                      fontFamily: '"Inter", "Roboto", system-ui, sans-serif',
+                      backgroundColor: isEditing ? "#ffffff" : "#f8fafc",
+                      "& .MuiOutlinedInput-notchedOutline": {
+                        borderColor: "#e2e8f0",
+                      },
+                      "&:hover .MuiOutlinedInput-notchedOutline": {
+                        borderColor: "#cbd5e1",
+                      },
+                      "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                        borderColor: "#1a237e",
+                        borderWidth: 2,
+                      },
+                    },
+                  }}
+                  InputLabelProps={{
+                    sx: {
+                      fontFamily: '"Inter", "Roboto", system-ui, sans-serif',
+                      fontWeight: 500,
+                      color: "#64748b",
+                      "&.Mui-focused": {
+                        color: "#1a237e",
+                      },
+                    },
+                  }}
+                />
+              </Grid>
+
+            </Grid>
+          </Paper>
+        </>
       )}
     </Container>
   );
