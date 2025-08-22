@@ -672,6 +672,69 @@ const Profilim = ({
                     ? userProfile.name.charAt(0).toUpperCase()
                     : "?"}
                 </Avatar>
+
+                {/* Photo Upload Buttons - Only show when editing */}
+                {isEditing && (
+                  <Box sx={{ mt: 1, display: "flex", flexDirection: "column", gap: 1 }}>
+                    <input
+                      accept="image/*"
+                      style={{ display: "none" }}
+                      id="photo-upload-input"
+                      type="file"
+                      onChange={(e) => {
+                        const file = e.target.files[0];
+                        if (file) {
+                          const reader = new FileReader();
+                          reader.onload = (event) => {
+                            handlePhotoChange(file, event.target.result);
+                          };
+                          reader.readAsDataURL(file);
+                        }
+                      }}
+                    />
+                    <label htmlFor="photo-upload-input">
+                      <Button
+                        variant="outlined"
+                        component="span"
+                        size="small"
+                        sx={{
+                          fontSize: "0.75rem",
+                          px: 1,
+                          py: 0.5,
+                          borderColor: "#1a237e",
+                          color: "#1a237e",
+                          "&:hover": {
+                            borderColor: "#0d1642",
+                            backgroundColor: "#f8f9ff",
+                          },
+                        }}
+                      >
+                        Fotoğraf Seç
+                      </Button>
+                    </label>
+
+                    {(photoPreview || userProfile.profilePhoto) && (
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        onClick={handlePhotoRemove}
+                        sx={{
+                          fontSize: "0.75rem",
+                          px: 1,
+                          py: 0.5,
+                          borderColor: "#dc2626",
+                          color: "#dc2626",
+                          "&:hover": {
+                            borderColor: "#b91c1c",
+                            backgroundColor: "#fef2f2",
+                          },
+                        }}
+                      >
+                        Fotoğrafı Sil
+                      </Button>
+                    )}
+                  </Box>
+                )}
               </Box>
 
               {/* Modern Profile Info */}

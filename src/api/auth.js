@@ -648,35 +648,54 @@ export const updateLecturerProfile = async (lecturerId, profileData, accessToken
 // Profil fotoğrafı yükle
 export const uploadProfilePhoto = async (lecturerId, photoFile, accessToken) => {
   try {
-    console.log(`📸 Profil fotoğrafı yükleme geçici olarak devre dışı - Lecturer ID: ${lecturerId}`);
+    console.log(`📸 Profil fotoğrafı yükleniyor - Lecturer ID: ${lecturerId}`);
 
-    // Backend endpoint'i henüz mevcut değil, geçici olarak başarılı yanıt döndür
-    return {
-      success: true,
-      message: "Profil fotoğrafı yükleme özelliği geçici olarak devre dışı",
-      profile_photo: null
-    };
-
-    /* Backend hazır olduğunda bu kısım aktif edilecek
     const formData = new FormData();
     formData.append('profile_photo', photoFile);
     
-    const response = await fetch(`${API_BASE_URL}/lecturer_data/lecturers/${lecturerId}/upload_photo/`, {
-      method: "POST",
+    const response = await fetch(`${API_BASE_URL}/lecturer_data/lecturers/${lecturerId}/`, {
+      method: "PUT",
       headers: {
         "Authorization": `Bearer ${accessToken}`
       },
       body: formData
     });
 
+    console.log("📸 Profil fotoğrafı yükleme API yanıt durumu:", response.status);
+
     if (!response.ok) {
-      throw new Error(`Profil fotoğrafı yüklenemedi (${response.status})`);
+      let errorData;
+      let textResponse;
+
+      try {
+        textResponse = await response.text();
+        console.error("❌ Profil fotoğrafı yükleme API raw yanıtı:", textResponse);
+
+        try {
+          errorData = JSON.parse(textResponse);
+          console.error("❌ Profil fotoğrafı yükleme API JSON hata detayı:", errorData);
+        } catch (parseError) {
+          console.error("❌ Profil fotoğrafı yükleme JSON parse edilemedi:", textResponse);
+          throw new Error(`Profil fotoğrafı yüklenemedi (${response.status}): Server hatası`);
+        }
+      } catch (textError) {
+        console.error("❌ Profil fotoğrafı yükleme response text alınamadı:", textError);
+        throw new Error(`Profil fotoğrafı yüklenemedi (${response.status}): Response okunamadı`);
+      }
+
+      let errorMessage = "Profil fotoğrafı yüklenemedi";
+      if (errorData.detail) {
+        errorMessage = errorData.detail;
+      } else if (errorData.message) {
+        errorMessage = errorData.message;
+      }
+
+      throw new Error(errorMessage);
     }
 
     const result = await response.json();
     console.log("✅ Profil fotoğrafı başarıyla yüklendi:", result);
     return result;
-    */
   } catch (error) {
     console.error("❌ Profil fotoğrafı yükleme hatası:", error);
     throw error;
@@ -686,30 +705,54 @@ export const uploadProfilePhoto = async (lecturerId, photoFile, accessToken) => 
 // Profil fotoğrafını sil
 export const deleteProfilePhoto = async (lecturerId, accessToken) => {
   try {
-    console.log(`🗑️ Profil fotoğrafı silme geçici olarak devre dışı - Lecturer ID: ${lecturerId}`);
+    console.log(`🗑️ Profil fotoğrafı siliniyor - Lecturer ID: ${lecturerId}`);
 
-    // Backend endpoint'i henüz mevcut değil, geçici olarak başarılı yanıt döndür
-    return {
-      success: true,
-      message: "Profil fotoğrafı silme özelliği geçici olarak devre dışı"
-    };
+    const formData = new FormData();
+    formData.append('profile_photo', ''); // Boş değer gönder
 
-    /* Backend hazır olduğunda bu kısım aktif edilecek
-    const response = await fetch(`${API_BASE_URL}/lecturer_data/lecturers/${lecturerId}/delete_photo/`, {
-      method: "DELETE",
+    const response = await fetch(`${API_BASE_URL}/lecturer_data/lecturers/${lecturerId}/`, {
+      method: "PUT",
       headers: {
         "Authorization": `Bearer ${accessToken}`
-      }
+      },
+      body: formData
     });
 
+    console.log("🗑️ Profil fotoğrafı silme API yanıt durumu:", response.status);
+
     if (!response.ok) {
-      throw new Error(`Profil fotoğrafı silinemedi (${response.status})`);
+      let errorData;
+      let textResponse;
+
+      try {
+        textResponse = await response.text();
+        console.error("❌ Profil fotoğrafı silme API raw yanıtı:", textResponse);
+
+        try {
+          errorData = JSON.parse(textResponse);
+          console.error("❌ Profil fotoğrafı silme API JSON hata detayı:", errorData);
+        } catch (parseError) {
+          console.error("❌ Profil fotoğrafı silme JSON parse edilemedi:", textResponse);
+          throw new Error(`Profil fotoğrafı silinemedi (${response.status}): Server hatası`);
+        }
+      } catch (textError) {
+        console.error("❌ Profil fotoğrafı silme response text alınamadı:", textError);
+        throw new Error(`Profil fotoğrafı silinemedi (${response.status}): Response okunamadı`);
+      }
+
+      let errorMessage = "Profil fotoğrafı silinemedi";
+      if (errorData.detail) {
+        errorMessage = errorData.detail;
+      } else if (errorData.message) {
+        errorMessage = errorData.message;
+      }
+
+      throw new Error(errorMessage);
     }
 
     const result = await response.json();
     console.log("✅ Profil fotoğrafı başarıyla silindi:", result);
     return result;
-    */
   } catch (error) {
     console.error("❌ Profil fotoğrafı silme hatası:", error);
     throw error;
