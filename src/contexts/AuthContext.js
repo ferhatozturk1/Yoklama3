@@ -1,13 +1,14 @@
 import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react';
 import { getLecturerProfile, refreshToken, getDepartments, getFaculties, getUniversities } from '../api/auth';
+import axios from 'axios';
 
 // JWT token decode helper (sadece payload'ı alır, imza doğrulaması yapmaz)
 const decodeJWT = (token) => {
   try {
     const base64Url = token.split('.')[1];
     const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-    const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
-        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+    const jsonPayload = decodeURIComponent(atob(base64).split('').map(function (c) {
+      return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
     }).join(''));
 
     return JSON.parse(jsonPayload);
@@ -75,7 +76,7 @@ export const AuthProvider = ({ children }) => {
     if (photoPath.startsWith('http')) {
       return photoPath;
     }
-    
+
     const fullUrl = `http://127.0.0.1:8000${photoPath}`;
     return fullUrl;
   };
@@ -84,50 +85,50 @@ export const AuthProvider = ({ children }) => {
   const loadEnhancedProfile = async (profileData, currentAccessToken = null) => {
     try {
       console.log('🔍 loadEnhancedProfile - Raw profileData:', profileData);
-      
+
       let enhancedProfile = { ...profileData };
-      
+
       // Backend'den gelen university/faculty bilgilerini kontrol et
-      const rawUniversity = profileData.university || profileData.school || 
-                          profileData.university_name || profileData.universityName;
-      const rawFaculty = profileData.faculty || profileData.faculty_name || 
-                        profileData.facultyName;
-      const rawDepartment = profileData.department || profileData.department_name || 
-                           profileData.departmentName;
-      
+      const rawUniversity = profileData.university || profileData.school ||
+        profileData.university_name || profileData.universityName;
+      const rawFaculty = profileData.faculty || profileData.faculty_name ||
+        profileData.facultyName;
+      const rawDepartment = profileData.department || profileData.department_name ||
+        profileData.departmentName;
+
       console.log('🏛️ University mapping:', {
         original: profileData.university,
         school: profileData.school,
         university_name: profileData.university_name,
         final: rawUniversity
       });
-      
+
       console.log('🏫 Faculty mapping:', {
         original: profileData.faculty,
         faculty_name: profileData.faculty_name,
         final: rawFaculty
       });
-      
+
       console.log('🏢 Department mapping:', {
         original: profileData.department,
         department_name: profileData.department_name,
         final: rawDepartment
       });
-      
+
       // Enhanced profile oluştur
       enhancedProfile.university = rawUniversity || '';
       enhancedProfile.faculty = rawFaculty || '';
       enhancedProfile.department = rawDepartment || '';
       enhancedProfile.department_name = rawDepartment || '';
       enhancedProfile.department_id = profileData.department_id || profileData.departmentId || '';
-      
+
       console.log('✅ Enhanced profile result:', {
         university: enhancedProfile.university,
-        faculty: enhancedProfile.faculty, 
+        faculty: enhancedProfile.faculty,
         department: enhancedProfile.department,
         department_id: enhancedProfile.department_id
       });
-      
+
       return enhancedProfile;
     } catch (error) {
       console.error('❌ Profil analizi hatası:', error);
@@ -166,21 +167,21 @@ export const AuthProvider = ({ children }) => {
               const decodedToken = decodeJWT(storedToken);
               const lecturerId = decodedToken?.lecturer_id;
               const tokenDepartmentId = decodedToken?.department_id;
-              
+
               if (!lecturerId) {
                 console.error('❌ AuthContext - JWT token\'da lecturer_id bulunamadı');
                 clearSession();
                 return;
               }
-              
+
               const profileData = await getLecturerProfile(lecturerId, storedToken);
-              
+
               if (profileData) {
                 // Profili ek bilgilerle genişlet (token'ı da geç)
                 const enhancedProfile = await loadEnhancedProfile(profileData, storedToken);
                 const enhancedDeptId = resolveDepartmentId(enhancedProfile);
                 const finalDepartmentId = pendingDepartmentId || tokenDepartmentId || enhancedDeptId;
-                
+
                 const userData = {
                   id: lecturerId,
                   lecturer_id: lecturerId,
@@ -197,10 +198,10 @@ export const AuthProvider = ({ children }) => {
                   university: enhancedProfile.university,
                   profile_photo: enhancedProfile.profile_photo,
                 };
-                
+
                 setUser(userData);
                 setIsAuthenticated(true);
-                
+
                 // SessionStorage'a da kaydet
                 sessionStorage.setItem('user', JSON.stringify(userData));
                 if (pendingDepartmentId) sessionStorage.removeItem('pendingDepartmentId');
@@ -230,6 +231,187 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     accessTokenRef.current = accessToken;
   }, [accessToken]);
+
+  // Otomatik token yenileme mekanizması
+  useEffect(() => {
+    if (!accessToken || !refreshTokenState) return;
+
+    let isRefreshing = false;
+    let failedQueue = [];
+
+    const processQueue = (error, token = null) => {
+      failedQueue.forEach(prom => {
+        if (error) {
+          prom.reject(error);
+        } else {
+          prom.resolve(token);
+        }
+      });
+
+      failedQueue = [];
+    };
+
+    // Request interceptor - her istekte token ekle
+    const requestInterceptor = axios.interceptors.request.use(
+      (config) => {
+        const token = accessTokenRef.current;
+        if (token && !config.headers.Authorization) {
+          config.headers.Authorization = `Bearer ${token}`;
+        }
+        return config;
+      },
+      (error) => {
+        return Promise.reject(error);
+      }
+    );
+
+    // Response interceptor - 401 hatalarında token yenile
+    const responseInterceptor = axios.interceptors.response.use(
+      (response) => {
+        return response;
+      },
+      async (error) => {
+        const originalRequest = error.config;
+
+        if (error.response?.status === 401 && !originalRequest._retry) {
+          if (isRefreshing) {
+            // Zaten yenileme yapılıyorsa kuyruğa ekle
+            return new Promise((resolve, reject) => {
+              failedQueue.push({ resolve, reject });
+            }).then(token => {
+              originalRequest.headers.Authorization = `Bearer ${token}`;
+              return axios(originalRequest);
+            }).catch(err => {
+              return Promise.reject(err);
+            });
+          }
+
+          originalRequest._retry = true;
+          isRefreshing = true;
+
+          try {
+            console.log('🔄 Axios: Token süresi doldu, yenileniyor...');
+
+            // refreshAccessToken fonksiyonunu çağır
+            const response = await refreshToken(refreshTokenState);
+
+            if (response.access) {
+              const newToken = response.access;
+              setAccessToken(newToken);
+              sessionStorage.setItem('token', newToken);
+              accessTokenRef.current = newToken;
+
+              console.log('✅ Axios: Token başarıyla yenilendi');
+              processQueue(null, newToken);
+              originalRequest.headers.Authorization = `Bearer ${newToken}`;
+              return axios(originalRequest);
+            } else {
+              throw new Error('Yeni token alınamadı');
+            }
+          } catch (refreshError) {
+            console.error('❌ Axios: Token yenileme başarısız, kullanıcı çıkış yapılıyor');
+            processQueue(refreshError, null);
+            clearSession();
+            // Kullanıcıyı login sayfasına yönlendir
+            if (typeof window !== 'undefined') {
+              window.location.href = '/login';
+            }
+            return Promise.reject(refreshError);
+          } finally {
+            isRefreshing = false;
+          }
+        }
+
+        return Promise.reject(error);
+      }
+    );
+
+    // Cleanup function
+    return () => {
+      axios.interceptors.request.eject(requestInterceptor);
+      axios.interceptors.response.eject(responseInterceptor);
+    };
+  }, [accessToken, refreshTokenState]); // accessToken ve refreshToken değiştiğinde yeniden kur
+
+  // Global fetch override - fetch kullanan yerler için otomatik token yenileme
+  useEffect(() => {
+    const originalFetch = window.fetch;
+    let isRefreshingFetch = false;
+    let fetchFailedQueue = [];
+
+    const processFetchQueue = (error, token = null) => {
+      fetchFailedQueue.forEach(prom => {
+        if (error) {
+          prom.reject(error);
+        } else {
+          prom.resolve(token);
+        }
+      });
+
+      fetchFailedQueue = [];
+    };
+
+    window.fetch = async (url, options = {}) => {
+      // İlk istekte token ekle
+      const token = accessTokenRef.current;
+      if (token && !options.headers?.Authorization) {
+        options.headers = {
+          ...options.headers,
+          'Authorization': `Bearer ${token}`
+        };
+      }
+
+      try {
+        const response = await originalFetch(url, options);
+
+        // 401 hatası varsa token yenile
+        if (response.status === 401 && !options._retry) {
+          if (isRefreshingFetch) {
+            // Zaten yenileme yapılıyorsa kuyruğa ekle
+            return new Promise((resolve, reject) => {
+              fetchFailedQueue.push({ resolve, reject });
+            }).then(newToken => {
+              options.headers.Authorization = `Bearer ${newToken}`;
+              options._retry = true;
+              return originalFetch(url, options);
+            });
+          }
+
+          isRefreshingFetch = true;
+
+          try {
+            console.log('🔄 Fetch: Token süresi doldu, yenileniyor...');
+            const newToken = await refreshAccessToken();
+            processFetchQueue(null, newToken);
+
+            // Yeni token ile tekrar dene
+            options.headers.Authorization = `Bearer ${newToken}`;
+            options._retry = true;
+            return originalFetch(url, options);
+          } catch (refreshError) {
+            console.error('❌ Fetch: Token yenileme başarısız');
+            processFetchQueue(refreshError, null);
+            clearSession();
+            if (typeof window !== 'undefined') {
+              window.location.href = '/login';
+            }
+            throw refreshError;
+          } finally {
+            isRefreshingFetch = false;
+          }
+        }
+
+        return response;
+      } catch (error) {
+        throw error;
+      }
+    };
+
+    // Cleanup function
+    return () => {
+      window.fetch = originalFetch;
+    };
+  }, [accessToken, refreshTokenState]);
 
   // Login fonksiyonu
   const login = async (loginData) => {
@@ -273,11 +455,11 @@ export const AuthProvider = ({ children }) => {
           console.log('📧 Email (token):', decodedToken?.email);
           console.log('⏰ Token expiry:', decodedToken?.exp ? new Date(decodedToken.exp * 1000) : 'YOK');
           console.log('🔍 === JWT TOKEN DECODE BİTİŞ ===');
-          
+
           lecturerId = decodedToken?.lecturer_id || decodedToken?.lecturerId;
           if (lecturerId) {
             console.log('✅ AuthContext - Token\'dan lecturer_id alındı:', lecturerId);
-            
+
             // Department ID varsa onu da al
             if (decodedToken?.department_id || decodedToken?.departmentId) {
               const tokenDept = decodedToken.department_id || decodedToken.departmentId;
@@ -300,7 +482,7 @@ export const AuthProvider = ({ children }) => {
       if (lecturerId && token) {
         try {
           const profileData = await getLecturerProfile(lecturerId, token);
-          
+
           if (profileData) {
             // Profili ek bilgilerle genişlet (token'ı da geç)
             const enhancedProfile = await loadEnhancedProfile(profileData, token);
@@ -308,14 +490,14 @@ export const AuthProvider = ({ children }) => {
             const enhancedDeptId = resolveDepartmentId(enhancedProfile);
             // Öncelik: pendingDepartmentId > loginData > token > enhanced
             const finalDepartmentId = pendingDepartmentId || loginData.department_id || loginData.departmentId || enhancedDeptId;
-            
+
             console.log('🔧 === LOGIN - DEPARTMENT ID PRİORİTE SEÇİMİ ===');
             console.log('🏢 LoginData\'dan department_id:', loginData.department_id);
             console.log('🏢 Profile\'dan department_id:', enhancedProfile.department_id);
             console.log('🏢 PendingDepartmentId:', pendingDepartmentId);
             console.log('✅ Final department_id:', finalDepartmentId);
             console.log('🔧 === LOGIN - DEPARTMENT ID PRİORİTE BİTİŞ ===');
-            
+
             const userData = {
               id: lecturerId,
               lecturer_id: lecturerId,
@@ -332,7 +514,7 @@ export const AuthProvider = ({ children }) => {
               university: enhancedProfile.university,
               profile_photo: enhancedProfile.profile_photo,
             };
-            
+
             setUser(userData);
             sessionStorage.setItem('user', JSON.stringify(userData));
             if (pendingDepartmentId) sessionStorage.removeItem('pendingDepartmentId');
@@ -379,12 +561,12 @@ export const AuthProvider = ({ children }) => {
   // Logout fonksiyonu
   const logout = () => {
     console.log('🚪 AuthContext - Kullanıcı oturumu sonlandırılıyor');
-    
+
     // clearSession helper fonksiyonunu kullan
     clearSession();
-    
+
     console.log('✅ AuthContext - Oturum başarıyla sonlandırıldı');
-    
+
     // Tüm sessionStorage'ı da temizle (ek güvenlik için)
     try {
       sessionStorage.clear();
@@ -548,7 +730,7 @@ export const AuthProvider = ({ children }) => {
     try {
       console.log('🔄 AuthContext - Token yenileniyor...');
       const response = await refreshToken(refreshTokenState);
-      
+
       if (response.access) {
         setAccessToken(response.access);
         sessionStorage.setItem('token', response.access);
