@@ -63,6 +63,7 @@ const AnaSayfa = ({
   const [currentTime, setCurrentTime] = useState(new Date());
   const [expandedDay, setExpandedDay] = useState(false);
   const [currentWeek, setCurrentWeek] = useState(8); // Şu anki hafta (8. hafta)
+  const [weekSelectorOpen, setWeekSelectorOpen] = useState(false);
 
   const { user, accessToken } = useAuth();
 
@@ -813,37 +814,81 @@ const AnaSayfa = ({
               value={currentWeek}
               onChange={(e) => setCurrentWeek(e.target.value)}
               MenuProps={{
+                autoFocus: false,
+                disableAutoFocusItem: true,
+                disableRestoreFocus: true,
+                disableEnforceFocus: true,
                 PaperProps: {
                   sx: {
-                    maxHeight: 200,
+                    maxHeight: 240,
                     overflowY: "auto",
+                    mt: 0.5,
+                    boxShadow: "0 4px 20px rgba(0,0,0,0.15)",
+                    borderRadius: "8px",
+                    border: "1px solid #e0e0e0",
+                    "& .MuiMenuItem-root": {
+                      fontSize: "0.875rem",
+                      minHeight: "36px",
+                      "&:hover": {
+                        backgroundColor: "#f5f5f5",
+                      },
+                      "&.Mui-selected": {
+                        backgroundColor: "#e3f2fd",
+                        "&:hover": {
+                          backgroundColor: "#bbdefb",
+                        },
+                      },
+                    },
                     "&::-webkit-scrollbar": {
-                      width: "6px",
+                      width: "8px",
                     },
                     "&::-webkit-scrollbar-track": {
                       background: "#f1f1f1",
-                      borderRadius: "3px",
+                      borderRadius: "4px",
                     },
                     "&::-webkit-scrollbar-thumb": {
                       background: "#c1c1c1",
-                      borderRadius: "3px",
+                      borderRadius: "4px",
                       "&:hover": {
                         background: "#a8a8a8",
                       },
                     },
                   },
                 },
+                anchorOrigin: {
+                  vertical: "bottom",
+                  horizontal: "left",
+                },
+                transformOrigin: {
+                  vertical: "top",
+                  horizontal: "left",
+                },
               }}
               sx={{
                 bgcolor: "white",
+                borderRadius: "6px",
                 "& .MuiOutlinedInput-notchedOutline": {
                   border: "1px solid #e0e0e0",
+                  borderRadius: "6px",
                 },
                 "&:hover .MuiOutlinedInput-notchedOutline": {
                   border: "1px solid #1976d2",
                 },
-                height: isMobile ? 28 : 32,
-                fontSize: isMobile ? "0.75rem" : "0.875rem",
+                "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                  border: "2px solid #1976d2",
+                },
+                "& .MuiSelect-select": {
+                  padding: isMobile ? "4px 8px" : "6px 12px",
+                  fontSize: isMobile ? "0.75rem" : "0.875rem",
+                  fontWeight: 500,
+                  display: "flex",
+                  alignItems: "center",
+                },
+                "& .MuiSelect-icon": {
+                  color: "#666",
+                  fontSize: "1.2rem",
+                },
+                height: isMobile ? 32 : 36,
               }}
             >
               <MenuItem value={1}>1.Hafta</MenuItem>

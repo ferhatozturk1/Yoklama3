@@ -749,18 +749,12 @@ const DersDetay = ({ ders, onBack }) => {
     handleCloseAddStudentDialog();
   };
 
-  // Eğer öğrenci detayı gösteriliyorsa ÖğrenciDetay bileşenini render et
-  if (showStudentDetail && selectedStudent) {
-    return (
-      <ÖğrenciDetay
-        student={selectedStudent}
-        course={ders}
-        onBack={handleBackFromStudentDetail}
-        loading={studentsLoading}
-        error={studentsError}
-      />
-    );
-  }
+  // Bileşen yüklendiğinde öğrenci listesini çek
+  React.useEffect(() => {
+    if (ders && ders.section_id) {
+      fetchStudentList();
+    }
+  }, [ders?.section_id]);
 
   // Interval ve Timer yönetimi
   React.useEffect(() => {
@@ -801,7 +795,18 @@ const DersDetay = ({ ders, onBack }) => {
     };
   }, [qrModalOpen, currentAttendanceListId, isAttendanceActive]);
 
-
+  // Eğer öğrenci detayı gösteriliyorsa ÖğrenciDetay bileşenini render et
+  if (showStudentDetail && selectedStudent) {
+    return (
+      <ÖğrenciDetay
+        student={selectedStudent}
+        course={ders}
+        onBack={handleBackFromStudentDetail}
+        loading={studentsLoading}
+        error={studentsError}
+      />
+    );
+  }
 
   return (
     <>
