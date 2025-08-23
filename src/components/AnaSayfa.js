@@ -63,7 +63,6 @@ const AnaSayfa = ({
   const [currentTime, setCurrentTime] = useState(new Date());
   const [expandedDay, setExpandedDay] = useState(false);
   const [currentWeek, setCurrentWeek] = useState(8); // Şu anki hafta (8. hafta)
-  const [weekSelectorOpen, setWeekSelectorOpen] = useState(false);
 
   const { user, accessToken } = useAuth();
 
@@ -793,137 +792,68 @@ const AnaSayfa = ({
             flex: isMobile ? 0 : 1,
           }}
         >
-          <IconButton
-            onClick={() => setCurrentWeek(Math.max(1, currentWeek - 1))}
-            size="small"
-            disabled={currentWeek <= 1}
-            sx={{
-              bgcolor: "white",
-              boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
-              "&:hover": { bgcolor: "#f5f5f5" },
-              "&:disabled": { bgcolor: "#f5f5f5", opacity: 0.5 },
-              width: isMobile ? 28 : 32,
-              height: isMobile ? 28 : 32,
-            }}
-          >
-            <ChevronLeftIcon fontSize="small" />
-          </IconButton>
-
-          <FormControl size="small" sx={{ minWidth: isMobile ? 90 : 120 }}>
-            <Select
-              value={currentWeek}
-              onChange={(e) => setCurrentWeek(e.target.value)}
-              MenuProps={{
-                autoFocus: false,
-                disableAutoFocusItem: true,
-                disableRestoreFocus: true,
-                disableEnforceFocus: true,
-                PaperProps: {
-                  sx: {
-                    maxHeight: 240,
-                    overflowY: "auto",
-                    mt: 0.5,
-                    boxShadow: "0 4px 20px rgba(0,0,0,0.15)",
-                    borderRadius: "8px",
-                    border: "1px solid #e0e0e0",
-                    "& .MuiMenuItem-root": {
-                      fontSize: "0.875rem",
-                      minHeight: "36px",
-                      "&:hover": {
-                        backgroundColor: "#f5f5f5",
-                      },
-                      "&.Mui-selected": {
-                        backgroundColor: "#e3f2fd",
-                        "&:hover": {
-                          backgroundColor: "#bbdefb",
-                        },
-                      },
-                    },
-                    "&::-webkit-scrollbar": {
-                      width: "8px",
-                    },
-                    "&::-webkit-scrollbar-track": {
-                      background: "#f1f1f1",
-                      borderRadius: "4px",
-                    },
-                    "&::-webkit-scrollbar-thumb": {
-                      background: "#c1c1c1",
-                      borderRadius: "4px",
-                      "&:hover": {
-                        background: "#a8a8a8",
-                      },
-                    },
-                  },
-                },
-                anchorOrigin: {
-                  vertical: "bottom",
-                  horizontal: "left",
-                },
-                transformOrigin: {
-                  vertical: "top",
-                  horizontal: "left",
-                },
-              }}
+          <Box>
+            <IconButton
+              onClick={() => setCurrentWeek(Math.max(1, currentWeek - 1))}
+              size="small"
+              disabled={currentWeek <= 1}
               sx={{
                 bgcolor: "white",
-                borderRadius: "6px",
-                "& .MuiOutlinedInput-notchedOutline": {
-                  border: "1px solid #e0e0e0",
-                  borderRadius: "6px",
-                },
-                "&:hover .MuiOutlinedInput-notchedOutline": {
-                  border: "1px solid #1976d2",
-                },
-                "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                  border: "2px solid #1976d2",
-                },
-                "& .MuiSelect-select": {
-                  padding: isMobile ? "4px 8px" : "6px 12px",
-                  fontSize: isMobile ? "0.75rem" : "0.875rem",
-                  fontWeight: 500,
-                  display: "flex",
-                  alignItems: "center",
-                },
-                "& .MuiSelect-icon": {
-                  color: "#666",
-                  fontSize: "1.2rem",
-                },
-                height: isMobile ? 32 : 36,
+                boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+                "&:hover": { bgcolor: "#f5f5f5" },
+                "&:disabled": { bgcolor: "#f5f5f5", opacity: 0.5 },
+                width: isMobile ? 28 : 32,
+                height: isMobile ? 28 : 32,
               }}
             >
-              <MenuItem value={1}>1.Hafta</MenuItem>
-              <MenuItem value={2}>2.Hafta</MenuItem>
-              <MenuItem value={3}>3.Hafta</MenuItem>
-              <MenuItem value={4}>4.Hafta</MenuItem>
-              <MenuItem value={5}>5.Hafta</MenuItem>
-              <MenuItem value={6}>6.Hafta</MenuItem>
-              <MenuItem value={7}>7.Hafta</MenuItem>
-              <MenuItem value={8}>8.Hafta</MenuItem>
-              <MenuItem value={9}>9.Hafta</MenuItem>
-              <MenuItem value={10}>10.Hafta</MenuItem>
-              <MenuItem value={11}>11.Hafta</MenuItem>
-              <MenuItem value={12}>12.Hafta</MenuItem>
-              <MenuItem value={13}>13.Hafta</MenuItem>
-              <MenuItem value={14}>14.Hafta</MenuItem>
-              <MenuItem value={15}>15.Hafta</MenuItem>
-            </Select>
-          </FormControl>
+              <ChevronLeftIcon fontSize="small" />
+            </IconButton>
+          </Box>
 
-          <IconButton
-            onClick={() => setCurrentWeek(Math.min(15, currentWeek + 1))}
-            size="small"
-            disabled={currentWeek >= 15}
-            sx={{
-              bgcolor: "white",
-              boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
-              "&:hover": { bgcolor: "#f5f5f5" },
-              "&:disabled": { bgcolor: "#f5f5f5", opacity: 0.5 },
-              width: isMobile ? 28 : 32,
-              height: isMobile ? 28 : 32,
-            }}
-          >
-            <ChevronRightIcon fontSize="small" />
-          </IconButton>
+          <Box>
+            <FormControl size="small" sx={{ minWidth: isMobile ? 90 : 120 }}>
+              <Select
+                value={currentWeek}
+                onChange={(e) => setCurrentWeek(Number(e.target.value))}
+                MenuProps={{
+                  PaperProps: {
+                    style: {
+                      maxHeight: 150,
+                    },
+                  },
+                }}
+                sx={{
+                  bgcolor: "white",
+                  height: isMobile ? 32 : 36,
+                  fontSize: isMobile ? "0.75rem" : "0.875rem",
+                }}
+              >
+                {Array.from({ length: 15 }, (_, i) => (
+                  <MenuItem key={i + 1} value={i + 1}>
+                    {i + 1}.Hafta
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Box>
+
+          <Box>
+            <IconButton
+              onClick={() => setCurrentWeek(Math.min(15, currentWeek + 1))}
+              size="small"
+              disabled={currentWeek >= 15}
+              sx={{
+                bgcolor: "white",
+                boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+                "&:hover": { bgcolor: "#f5f5f5" },
+                "&:disabled": { bgcolor: "#f5f5f5", opacity: 0.5 },
+                width: isMobile ? 28 : 32,
+                height: isMobile ? 28 : 32,
+              }}
+            >
+              <ChevronRightIcon fontSize="small" />
+            </IconButton>
+          </Box>
         </Box>
 
         {/* Right - Next Class Info */}

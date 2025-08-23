@@ -56,7 +56,7 @@ const DersVeDönemIslemleri = ({ onNavigate }) => {
   const { user, accessToken } = useContext(AuthContext);
   const navigate = useNavigate();
   const [selectedTerm, setSelectedTerm] = useState("2025-2026 Güz");
-  
+
   // Ders güncelleme için state'ler
   const [updateDialogOpen, setUpdateDialogOpen] = useState(false);
   const [lecturerLectures, setLecturerLectures] = useState([]);
@@ -88,7 +88,7 @@ const DersVeDönemIslemleri = ({ onNavigate }) => {
   // Helper function - Kursları normalize et
   const normalizeCourses = async (courses) => {
     let normalizedCourses = [];
-    
+
     if (!courses) {
       normalizedCourses = [];
     } else if (courses.sections && Array.isArray(courses.sections)) {
@@ -108,12 +108,12 @@ const DersVeDönemIslemleri = ({ onNavigate }) => {
           section_code: section.section_number,
           hours: []
         };
-        
+
         // Section'ın saatlerini de yükle
         try {
           const hours = await fetchSectionHours(section.id, accessToken);
           course.hours = hours || [];
-          
+
           // Günleri formatla
           const dayHours = {};
           if (Array.isArray(hours)) {
@@ -135,13 +135,13 @@ const DersVeDönemIslemleri = ({ onNavigate }) => {
             });
           }
           course.schedule = dayHours;
-          
+
         } catch (hoursError) {
           console.error('❌ Section hours yüklenirken hata:', hoursError);
           course.hours = [];
           course.schedule = {};
         }
-        
+
         return course;
       }));
     } else if (Array.isArray(courses)) {
@@ -154,7 +154,7 @@ const DersVeDönemIslemleri = ({ onNavigate }) => {
       console.warn('⚠️ Unexpected API response format:', courses);
       normalizedCourses = [];
     }
-    
+
     return normalizedCourses;
   };
 
@@ -169,10 +169,10 @@ const DersVeDönemIslemleri = ({ onNavigate }) => {
           console.log('📚 API Response courses:', courses);
           console.log('📚 Courses type:', typeof courses);
           console.log('📚 Is array:', Array.isArray(courses));
-          
+
           // API response'ı normalize et (Derslerim.js'deki normalizeLectures mantığı)
           let normalizedCourses = [];
-          
+
           if (!courses) {
             normalizedCourses = [];
           } else if (courses.sections && Array.isArray(courses.sections)) {
@@ -195,14 +195,14 @@ const DersVeDönemIslemleri = ({ onNavigate }) => {
                 section_code: section.section_number,
                 hours: [] // Başlangıçta boş, ama sonra doldurulacak
               };
-              
+
               // Section'ın saatlerini de yükle
               try {
                 console.log('🕐 Loading hours for section:', section.id);
                 const hours = await fetchSectionHours(section.id, accessToken);
                 console.log('🕐 Hours for section', section.id, ':', hours);
                 course.hours = hours || [];
-                
+
                 // Günleri formatla
                 const dayHours = {};
                 if (Array.isArray(hours)) {
@@ -224,13 +224,13 @@ const DersVeDönemIslemleri = ({ onNavigate }) => {
                   });
                 }
                 course.schedule = dayHours;
-                
+
               } catch (hoursError) {
                 console.error('❌ Section hours yüklenirken hata:', hoursError);
                 course.hours = [];
                 course.schedule = {};
               }
-              
+
               return course;
             }));
             console.log('✅ Converted sections to lectures with hours:', normalizedCourses);
@@ -244,7 +244,7 @@ const DersVeDönemIslemleri = ({ onNavigate }) => {
             console.warn('⚠️ Unexpected API response format:', courses);
             normalizedCourses = [];
           }
-          
+
           console.log('🎯 Final normalized courses:', normalizedCourses);
           setLecturerCoursesForDisplay(normalizedCourses);
         } catch (error) {
@@ -278,10 +278,10 @@ const DersVeDönemIslemleri = ({ onNavigate }) => {
     try {
       const lectures = await fetchLecturerLectures(user.lecturer_id, accessToken);
       console.log('🔄 Dialog - Raw lectures response:', lectures);
-      
+
       // Lectures'ı normalize et
       let normalizedLectures = [];
-      
+
       if (!lectures) {
         normalizedLectures = [];
       } else if (lectures.sections && Array.isArray(lectures.sections)) {
@@ -313,7 +313,7 @@ const DersVeDönemIslemleri = ({ onNavigate }) => {
         console.warn('⚠️ Dialog - Unexpected API response format:', lectures);
         normalizedLectures = [];
       }
-      
+
       console.log('🎯 Dialog - Final normalized lectures:', normalizedLectures);
       setLecturerLectures(normalizedLectures);
       setUpdateDialogOpen(true);
@@ -342,7 +342,7 @@ const DersVeDönemIslemleri = ({ onNavigate }) => {
   const handleEditHour = (hour) => {
     console.log('✏️ Editing hour:', hour);
     console.log('🆔 Hour ID:', hour.hour_id || hour.id);
-    
+
     setEditingHour(hour);
     setHourFormData({
       order: hour.order || '',
@@ -397,19 +397,19 @@ const DersVeDönemIslemleri = ({ onNavigate }) => {
       console.log('🌐 API URL will be:', `${process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000'}/lecturer_data/hours/${hourId}/`);
 
       await updateHour(hourId, updateData, accessToken);
-      
+
       console.log('✅ Saat güncellendi, saatleri yeniden yükleniyor...');
-      
+
       // Saatleri yeniden yükle
       const hours = await fetchSectionHours(selectedLecture.section_id, accessToken);
       setLectureHours(hours);
       setEditingHour(null);
-      
+
       // Ana listeyi de yeniden yükle
       const courses = await fetchLecturerLectures(user.lecturer_id, accessToken);
       const normalizedCourses = await normalizeCourses(courses);
       setLecturerCoursesForDisplay(normalizedCourses);
-      
+
       alert('Ders saati başarıyla güncellendi!');
     } catch (error) {
       console.error('❌ Saat güncellenirken hata:', error);
@@ -555,20 +555,20 @@ const DersVeDönemIslemleri = ({ onNavigate }) => {
 
   const getDaysText = (schedule) => {
     if (!schedule || typeof schedule !== 'object') return 'Henüz planlanmamış';
-    
+
     const dayNames = {
       'Monday': 'Pazartesi',
-      'Tuesday': 'Salı', 
+      'Tuesday': 'Salı',
       'Wednesday': 'Çarşamba',
       'Thursday': 'Perşembe',
       'Friday': 'Cuma',
       'Saturday': 'Cumartesi',
       'Sunday': 'Pazar'
     };
-    
+
     const days = Object.keys(schedule);
     if (days.length === 0) return 'Henüz planlanmamış';
-    
+
     return days.map(day => dayNames[day] || day).join(', ');
   };
 
@@ -599,9 +599,9 @@ const DersVeDönemIslemleri = ({ onNavigate }) => {
   };
 
   return (
-    <Container 
-      maxWidth={false} 
-      sx={{ 
+    <Container
+      maxWidth={false}
+      sx={{
         py: { xs: 0.5, sm: 0.75, md: 1, lg: 1.25, xl: 1.5 },
         px: { xs: 1, sm: 2, md: 3, lg: 4, xl: 6 },
         maxWidth: { xs: "100%", sm: "100%", md: "1200px", lg: "1400px", xl: "1800px" },
@@ -614,15 +614,28 @@ const DersVeDönemIslemleri = ({ onNavigate }) => {
           display: "flex",
           alignItems: "center",
           mb: 1.5,
-          p: 1,
+          p: 2,
           bgcolor: "white",
           borderRadius: 1,
           boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
         }}
       >
+        <UpdateIcon
+          sx={{
+            mr: 2,
+            color: "#1a237e",
+            fontSize: "2rem"
+          }}
+        />
         <Typography
           variant="h6"
-          sx={{ fontWeight: 600, color: "#1a237e", fontSize: "1rem" }}
+          sx={{
+            fontWeight: 600,
+            color: "#1a237e",
+            fontSize: "1.5rem",
+            display: "flex",
+            alignItems: "center"
+          }}
         >
           Ders ve Dönem İşlemleri
         </Typography>
@@ -681,9 +694,9 @@ const DersVeDönemIslemleri = ({ onNavigate }) => {
                 opacity: isTermActive ? 1 : 0.5,
                 "&:hover": isTermActive
                   ? {
-                      transform: "translateY(-1px)",
-                      boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
-                    }
+                    transform: "translateY(-1px)",
+                    boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
+                  }
                   : {},
               }}
               onClick={() =>
@@ -746,9 +759,9 @@ const DersVeDönemIslemleri = ({ onNavigate }) => {
                 opacity: isTermActive ? 1 : 0.5,
                 "&:hover": isTermActive
                   ? {
-                      transform: "translateY(-1px)",
-                      boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
-                    }
+                    transform: "translateY(-1px)",
+                    boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
+                  }
                   : {},
               }}
               onClick={() =>
@@ -935,22 +948,24 @@ const DersVeDönemIslemleri = ({ onNavigate }) => {
       </Grid>
 
       {/* Ders Güncelleme Dialog */}
-      <Dialog 
-        open={updateDialogOpen} 
+      <Dialog
+        open={updateDialogOpen}
         onClose={handleDialogClose}
         maxWidth="lg"
         fullWidth
       >
         <DialogTitle>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, }}>
             <UpdateIcon color="primary" />
-            <Typography variant="h6">Ders Güncelleme</Typography>
+            <Typography variant="h6"  sx={{mt:1}}>Ders Güncelleme</Typography>
           </Box>
         </DialogTitle>
-        
+
         <DialogContent>
           {loadingLectures ? (
-            <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
+            <Box sx={{
+              display: 'flex', justifyContent: 'center', p: 3,
+            }}>
               <CircularProgress />
             </Box>
           ) : (
@@ -963,10 +978,10 @@ const DersVeDönemIslemleri = ({ onNavigate }) => {
                   </Typography>
                   {(lecturerLectures || []).length > 0 ? (
                     (lecturerLectures || []).map((lecture) => (
-                      <Card 
+                      <Card
                         key={lecture.section_id}
-                        sx={{ 
-                          mb: 2, 
+                        sx={{
+                          mb: 2,
                           cursor: 'pointer',
                           '&:hover': { bgcolor: 'rgba(25, 118, 210, 0.04)' }
                         }}
@@ -1001,7 +1016,7 @@ const DersVeDönemIslemleri = ({ onNavigate }) => {
                   <Typography variant="h6" sx={{ mb: 2 }}>
                     Ders Saatleri:
                   </Typography>
-                  
+
                   {(lectureHours || []).length > 0 ? (
                     (lectureHours || []).map((hour) => (
                       <Accordion key={hour.hour_id || hour.id || `hour-${hour.order}-${hour.day}`} sx={{ mb: 1 }}>
@@ -1023,113 +1038,113 @@ const DersVeDönemIslemleri = ({ onNavigate }) => {
                             </Button>
                           </Box>
                         </AccordionSummary>
-                      
-                      <AccordionDetails>
-                        {(editingHour?.hour_id === hour.hour_id || editingHour?.id === hour.id) ? (
-                          <Grid container spacing={2}>
-                            <Grid item xs={6} md={3}>
-                              <TextField
-                                label="Sıra"
-                                type="number"
-                                fullWidth
-                                size="small"
-                                value={hourFormData.order}
-                                onChange={(e) => setHourFormData({...hourFormData, order: e.target.value})}
-                              />
-                            </Grid>
-                            <Grid item xs={6} md={3}>
-                              <FormControl fullWidth size="small">
-                                <InputLabel>Gün</InputLabel>
-                                <Select
-                                  value={hourFormData.day}
-                                  onChange={(e) => setHourFormData({...hourFormData, day: e.target.value})}
-                                  label="Gün"
-                                >
-                                  <MenuItem value="Monday">Pazartesi</MenuItem>
-                                  <MenuItem value="Tuesday">Salı</MenuItem>
-                                  <MenuItem value="Wednesday">Çarşamba</MenuItem>
-                                  <MenuItem value="Thursday">Perşembe</MenuItem>
-                                  <MenuItem value="Friday">Cuma</MenuItem>
-                                  <MenuItem value="Saturday">Cumartesi</MenuItem>
-                                  <MenuItem value="Sunday">Pazar</MenuItem>
-                                </Select>
-                              </FormControl>
-                            </Grid>
-                            <Grid item xs={6} md={3}>
-                              <TextField
-                                label="Başlangıç"
-                                type="time"
-                                fullWidth
-                                size="small"
-                                value={hourFormData.time_start}
-                                onChange={(e) => setHourFormData({...hourFormData, time_start: e.target.value})}
-                                InputLabelProps={{ shrink: true }}
-                              />
-                            </Grid>
-                            <Grid item xs={6} md={3}>
-                              <TextField
-                                label="Bitiş"
-                                type="time"
-                                fullWidth
-                                size="small"
-                                value={hourFormData.time_end}
-                                onChange={(e) => setHourFormData({...hourFormData, time_end: e.target.value})}
-                                InputLabelProps={{ shrink: true }}
-                              />
-                            </Grid>
-                            <Grid item xs={12} md={6}>
-                              <TextField
-                                label="Sınıf ID"
-                                fullWidth
-                                size="small"
-                                value={hourFormData.classroom_id}
-                                onChange={(e) => setHourFormData({...hourFormData, classroom_id: e.target.value})}
-                              />
-                            </Grid>
-                            <Grid item xs={12}>
-                              <Box sx={{ display: 'flex', gap: 1 }}>
-                                <Button
-                                  variant="contained"
-                                  startIcon={<SaveIcon />}
-                                  onClick={handleSaveHour}
+
+                        <AccordionDetails>
+                          {(editingHour?.hour_id === hour.hour_id || editingHour?.id === hour.id) ? (
+                            <Grid container spacing={2}>
+                              <Grid item xs={6} md={3}>
+                                <TextField
+                                  label="Sıra"
+                                  type="number"
+                                  fullWidth
                                   size="small"
-                                >
-                                  Kaydet
-                                </Button>
-                                <Button
-                                  variant="outlined"
-                                  onClick={() => setEditingHour(null)}
+                                  value={hourFormData.order}
+                                  onChange={(e) => setHourFormData({ ...hourFormData, order: e.target.value })}
+                                />
+                              </Grid>
+                              <Grid item xs={6} md={3}>
+                                <FormControl fullWidth size="small">
+                                  <InputLabel>Gün</InputLabel>
+                                  <Select
+                                    value={hourFormData.day}
+                                    onChange={(e) => setHourFormData({ ...hourFormData, day: e.target.value })}
+                                    label="Gün"
+                                  >
+                                    <MenuItem value="Monday">Pazartesi</MenuItem>
+                                    <MenuItem value="Tuesday">Salı</MenuItem>
+                                    <MenuItem value="Wednesday">Çarşamba</MenuItem>
+                                    <MenuItem value="Thursday">Perşembe</MenuItem>
+                                    <MenuItem value="Friday">Cuma</MenuItem>
+                                    <MenuItem value="Saturday">Cumartesi</MenuItem>
+                                    <MenuItem value="Sunday">Pazar</MenuItem>
+                                  </Select>
+                                </FormControl>
+                              </Grid>
+                              <Grid item xs={6} md={3}>
+                                <TextField
+                                  label="Başlangıç"
+                                  type="time"
+                                  fullWidth
                                   size="small"
-                                >
-                                  İptal
-                                </Button>
-                              </Box>
+                                  value={hourFormData.time_start}
+                                  onChange={(e) => setHourFormData({ ...hourFormData, time_start: e.target.value })}
+                                  InputLabelProps={{ shrink: true }}
+                                />
+                              </Grid>
+                              <Grid item xs={6} md={3}>
+                                <TextField
+                                  label="Bitiş"
+                                  type="time"
+                                  fullWidth
+                                  size="small"
+                                  value={hourFormData.time_end}
+                                  onChange={(e) => setHourFormData({ ...hourFormData, time_end: e.target.value })}
+                                  InputLabelProps={{ shrink: true }}
+                                />
+                              </Grid>
+                              <Grid item xs={12} md={6}>
+                                <TextField
+                                  label="Sınıf ID"
+                                  fullWidth
+                                  size="small"
+                                  value={hourFormData.classroom_id}
+                                  onChange={(e) => setHourFormData({ ...hourFormData, classroom_id: e.target.value })}
+                                />
+                              </Grid>
+                              <Grid item xs={12}>
+                                <Box sx={{ display: 'flex', gap: 1 }}>
+                                  <Button
+                                    variant="contained"
+                                    startIcon={<SaveIcon />}
+                                    onClick={handleSaveHour}
+                                    size="small"
+                                  >
+                                    Kaydet
+                                  </Button>
+                                  <Button
+                                    variant="outlined"
+                                    onClick={() => setEditingHour(null)}
+                                    size="small"
+                                  >
+                                    İptal
+                                  </Button>
+                                </Box>
+                              </Grid>
                             </Grid>
-                          </Grid>
-                        ) : (
-                          <Box>
-                            <Typography variant="body2">
-                              <strong>Gün:</strong> {hour.day}<br />
-                              <strong>Saat:</strong> {hour.time_start} - {hour.time_end}<br />
-                              <strong>Sıra:</strong> {hour.order}<br />
-                              <strong>Sınıf ID:</strong> {hour.classroom_id}
-                            </Typography>
-                          </Box>
-                        )}
-                      </AccordionDetails>
-                    </Accordion>
-                  ))
-                ) : (
-                  <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', py: 3 }}>
-                    {loadingHours ? 'Saatler yükleniyor...' : 'Bu ders için henüz saat bilgisi yok'}
-                  </Typography>
-                )}
+                          ) : (
+                            <Box>
+                              <Typography variant="body2">
+                                <strong>Gün:</strong> {hour.day}<br />
+                                <strong>Saat:</strong> {hour.time_start} - {hour.time_end}<br />
+                                <strong>Sıra:</strong> {hour.order}<br />
+                                <strong>Sınıf ID:</strong> {hour.classroom_id}
+                              </Typography>
+                            </Box>
+                          )}
+                        </AccordionDetails>
+                      </Accordion>
+                    ))
+                  ) : (
+                    <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', py: 3 }}>
+                      {loadingHours ? 'Saatler yükleniyor...' : 'Bu ders için henüz saat bilgisi yok'}
+                    </Typography>
+                  )}
                 </Box>
               )}
             </Box>
           )}
         </DialogContent>
-        
+
         <DialogActions>
           {selectedLecture && (
             <Button onClick={() => setSelectedLecture(null)}>
